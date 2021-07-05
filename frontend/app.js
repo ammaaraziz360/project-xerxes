@@ -14,9 +14,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 // set the view engine to ejs
 app.set('view engine', 'ejs');
 
+app.get('/', function(req, res){
+  res.render('./pages/home')
+})
+
 // default route
-app.get('/', function(req, res) {
-    res.render('./pages/home')
+app.get('/login', function(req, res) {
+    res.render('./pages/login')
+});
+
+app.post('/authlogin', function(req, res){
+  console.log(req.body)
+  res.render('./pages/home')
 });
 
 const port = 3000

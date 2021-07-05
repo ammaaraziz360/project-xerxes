@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <%- include('../partials/head'); %> 
+    </head>
+
+    <body>
+        <div class="g-signin2" data-onsuccess="onSignIn"></div>
+
+        <form action="/authlogin" method="POST" id="login">
+            <input id="user_ID" name="user_ID" value="" hidden>
+            <input id="user_NAME" name="user_NAME" value="" hidden>
+            <input id="user_IMAGE_URL" name="user_IMAGE_URL" value="" hidden>
+            <input id="user_EMAIL" name="user_EMAIL" value="" hidden>
+            <div id="submitter">
+
+            </div>
+        </form>
+    </body>
+
+    <script>
+        function onSignIn(googleUser) {
+            var profile = googleUser.getBasicProfile();
+            signin(profile.getId(),profile.getName(), profile.getImageUrl(), profile.getEmail())
+        }
+
+       function signin(USER_ID, USER_NAME, USER_IMAGE_URL, USER_EMAIL){
+            document.getElementById("user_ID").setAttribute('value', USER_ID)
+            document.getElementById("user_NAME").setAttribute('value', USER_NAME)
+            document.getElementById("user_IMAGE_URL").setAttribute('value', USER_IMAGE_URL)
+            document.getElementById("user_EMAIL").setAttribute('value', USER_EMAIL)
+            document.getElementById("submitter").innerHTML = '<button id="loginer"type="submit">Continue</button>'
+        }
+    </script>
+</html>
