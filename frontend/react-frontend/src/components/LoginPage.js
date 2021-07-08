@@ -18,25 +18,28 @@ const LoginPage = () => {
     }
 
     return(
-        <div className='d-flex bg-dark vh-100'>
-            <div className="centerDiv">
+        <div className='bg-dark vh-100 container-fluid'>
+            <div className='centerCol'></div>
                 <div className="row m-0">
-                    <div className="col-12 bg-secondary text-light rounded-top p-3">
-                        <h1 className="text-center">Welcome to Project Xerxes</h1>
+                    <div className="col-lg-4 col-sm-1"></div>
+                    <div className="col-lg-4 col-sm-10 bg-secondary text-light rounded align-items-center p-3">
+                        <div className="d-flex justify-content-center flex-column text-center">
+                            <div className="bg-light text-dark p-4 mb-4 rounded">
+                                <h1>Project Xerxes</h1>
+                                <p>Log in</p>
+                            </div>
+                                <GoogleLogin
+                                    clientId= {clientId}
+                                    buttonText="Login with Google"
+                                    onSuccess={responseGoogle}
+                                    onFailure={responseGoogle}
+                                    cookiePolicy={'single_host_origin'}
+                                    className="d-flex justify-content-center"
+                                />
+                        </div>
                     </div>
+                    <div className="col-lg-4 col-sm-1"></div>
                 </div>
-                <div className="row m-0">
-                    <div className="d-flex col-12 bg-secondary text-light rounded-bottom justify-content-center p-3">
-                        <GoogleLogin
-                            clientId= {clientId}
-                            buttonText="Login"
-                            onSuccess={responseGoogle}
-                            onFailure={responseGoogle}
-                            cookiePolicy={'single_host_origin'}
-                        />
-                    </div>
-                </div>
-            </div>
         </div>
     )
 }
