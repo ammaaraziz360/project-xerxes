@@ -1,5 +1,50 @@
+/* CSS HEX 
+--space-cadet: #1d3461ff;
+--yale-blue: #1f487eff;
+--queen-blue: #376996ff;
+--united-nations-blue: #6290c8ff;
+--cerulean-frost: #829cbcff;
+*/
+
+/* CSS HSL 
+space-cadet: hsla(220, 54%, 25%, 1);
+--yale-blue: hsla(214, 61%, 31%, 1);
+--queen-blue: hsla(208, 46%, 40%, 1);
+--united-nations-blue: hsla(213, 48%, 58%, 1);
+--cerulean-frost: hsla(213, 30%, 62%, 1);
+*/
+/* CSS HEX 
+--smoky-black: #14110fff;
+--jet: #34312dff;
+--gray-web: #7e7f83ff;
+--almond: #d9c5b2ff;
+--cultured: #f3f3f4ff;
+*/
+/* CSS HSL 
+--smoky-black: hsla(24, 14%, 7%, 1);
+--jet: hsla(34, 7%, 19%, 1);
+--gray-web: hsla(228, 2%, 50%, 1);
+--almond: hsla(29, 34%, 77%, 1);
+--cultured: hsla(240, 4%, 95%, 1);
+*/
+
+
 .centerCol
 { 
 	width: 50%;
 	height: 30%;
+}
+
+.main {
+	background: linear-gradient(to bottom right, #14110fff, #7e7f83ff);
+}
+
+.sub {
+	background-color: #34312dff;
+}
+.sub-int{
+	background-color: #f3f3f4ff;
+}
+.jet-bg{
+	background-color: #d9c5b2ff;
 }

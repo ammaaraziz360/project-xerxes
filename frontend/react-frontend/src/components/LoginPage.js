@@ -18,13 +18,32 @@ const LoginPage = () => {
     }
 
     return(
-        <div className='bg-dark vh-100 container-fluid'>
-            <div className='centerCol'></div>
-                <div className="row m-0">
+        <div className='main vh-100 container-fluid p-0'>
+            <div className="row m-0 h-100">
+                <div className="d-flex col-10 jet-bg p-0 align-items-center">
+                    <div className="text-left text-dark sub-int p-4 w-100">
+                        <h1 className="font-weight-bold">Project Xerxes</h1>
+                        <p>Log in</p>
+                    </div>
+                </div>
+                <div className="d-flex col-2 sub-int p-0 align-items-center">
+                    <div className="p-4 w-100">
+                            <GoogleLogin
+                                clientId= {clientId}
+                                buttonText="Login with Google"
+                                onSuccess={responseGoogle}
+                                onFailure={responseGoogle}
+                                cookiePolicy={'single_host_origin'}
+                                className="d-flex justify-content-center"
+                            />
+                    </div>
+                </div>
+            </div>
+                {/* <div className="row m-0">
                     <div className="col-lg-4 col-sm-1"></div>
-                    <div className="col-lg-4 col-sm-10 bg-secondary text-light rounded align-items-center p-3">
+                    <div className="col-lg-4 col-sm-10 text-light rounded align-items-center p-3 sub">
                         <div className="d-flex justify-content-center flex-column text-center">
-                            <div className="bg-light text-dark p-4 mb-4 rounded">
+                            <div className="text-dark sub-int p-4 mb-4 rounded">
                                 <h1>Project Xerxes</h1>
                                 <p>Log in</p>
                             </div>
@@ -39,7 +58,7 @@ const LoginPage = () => {
                         </div>
                     </div>
                     <div className="col-lg-4 col-sm-1"></div>
-                </div>
+                </div> */}
         </div>
     )
 }
