@@ -3,6 +3,10 @@ import { GoogleLogin } from 'react-google-login';
 import {useHistory } from 'react-router';
 import Modal from 'react-bootstrap/Modal'
 import Button from 'react-bootstrap/Button'
+import InputGroup from 'react-bootstrap/InputGroup'
+import FormControl from 'react-bootstrap/FormControl'
+
+import BlankModal from './Modal';
 
 import '../App.css'
 const clientId = "31312193628-o29ttjk3ogu3ftvbvurt91oi8t3akt0m.apps.googleusercontent.com"
@@ -25,11 +29,23 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
 
     return(
         <div>
-            <Modal show={toggleModal} onHide={() => setToggleModal(false)}>
+            <Modal backdrop="static" keyboard={false} show={toggleModal} onHide={() => setToggleModal(false)}>
                 <Modal.Header closeButton>
                 <Modal.Title>Welcome to Blogoo</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>Pick a username</Modal.Body>
+                <Modal.Body>
+                    <h4>Pick a username</h4>
+                    <InputGroup className="mb-3">
+                        <InputGroup.Prepend>
+                        <InputGroup.Text id="basic-addon1">@</InputGroup.Text>
+                        </InputGroup.Prepend>
+                        <FormControl
+                        placeholder="Username"
+                        aria-label="Username"
+                        aria-describedby="basic-addon1"
+                        />
+                    </InputGroup>
+                </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" onClick={() => setToggleModal(false)}>
                     Close
@@ -44,8 +60,16 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
 }
 
 const LoginPage = () => {
+    const[toggleUsernameModal, setToggleUsernameModal] = useState(false);
     const[toggleModal, setToggleModal] = useState(false);
+
+    const[modalText, setModalText] = useState({'title': '', 'body': ''})
+
     const history = useHistory()
+
+    var title = "";
+    var body = "";
+
     const responseGoogle = (response) => {
 
         var google_user = response.profileObj
@@ -68,12 +92,19 @@ const LoginPage = () => {
             headers: {
                 'Content-Type': 'application/json'
               },
-        })
-            .then(res => res.json())
-            .then(result => {
-                console.log(result)
+        }) .then(res => {
+            if(res.status == 200){
+                setToggleUsernameModal(!toggleUsernameModal)
+            }
+            else {
+                setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
+                setToggleModal(!toggleModal)
+            }
+        }).catch(error => {
+                title = "Error"
+                body = error
+                setToggleModal(!toggleModal)
             })
-        setToggleModal(!toggleModal)
         //history.push('/history')
     }
 
@@ -101,10 +132,12 @@ const LoginPage = () => {
                     </div>
                 </div>
             </div>
-            <EnterUsernameModal toggleModal = {toggleModal}
-                                setToggleModal = {setToggleModal}/>
+            <EnterUsernameModal toggleModal = {toggleUsernameModal}
+                                setToggleModal = {setToggleUsernameModal}/>
+            <BlankModal toggleModal = {toggleModal}
+                        setToggleModal = {setToggleModal}
+                        text = {modalText}/>
         </div>
-        
     )
 }
 
