@@ -5,7 +5,9 @@ import Modal from 'react-bootstrap/Modal'
 import Button from 'react-bootstrap/Button'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
+import Form from 'react-bootstrap/Form'
 
+import Alerts from './ErrorAlert';
 import BlankModal from './Modal';
 
 import '../App.css'
@@ -23,6 +25,9 @@ const customStyles = {
 
 
 const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
+    const[ErrorAlertText, setAlertErrorText] = useState({'message': 'Banned username, pick a new username', 'style': 'danger'})
+    const[AlertToggle, setAlertToggle] = useState(true)
+
     if(toggleModal == false){
         return null
     } 
@@ -30,29 +35,47 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
     return(
         <div>
             <Modal backdrop="static" keyboard={false} show={toggleModal} onHide={() => setToggleModal(false)}>
-                <Modal.Header closeButton>
+                <Modal.Header>
                 <Modal.Title>Welcome to Blogoo</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <h4>Pick a username</h4>
-                    <InputGroup className="mb-3">
-                        <InputGroup.Prepend>
-                        <InputGroup.Text id="basic-addon1">@</InputGroup.Text>
-                        </InputGroup.Prepend>
-                        <FormControl
-                        placeholder="Username"
-                        aria-label="Username"
-                        aria-describedby="basic-addon1"
-                        />
-                    </InputGroup>
-                </Modal.Body>
+                    <Form>
+                        <Form.Group>
+                            <Form.Label><strong>Pick a username</strong></Form.Label>
+                            <InputGroup className="mb-3">
+                                <InputGroup.Prepend>
+                                <InputGroup.Text id="basic-addon1">@</InputGroup.Text>
+                                </InputGroup.Prepend>
+                                <FormControl
+                                placeholder="Username"
+                                aria-label="Username"
+                                aria-describedby="basic-addon1"
+                                />
+                            </InputGroup>
+                        </Form.Group>
+                        
+                        <div className='mt-4'>
+                            <Form.Group controlId="formBasicCheckbox">
+                                <Form.Check type="checkbox" label="I agree to the terms of service" />
+                            </Form.Group>
+                            <Form.Group controlId="formBasicCheckbox">
+                                <Form.Check type="checkbox" label="I have read and agree to the Privacy Policy" />
+                            </Form.Group>
+                        </div>
+                        <div className='mt-4'>
+                            <Alerts
+                                AlertToggle = {AlertToggle}
+                                setAlertToggle = {setAlertToggle}
+                                AlertText = {ErrorAlertText}
+                            />
+                        </div>
+                       
+                    </Form>
+                </Modal.Body>   
                 <Modal.Footer>
-                <Button variant="secondary" onClick={() => setToggleModal(false)}>
-                    Close
-                </Button>
-                <Button variant="primary" onClick={() => setToggleModal(false)}>
-                    Save Changes
-                </Button>
+                    <Button variant="primary" onClick={() => setToggleModal(false)}>
+                        Join
+                    </Button>
                 </Modal.Footer>
             </Modal>
         </div>
@@ -79,7 +102,8 @@ const LoginPage = () => {
             'last_name': google_user.familyName,
             'first_name': google_user.givenName,
             'pfp_url': google_user.imageUrl,
-            'auth_token': response.getAuthResponse().id_token
+            'auth_token': response.getAuthResponse().id_token,
+            'login_type': 'g'
         }
 
         sessionStorage.setItem("session_token", user_data.auth_token)
@@ -101,8 +125,7 @@ const LoginPage = () => {
                 setToggleModal(!toggleModal)
             }
         }).catch(error => {
-                title = "Error"
-                body = error
+                setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
                 setToggleModal(!toggleModal)
             })
         //history.push('/history')

@@ -1,2 +1,3 @@
 backend/mysql_db_access/mysqldb_credentials.py
 frontend/views/partials/head.ejs
+backend/venv/Lib/site-packages/mysql_db_access/mysqldb_credentials.py

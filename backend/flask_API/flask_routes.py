@@ -2,6 +2,8 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask import Flask, json, request, jsonify, make_response, abort
 from flask_cors import CORS
+from mysql_db_access.mysql_connection import bannedPhrases
+
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -9,7 +11,7 @@ CORS(app)
 
 # default route
 @app.route('/api/users', methods=['POST'])
-def home():
+def createUser():
     try:
         request_body = request.json
 
@@ -18,6 +20,17 @@ def home():
         return make_response(jsonify({"status": "Authentication Failuire"}), 401)
     except:
         return 
+
+
+@app.route('/api/users/banned-usernames', methods=['GET'])
+def getBannedUsernames():
+
+    try:
+        banned_words = bannedPhrases()
+        return jsonify({'banned_words': banned_words}, 200)
+    except:
+        return
+        
 
 
 
