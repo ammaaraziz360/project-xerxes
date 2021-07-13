@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useReducer } from 'react';
 import { GoogleLogin } from 'react-google-login';
 import {useHistory } from 'react-router';
 import Modal from 'react-bootstrap/Modal'
@@ -11,22 +11,77 @@ import Alerts from './ErrorAlert';
 import BlankModal from './Modal';
 
 import '../App.css'
+import React from 'react';
+
 const clientId = "31312193628-o29ttjk3ogu3ftvbvurt91oi8t3akt0m.apps.googleusercontent.com"
-const customStyles = {
-    content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      marginRight: '-50%',
-      transform: 'translate(-50%, -50%)',
-    },
-  };
+
+// regular expression with only letters, numbers, and _!#$%&*.'=+
+const username_regex = new RegExp("^[a-zA-Z0-9_!#$%&*.'=+]*")
+
 
 
 const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
+
     const[ErrorAlertText, setAlertErrorText] = useState({'message': 'Banned username, pick a new username', 'style': 'danger'})
-    const[AlertToggle, setAlertToggle] = useState(true)
+    const[usernameErrorAlertText, setUsernameAlertText] = useState({'message': '', 'style': 'danger'})
+    const [input, setInput] = useState('');
+    const[bannedWords,setBannedWords] = useState([])
+    const[AlertToggle, setAlertToggle] = useState(false)
+    const[UsernameAlertToggle, setUsernameAlertToggle] = useState(false)
+    // to disable join button
+    const[disableButton, setDisableButton] = useState(true)
+
+    // to check for privacy policy checkbox
+    const[ppCheck, setPPCheck] = useState(false)
+    // to check for terms of service checkbox
+    const[tosCheck, setTosCheck] = useState(false)
+    const[nameCheck, setNameCheck] = useState(false)
+    useEffect(() => {
+        fetch('http://127.0.0.1:5000/api/users/banned-usernames', {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'auth_token': sessionStorage.getItem("session_token")
+            },
+        }) 
+            .then(res => res.json())
+            .then(data => {
+                console.log(data)
+                setBannedWords(data[0].banned_words)
+            })
+    }, [toggleModal])
+
+    useEffect(() =>{
+  
+        if(bannedWords.includes(input)){
+            setAlertErrorText({'message': 'Banned username, pick a new username', 'style': 'danger'})
+            setAlertToggle(true)
+            setNameCheck(false)
+        }
+        else{
+            if(input.length > 4 && !input.includes(' ')){
+                setUsernameAlertToggle(false)
+                setNameCheck(true)
+            }
+            else{
+                setUsernameAlertText({'message': 'Username must be at least 5 characters long and not contain spaces', 'style': 'danger'})
+                setUsernameAlertToggle(true)
+                setNameCheck(false)
+            }
+            setAlertToggle(false)
+        }
+        
+    }, [input])
+
+    useEffect(() => {
+        if(tosCheck && ppCheck && nameCheck){
+            setDisableButton(false)
+        }
+        else{
+            setDisableButton(true)
+        }
+    })
 
     if(toggleModal == false){
         return null
@@ -34,7 +89,7 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
 
     return(
         <div>
-            <Modal backdrop="static" keyboard={false} show={toggleModal} onHide={() => setToggleModal(false)}>
+            <Modal animation={false} backdrop="static" keyboard={false} show={toggleModal} onHide={() => setToggleModal(false)}>
                 <Modal.Header>
                 <Modal.Title>Welcome to Blogoo</Modal.Title>
                 </Modal.Header>
@@ -47,33 +102,46 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
                                 <InputGroup.Text id="basic-addon1">@</InputGroup.Text>
                                 </InputGroup.Prepend>
                                 <FormControl
+                                type="username"
                                 placeholder="Username"
                                 aria-label="Username"
                                 aria-describedby="basic-addon1"
+                                value = {input}
+                                onChange = {(e) => {setInput(e.target.value)}}
                                 />
                             </InputGroup>
                         </Form.Group>
                         
                         <div className='mt-4'>
                             <Form.Group controlId="formBasicCheckbox">
-                                <Form.Check type="checkbox" label="I agree to the terms of service" />
+                                <Form.Check 
+                                    type="checkbox" 
+                                    label="I agree to the terms of service" 
+                                    onChange={() => setTosCheck(!tosCheck)}
+                                />
                             </Form.Group>
                             <Form.Group controlId="formBasicCheckbox">
-                                <Form.Check type="checkbox" label="I have read and agree to the Privacy Policy" />
+                                <Form.Check 
+                                    type="checkbox" 
+                                    label="I have read and agree to the Privacy Policy"
+                                    onChange={() => setPPCheck(!ppCheck)} />
                             </Form.Group>
                         </div>
                         <div className='mt-4'>
                             <Alerts
                                 AlertToggle = {AlertToggle}
-                                setAlertToggle = {setAlertToggle}
                                 AlertText = {ErrorAlertText}
+                            />
+                            <Alerts
+                                AlertToggle = {UsernameAlertToggle}
+                                AlertText = {usernameErrorAlertText}
                             />
                         </div>
                        
                     </Form>
                 </Modal.Body>   
                 <Modal.Footer>
-                    <Button variant="primary" onClick={() => setToggleModal(false)}>
+                    <Button disabled={disableButton} variant="primary" onClick={() => setToggleModal(false)}>
                         Join
                     </Button>
                 </Modal.Footer>
@@ -102,11 +170,10 @@ const LoginPage = () => {
             'last_name': google_user.familyName,
             'first_name': google_user.givenName,
             'pfp_url': google_user.imageUrl,
-            'auth_token': response.getAuthResponse().id_token,
-            'login_type': 'g'
+            'login_type': 'gog'
         }
 
-        sessionStorage.setItem("session_token", user_data.auth_token)
+        sessionStorage.setItem("session_token", response.getAuthResponse().id_token)
         sessionStorage.setItem("user_id", user_data.google_id)
 
         fetch('http://127.0.0.1:5000/api/users', {
@@ -114,7 +181,8 @@ const LoginPage = () => {
             mode: 'cors',
             body: JSON.stringify(user_data),
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'auth_token': response.getAuthResponse().id_token,
               },
         }) .then(res => {
             if(res.status == 200){

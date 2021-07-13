@@ -10,12 +10,16 @@ app.config["DEBUG"] = True
 CORS(app)
 
 # default route
-@app.route('/api/users', methods=['POST'])
+@app.route('/api/users/register', methods=['POST'])
 def createUser():
     try:
+        
+        auth_token = request.headers['auth_token']
         request_body = request.json
 
-        if(AuthenticateUser(request_body["auth_token"])):
+        request_body['']
+
+        if(AuthenticateUser(auth_token)):
             return make_response(jsonify({"staus": "Authentication Success"}), 200)
         return make_response(jsonify({"status": "Authentication Failuire"}), 401)
     except:
@@ -26,13 +30,14 @@ def createUser():
 def getBannedUsernames():
 
     try:
-        banned_words = bannedPhrases()
-        return jsonify({'banned_words': banned_words}, 200)
+        auth_token = request.headers['auth_token']
+        if AuthenticateUser(auth_token):
+            banned_words = bannedPhrases()
+            return make_response(jsonify({'banned_words': banned_words}, 200))
+        return make_response(jsonify({'banned_words': []}, 401))
     except:
-        return
+        return make_response(jsonify({'banned_words': []}, 401))
         
-
-
 
 def AuthenticateUser(auth_token):
     try:

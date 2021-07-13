@@ -10,7 +10,7 @@ const Alerts = ({AlertToggle, setAlertToggle, AlertText}) => {
         <Alert variant={AlertText.style}>
         {AlertText.message}
         </Alert>
-  )
+    )
 }
 
 export default Alerts
