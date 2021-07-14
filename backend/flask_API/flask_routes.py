@@ -2,7 +2,8 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask import Flask, json, request, jsonify, make_response, abort
 from flask_cors import CORS
-from mysql_db_access.mysql_connection import bannedPhrases
+from mysql_db_access import mysql_connection
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -17,11 +18,14 @@ def createUser():
         auth_token = request.headers['auth_token']
         request_body = request.json
 
-        request_body['']
+        request_body['register_date'] = datetime.now().strftime('%Y-%m-%d')
+        request_body['last_login'] = datetime.now().strftime('%Y-%m-%d')
 
         if(AuthenticateUser(auth_token)):
-            return make_response(jsonify({"staus": "Authentication Success"}), 200)
-        return make_response(jsonify({"status": "Authentication Failuire"}), 401)
+            result = mysql_connection.InsertUsers(request_body)
+            return jsonify({"user_exists": result}, 200)
+        
+        return jsonify({"user_exists": None}, 401)
     except:
         return 
 
@@ -32,7 +36,7 @@ def getBannedUsernames():
     try:
         auth_token = request.headers['auth_token']
         if AuthenticateUser(auth_token):
-            banned_words = bannedPhrases()
+            banned_words = mysql_connection.bannedPhrases()
             return make_response(jsonify({'banned_words': banned_words}, 200))
         return make_response(jsonify({'banned_words': []}, 401))
     except:
@@ -55,7 +59,6 @@ def AuthenticateUser(auth_token):
 
         # ID token is valid. Get the user's Google Account ID from the decoded token.
         userid = idinfo['sub']
-        print(userid)
         return True
     except ValueError:
         # Invalid token

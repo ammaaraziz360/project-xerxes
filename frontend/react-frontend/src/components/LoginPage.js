@@ -47,7 +47,6 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
         }) 
             .then(res => res.json())
             .then(data => {
-                console.log(data)
                 setBannedWords(data[0].banned_words)
             })
     }, [toggleModal])
@@ -82,6 +81,11 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
             setDisableButton(true)
         }
     })
+
+    const handleSubmit = () => {
+        
+    }
+       
 
     if(toggleModal == false){
         return null
@@ -176,7 +180,7 @@ const LoginPage = () => {
         sessionStorage.setItem("session_token", response.getAuthResponse().id_token)
         sessionStorage.setItem("user_id", user_data.google_id)
 
-        fetch('http://127.0.0.1:5000/api/users', {
+        fetch('http://127.0.0.1:5000/api/users/register', {
             method: 'POST',
             mode: 'cors',
             body: JSON.stringify(user_data),
@@ -184,15 +188,18 @@ const LoginPage = () => {
                 'Content-Type': 'application/json',
                 'auth_token': response.getAuthResponse().id_token,
               },
-        }) .then(res => {
-            if(res.status == 200){
-                setToggleUsernameModal(!toggleUsernameModal)
-            }
-            else {
-                setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
-                setToggleModal(!toggleModal)
-            }
-        }).catch(error => {
+        }) 
+            .then(res => res.json()) 
+            .then(data => {
+                if(data[1] == 200){
+                    setToggleUsernameModal(!toggleUsernameModal)
+                }
+                else {
+                    setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
+                    setToggleModal(!toggleModal)
+                }
+            })
+            .catch(error => {
                 setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
                 setToggleModal(!toggleModal)
             })
@@ -201,16 +208,13 @@ const LoginPage = () => {
 
     return(
         <div>
-            <div className='main vh-100 container-fluid p-0'>
+            <div className='vh-100 smokey_black container-fluid p-0'>
                 <div className="row m-0 h-100">
-                    <div className="d-flex col-lg-10 col-6 jet-bg p-0 align-items-center">
-                        <div className="text-left text-dark sub-int p-4 w-100">
-                            <h1 className="font-weight-bold">Project Xerxes</h1>
-                            <p>Log in</p>
-                        </div>
+                    <div className="d-flex col-lg-4 col-1 smokey_black p-0 align-items-center">
+                        
                     </div>
-                    <div className="d-flex col-lg-2 col-6 sub-int p-0 align-items-center">
-                        <div className="p-4 w-100">
+                    <div className="d-flex col-lg-4 col-10 p-0 align-items-center sub h-50 align-self-center border border-white rounded">
+                        <div className="d-flex p-4 w-100 justify-content-center">
                                 <GoogleLogin
                                     clientId= {clientId}
                                     buttonText="Login with Google"
@@ -220,6 +224,9 @@ const LoginPage = () => {
                                     className="d-flex justify-content-center"
                                 />
                         </div>
+                    </div>
+                    <div className="d-flex col-lg-4 col-1 smokey_black p-0 align-items-center">
+                        
                     </div>
                 </div>
             </div>
