@@ -192,6 +192,7 @@ const LoginPage = () => {
             .then(res => res.json()) 
             .then(data => {
                 if(data[1] == 200){
+                    console.log(data[0])
                     setToggleUsernameModal(!toggleUsernameModal)
                 }
                 else {

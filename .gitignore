@@ -4,3 +4,4 @@ backend/venv/Lib/site-packages/mysql_db_access/mysqldb_credentials.py
 backend/flask_API/mysql_db_access/mysqldb_credentials.py
 backend/flask_API/mysql_db_access/__pycache__/mysqldb_credentials.cpython-39.pyc
 backend/xerxes_env
+backend/flask_API/authentication/config.py
