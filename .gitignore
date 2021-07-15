@@ -8,3 +8,4 @@ backend/xerxes_env
 backend/flask_API/mysql_db_access/mysqldb_credentials.py
 backend/flask_API/mysql_db_access/mysqldb_credentials.py
 backend/flask_API/mysql_db_access/mysqldb_credentials.py
+backend/flask_API/mysql_db_access/mysql_creds.py
