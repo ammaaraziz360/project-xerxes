@@ -3,13 +3,12 @@ import sys
 path = str(Path(Path(__file__).parent.absolute()).parent.absolute())
 sys.path.insert(0, path)
 
-from authentication import config
+from authentication import jwt_config
 import jwt
 import datetime
 
-from mysql_db_access import mysqldb_credentials
 
-creds = config.JWTConfig()
+creds = jwt_config.JWTConfig()
 
 def encode_auth_token(user_id):
     """

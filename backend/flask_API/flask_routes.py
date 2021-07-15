@@ -1,6 +1,5 @@
 from flask import Flask, json, request, jsonify, make_response, abort
 from flask_cors import CORS
-from mysql_db_access import mysql_connection
 from datetime import datetime
 from authentication import google_auth_verify, jwt_auth
 

@@ -1,10 +1,13 @@
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from authentication import jwt_config
+
+creds = jwt_config.JWTConfig()
 
 def AuthenticateUser(auth_token):
     try:
         # Specify the CLIENT_ID of the app that accesses the backend:
-        idinfo = id_token.verify_oauth2_token(auth_token, requests.Request(), '31312193628-o29ttjk3ogu3ftvbvurt91oi8t3akt0m.apps.googleusercontent.com')
+        idinfo = id_token.verify_oauth2_token(auth_token, requests.Request(), creds.GOOGLE_CLIENT_ID)
 
         # Or, if multiple clients access the backend server:
         # idinfo = id_token.verify_oauth2_token(token, requests.Request())
@@ -25,7 +28,7 @@ def AuthenticateUser(auth_token):
 def GetUserID(auth_token):
     try:
         # Specify the CLIENT_ID of the app that accesses the backend:
-        idinfo = id_token.verify_oauth2_token(auth_token, requests.Request(), '31312193628-o29ttjk3ogu3ftvbvurt91oi8t3akt0m.apps.googleusercontent.com')
+        idinfo = id_token.verify_oauth2_token(auth_token, requests.Request(), creds.GOOGLE_CLIENT_ID)
 
         # Or, if multiple clients access the backend server:
         # idinfo = id_token.verify_oauth2_token(token, requests.Request())

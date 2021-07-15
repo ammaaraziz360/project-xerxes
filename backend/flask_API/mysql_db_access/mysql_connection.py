@@ -1,5 +1,5 @@
 import mysql.connector as mysqlconnex
-from mysql_db_access.mysqldb_credentials import Credentials
+from mysql_db_access.mysql_creds import Credentials
 from datetime import datetime
 def CreateConnection(creds: Credentials):
     connection = None
