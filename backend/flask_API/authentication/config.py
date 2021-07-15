@@ -1,3 +1,0 @@
-class JWTConfig:
-    def __init__(self):
-        self.SECRET_KEY = "\x01\xe3\x89\x02\xea0\xff\xc7\xc7[f0\x0b\xbbz\x8e\n\x8c1\x19[\xf7\xcb\xa8"
