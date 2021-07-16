@@ -29,11 +29,12 @@ def bannedPhrases():
 
             for result in cursor.stored_results():
                 for i in result.fetchall():
-                    banned_list.append(i['banned_keyword'])
+                    banned_list.append(i[0])
 
             return banned_list
         except Exception as e:
-            return None
+            banned_list.append(str(e))
+            return banned_list
 
     connex.close()   
 
@@ -52,7 +53,7 @@ def InsertUsers(user_info: dict):
                 for i in result.fetchall():
                     if i[0] == 1:
                        user_exists = True
-                    print(i)
+                       break
                 
         
             if user_exists:

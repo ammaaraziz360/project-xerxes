@@ -44,4 +44,4 @@ def GetUserID(auth_token):
         return userid
     except ValueError:
         # Invalid token
-        return False
+        return None
