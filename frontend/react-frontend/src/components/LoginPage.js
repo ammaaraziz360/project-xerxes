@@ -26,9 +26,11 @@ const LoginPage = () => {
     const history = useHistory()
 
     useEffect(() => {
+        cookies.remove('token', { path: '/' })
+
         fetch(`https://api.ipify.org?format=json`, {
             method: 'GET',
-            mode: 'cors'
+            mode: 'cors',
         })
             .then((res => res.json()))
             .then(data => {
@@ -61,20 +63,27 @@ const LoginPage = () => {
                 'ip': ipAddress
             },
         }) 
-            .then(res => res.json()) 
+            .then(res => {
+                if (res.status === 200){
+                    return res.json()
+                }
+                else{
+                    return null
+                }
+             }) 
             .then(data => {
-                if(data[1] == 200){
-                    cookies.set('token', data[0].token, {path: '/'})
-                    if (data[0] == "True"){
+                console.log(data)
+                if ("user_exists" in data){
+                    cookies.set('token', data.token, {path: '/'})
+                    if(data['user_exists'] == "True"){
                         history.push("/home")
                     }
-                    else{
+                    else {
                         setToggleUsernameModal(!toggleUsernameModal)
                     }
                 }
-                else {
-                    setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
-                    setToggleModal(!toggleModal)
+                else{
+                    throw "Backend problem"
                 }
             })
             .catch(error => {
@@ -108,8 +117,11 @@ const LoginPage = () => {
                     </div>
                 </div>
             </div>
-            <EnterUsernameModal toggleModal = {toggleUsernameModal}
-                                setToggleModal = {setToggleUsernameModal}/>
+            {toggleUsernameModal 
+                ? <EnterUsernameModal toggleModal = {toggleUsernameModal}
+                                    setToggleModal = {setToggleUsernameModal}/>
+                : null
+            }
             <BlankModal toggleModal = {toggleModal}
                         setToggleModal = {setToggleModal}
                         text = {modalText}/>

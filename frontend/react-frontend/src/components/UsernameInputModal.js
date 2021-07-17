@@ -37,7 +37,7 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
             mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
-                'google_auth_token': sessionStorage.getItem("google_auth_token"),
+                'id_token': sessionStorage.getItem("google_auth_token"),
                 'Authorization': cookies.get('token')
             },
         }) 
