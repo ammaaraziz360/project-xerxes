@@ -117,6 +117,27 @@ class AuthDB():
             except Exception as e:
                 print(e)
                 return(str(e))
+    
+    def CheckIfTokenIsBlacklisted(self, token):
+        """
+        Check if a token is blacklisted
+        :return:
+        """
+        connex = self.connection
+
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                cursor.callproc('check_blacklist_token', [token])
+
+                for result in cursor.stored_results():
+                    for i in result.fetchall():
+                        if i[0] > 0:
+                            return True
+                return False
+            except Exception as e:
+                print(e)
+                return(str(e))
 
     def CloseConnection(self):
         """

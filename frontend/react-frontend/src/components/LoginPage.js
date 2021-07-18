@@ -21,7 +21,6 @@ const LoginPage = () => {
     const[toggleModal, setToggleModal] = useState(false);
 
     const[modalText, setModalText] = useState({'title': '', 'body': ''})
-    const[ipAddress, setIpAddress] = useState('')
 
     const history = useHistory()
 
@@ -34,7 +33,7 @@ const LoginPage = () => {
         })
             .then((res => res.json()))
             .then(data => {
-                setIpAddress(data.ip)
+                sessionStorage.setItem('ip', data.ip)
         })
 
     },[]);
@@ -51,7 +50,6 @@ const LoginPage = () => {
         }
 
         sessionStorage.setItem("google_auth_token", response.getAuthResponse().id_token)
-
         fetch('http://127.0.0.1:5000/api/users/login', {
             method: 'POST',
             mode: 'cors',
@@ -60,21 +58,22 @@ const LoginPage = () => {
                 'Content-Type': 'application/json',
                 'google_auth_token': response.getAuthResponse().id_token,
                 'user_agent': navigator.userAgent,
-                'ip': ipAddress
+                'ip': sessionStorage.getItem('ip')
             },
         }) 
             .then(res => {
                 if (res.status === 200){
+                    cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
                     return res.json()
                 }
                 else{
-                    return null
+                    throw new Error("Internal server error, try again later")
                 }
              }) 
             .then(data => {
                 console.log(data)
                 if ("user_exists" in data){
-                    cookies.set('token', data.token, {path: '/'})
+                    cookies.set('user_id', data.user_id, { path: '/' })
                     if(data['user_exists'] == "True"){
                         history.push("/home")
                     }
@@ -83,14 +82,18 @@ const LoginPage = () => {
                     }
                 }
                 else{
-                    throw "Backend problem"
+                    throw new Error("Internal server error, try again later")
                 }
             })
             .catch(error => {
-                setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
+                setModalText({'title': 'Something went wrong', 'body': error.message})
                 setToggleModal(!toggleModal)
             })
-        //history.push('/history')
+    }
+
+    const NoResponseGoogle = () => {
+        setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
+        setToggleModal(!toggleModal)
     }
 
     return(
@@ -106,7 +109,7 @@ const LoginPage = () => {
                                     clientId= {clientId}
                                     buttonText="Login with Google"
                                     onSuccess={responseGoogle}
-                                    onFailure={responseGoogle}
+                                    onFailure={NoResponseGoogle}
                                     cookiePolicy={'single_host_origin'}
                                     className="d-flex justify-content-center"
                                 />

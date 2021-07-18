@@ -17,7 +17,7 @@ def encode_auth_token(user_id):
     """
     try:
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=15),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=60),
             'iat': datetime.datetime.utcnow(),
             'sub': user_id
         }

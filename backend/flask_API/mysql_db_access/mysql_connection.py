@@ -51,7 +51,7 @@ class ResourceDB():
                 cursor = connex.cursor()
 
                 cursor.callproc('user_exists', [user_info['google_id']])
-                
+                print(user_info['google_id'])
                 user_exists = False
                 for result in cursor.stored_results():
                     for i in result.fetchall():
@@ -61,6 +61,12 @@ class ResourceDB():
                      
                 if user_exists:
                     cursor.callproc('update_lastlogin', [user_info['google_id'], datetime.now().strftime('%Y-%m-%d')])
+                    cursor.callproc('username_null_check', [user_info['google_id']])
+                    for result in cursor.stored_results():
+                        for i in result.fetchall():
+                            if i[0] == 1:
+                                return 'False'
+                                break
                     return 'True'
                 else:
                     cursor.callproc('create_user', 
@@ -76,11 +82,10 @@ class ResourceDB():
                                     None, 
                                     user_info['login_type']])
                     connex.commit()
-                    connex.close()
                     return 'False'
             except Exception as e:
                 print(e)
-                return e
+                return str(e)
 
     def CloseConnection(self):
         """

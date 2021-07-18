@@ -22,20 +22,28 @@ def createUser():
     """
     result = auth_methods.AuthorizeUser(request)
     try:
+        resp = None
         if result['user_exists'] == None:
             return make_response(jsonify(result), 401)
         else:
-            return make_response(jsonify(result), 200)
-    except:
-        return make_response(jsonify(result), 401)
+            jwt_token = result['token']
+            del result['token']
 
-@app.route('/api/users', methods=['PUT'])
+            resp = make_response(result, 200)
+            resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+            resp.headers['X-JWT'] = jwt_token
+
+            return resp
+    except Exception as e:
+        return make_response(jsonify({'Error': str(e)}), 401)
+
+@app.route('/api/users/username', methods=['PUT'])
 def updateUserData():
     """
     Update user data
     """
     try:
-        
+        return make_response(jsonify({"error": "you are so bad at coding"}), 401)
         auth_methods.AuthenticateUser(request.headers)
         
         request_body = request.json
@@ -58,10 +66,11 @@ def getBannedUsernames():
         
         banned_words = resource_methods.getBannedUsernames()
         resp = make_response(jsonify({'banned_words': banned_words}), 200)
+        resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
         resp.headers['X-JWT'] = new_jwt_token
         return resp
     except Exception as e:
-        return make_response(jsonify({'error': [str(e)]}, 401))
+        return make_response(jsonify({'error': [str(e)]}), 401)
         
     
 app.run()

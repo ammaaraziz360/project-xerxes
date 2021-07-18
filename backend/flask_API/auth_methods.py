@@ -18,39 +18,42 @@ def AuthenticateUser(headers):
     ip_address = headers['ip']
     user_agent = headers['user_agent']
 
-    auth_table = {"jwt_token": jwt_token, "user_id": user_id, "ip_address": ip_address, "user_agent": user_agent}
-
-    if authDB.decode_auth_token(jwt_token) == user_id:
-        record = authDB.getTokenRecord(user_id)
-        # check if request ip address ans user agent is same as the one in the database
-        # if true, blacklist the old token and return new token
-        if ip_address == record[2] and user_agent == record[3]:
-            authDB.BlacklistToken(jwt_token)
-            authDB.updateTokenRecordDate(user_id)
-
-            authDB.CloseConnection()
-            return jwt_auth.encode_auth_token(user_id)
-    else:
-        # if token is expired
-        record = authDB.getTokenRecord(user_id)
-        if ip_address == record[2] and user_agent == record[3]:
-            # TODO: find difference in time from the updated record and current time
-            # if difference is greater than 30 minutes, make user login again
-            date_diff = (datetime.now() - record[5]).total_seconds()
-            date_diff = divmod(date_diff, 60)[0]
-
-            if date_diff < 30:
+    if authDB.CheckIfTokenIsBlacklisted(jwt_token) == False:
+        auth_table = {"jwt_token": jwt_token, "user_id": user_id, "ip_address": ip_address, "user_agent": user_agent}
+        if jwt_auth.decode_auth_token(jwt_token) == user_id:
+            print('Authenicated')
+            record = authDB.getTokenRecord(user_id)
+            # check if request ip address ans user agent is same as the one in the database
+            # if true, blacklist the old token and return new token
+            if ip_address == record[2] and user_agent == record[3]:
                 authDB.BlacklistToken(jwt_token)
                 authDB.updateTokenRecordDate(user_id)
 
                 authDB.CloseConnection()
                 return jwt_auth.encode_auth_token(user_id)
-            
+        else:
+            # if token is expired
+            print('Not Authenicated')
+            record = authDB.getTokenRecord(user_id)
+            if ip_address == record[2] and user_agent == record[3]:
+                # TODO: find difference in time from the updated record and current time
+                # if difference is greater than 30 minutes, make user login again
+                date_diff = (datetime.now() - record[5]).total_seconds()
+                date_diff = divmod(date_diff, 60)[0]
+
+                if date_diff < 30:
+                    authDB.BlacklistToken(jwt_token)
+                    authDB.updateTokenRecordDate(user_id)
+
+                    authDB.CloseConnection()
+                    return jwt_auth.encode_auth_token(user_id)
+
         authDB.BlacklistToken(jwt_token)
         authDB.updateTokenRecordDate(user_id)
         authDB.setTokenInvalid(user_id)
-    
-    authDB.CloseConnection()
+
+        authDB.CloseConnection()
+
     return False
 
 def AuthorizeUser(request):
@@ -82,7 +85,7 @@ def AuthorizeUser(request):
                 CreateTokenRecord(auth_table)
                 jwt_token = jwt_auth.encode_auth_token(google_id)
 
-                return {"user_exists": result, "token": jwt_token}  
+                return {"user_exists": result, "token": jwt_token, "user_id": google_id}  
             
             return {"user_exists": None, "token": jwt_token}
         except Exception as e:
