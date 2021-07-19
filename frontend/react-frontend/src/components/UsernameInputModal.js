@@ -15,10 +15,12 @@ import React from 'react';
 
 const cookies = new Cookies();
 
+
 // regular expression to validate username
 const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
 
 const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
+    const history = useHistory();
 
     const[ErrorAlertText, setAlertErrorText] = useState({'message': 'Banned username, pick a new username', 'style': 'danger'})
     const[usernameErrorAlertText, setUsernameAlertText] = useState({'message': '', 'style': 'danger'})
@@ -35,6 +37,8 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
     const[tosCheck, setTosCheck] = useState(false)
     const[nameCheck, setNameCheck] = useState(false)
 
+    const [ReadyToUnmount, setReadyToUnmount] = useState({status: false, message: ''});
+
     const [submissionStatus, setSubmissionStatus] = useState(false)
     useEffect(() => {
         fetch('http://127.0.0.1:5000/api/users/banned-usernames', {
@@ -48,12 +52,20 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
                 'user_agent': navigator.userAgent,            },
         }) 
             .then(res => {
-                cookies.set('token', res.headers.get('x-jwt'), {path: '/'})
-                return res.json()
+                if (res.status === 200) {
+                    cookies.set('token', res.headers.get('x-jwt'), {path: '/'})
+                    return res.json()
+                }
+                else {
+                    throw new Error("Internal Server Error")
+                }
             })
             .then(data => {
                 console.log(data)
                 setBannedWords(data.banned_words)
+            })
+            .catch(err => {
+                useHistory.push('/login')
             })
     }, [toggleModal])
 
@@ -80,20 +92,25 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
     }, [input])
 
     useEffect(() => {
-        if(tosCheck && ppCheck && nameCheck){
-            setDisableButton(false)
-        }
-        else{
-            setDisableButton(true)
+        if(ReadyToUnmount.status === false){
+            if(tosCheck && ppCheck && nameCheck){
+                setDisableButton(false)
+            }
+            else{
+                setDisableButton(true)
+            }
         }
     })
 
     useEffect(() => {
+        const abortController = new AbortController();
+        const signal = abortController.signal;
         var username = {username: input}
         if(submissionStatus){
-            fetch('http://127.0.0.1:5000/api/users/username', { 
+            fetch('http://127.0.0.1:5000/api/users', { 
                 method: 'PUT',
                 mode: 'cors',
+                signal: signal,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': cookies.get('token'),
@@ -105,19 +122,30 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
             }).then(res => {
                 if(res.status === 200){
                     cookies.set('token', res.headers.get('x-jwt'), {path: '/'})
+                    setReadyToUnmount({status: true, message: '/profile'})
+                }
+                else if (res.status === 400) {
+                    cookies.set('token', res.headers.get('x-jwt'), {path: '/'})
+                    setSubmissionStatus(false)
                     return res.json()
                 }
                 else{
-                    throw new Error('Internal server error, try again later')
+                    setReadyToUnmount({status: true, message: '/login'})
                 }
             }).then(data => {
-                console.log(data)
+                throw new Error(data.error)
             }).catch(err => {
-                setSubmissionStatus(false)
-                setUsernameAlertText({'message': err.message, 'style': 'danger'})
-                setUsernameAlertToggle(true)
+                if(ReadyToUnmount.status === false){
+                    setUsernameAlertText({'message': err.message, 'style': 'danger'})
+                    setUsernameAlertToggle(true)
+                    setSubmissionStatus(false)
+                }
             })
-        }   
+        }
+        if(ReadyToUnmount.status == true){
+            history.push(ReadyToUnmount.message)
+        }  
+        
     }, [submissionStatus])
     
 

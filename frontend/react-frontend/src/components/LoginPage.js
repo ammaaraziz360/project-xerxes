@@ -17,6 +17,7 @@ const username_regex = new RegExp("^[a-zA-Z0-9_!#$%&*.'=+]*")
 
 const LoginPage = () => {
 
+
     const[toggleUsernameModal, setToggleUsernameModal] = useState(false);
     const[toggleModal, setToggleModal] = useState(false);
 
@@ -38,8 +39,9 @@ const LoginPage = () => {
 
     },[]);
 
-    const responseGoogle = (response) => {
+    const responseGoogle = (response) => { 
         var google_user = response.profileObj
+        console.log(google_user.imageUrl)
         var user_data = {
             'google_id': '',
             'email': google_user.email,

@@ -23,4 +23,11 @@ def InsertUser(request_body: dict):
     resorDb.CloseConnection()
     return(result)
     
-
+def UpdateUser(updated_items: dict):
+    """
+    updates a user in the database
+    """
+    resorDb = ResourceDB(Credentials('bloggit-db'))
+    result = resorDb.UpdateUser(updated_items)
+    resorDb.CloseConnection()
+    return(result)

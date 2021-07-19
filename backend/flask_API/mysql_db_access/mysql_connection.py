@@ -61,6 +61,7 @@ class ResourceDB():
                      
                 if user_exists:
                     cursor.callproc('update_lastlogin', [user_info['google_id'], datetime.now().strftime('%Y-%m-%d')])
+                    connex.commit()
                     cursor.callproc('username_null_check', [user_info['google_id']])
                     for result in cursor.stored_results():
                         for i in result.fetchall():
@@ -86,7 +87,40 @@ class ResourceDB():
             except Exception as e:
                 print(e)
                 return str(e)
+    def UpdateUser(self, updated_items):
+        """
+        updates a user in the database
+        """
+        connex = self.connection
 
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+
+                if updated_items['username'] != None:
+                    cursor.callproc('username_validator', [updated_items['username']])
+                    for result in cursor.stored_results():
+                        for i in result.fetchall():
+                            if i[0] > 0:
+                                return 'Username contains a banned string, pick a new username'
+
+                    cursor.callproc('unique_usernames', [updated_items['username']])
+                    for result in cursor.stored_results():
+                        for i in result.fetchall():
+                            if i[0] > 0:
+                                return "Username is taken, pick a new username"
+                cursor.callproc('update_user', [updated_items['User_id'],
+                                                updated_items['username'],
+                                                updated_items['first_name'],
+                                                updated_items['last_name'],
+                                                updated_items['pfp_url'],
+                                                updated_items['bio'],
+                                                updated_items['location']])
+                connex.commit()
+                return True
+            except Exception as e:
+                return str(e)
+        return 'Server failed to connect'
     def CloseConnection(self):
         """
         Close the connection

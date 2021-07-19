@@ -51,3 +51,8 @@ space-cadet: hsla(220, 54%, 25%, 1);
 .smokey_black{
 	background-color: #14110fff;
 }
+.pfp{
+	width: 40px;
+	height: 40px;
+	border-radius: 25px;
+}
