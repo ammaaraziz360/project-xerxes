@@ -49,10 +49,36 @@ space-cadet: hsla(220, 54%, 25%, 1);
 	background-color: #d9c5b2ff;
 }
 .smokey_black{
-	background-color: #14110fff;
+	background-color: #14110fff!important;
 }
 .pfp{
 	width: 40px;
 	height: 40px;
 	border-radius: 25px;
+}
+.naver{
+	color: white;
+	position: sticky;
+    top: 0;
+}
+.search-bar{
+	background-color: #14110fff!important;
+	color: white!important;
+
+}
+.dropdown-menu{
+	background-color: #34312dff!important;
+}
+.dropdown-menu a{
+	color: white!important;
+}
+.dropdown-menu a:focus{
+	background-color: #14110fff!important;
+}
+.dropdown-menu a:hover{
+	color: black!important;
+}
+.nav-brand{
+	color: white!important;
+	text-decoration: none;
 }

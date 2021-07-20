@@ -22,7 +22,7 @@ class AuthDB():
     
         self.connection = connection
 
-    def createTokenRecord(self, jwt_data: dict):
+    def createSessionRecord(self, jwt_data: dict):
         """
         Create a token record
         :return:
@@ -33,7 +33,8 @@ class AuthDB():
             try:
                 cursor = connex.cursor()
                 cursor.callproc('insert_jwt_session',
-                                [jwt_data['user_id'],
+                                [jwt_data['uuid'],
+                                jwt_data['user_id'],
                                 jwt_data['ip_address'],
                                 jwt_data['user_agent'], 
                                 jwt_data['createdAt'],
@@ -43,7 +44,7 @@ class AuthDB():
                 print(e)
                 return(str(e))
 
-    def getTokenRecord(self, user_id):
+    def getSessionRecord(self, session_id):
         """
         Get a token record
         :return:
@@ -54,7 +55,7 @@ class AuthDB():
             try:
                 records = ()
                 cursor = connex.cursor(dictionary=True)
-                cursor.callproc('get_jwt_session', [user_id])
+                cursor.callproc('get_jwt_session', [session_id])
 
                 for result in cursor.stored_results():
                     for i in result.fetchall():
@@ -65,7 +66,7 @@ class AuthDB():
                 print(e)
                 return(str(e))
 
-    def updateTokenRecordDate(self, user_id):
+    def updateSessionRecordDate(self, session_id):
         """
         Update a token record date
         :return:
@@ -75,7 +76,7 @@ class AuthDB():
             try:
                 date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 cursor = connex.cursor()
-                cursor.callproc('update_jwt_session_date', [date, user_id])
+                cursor.callproc('update_jwt_session_date', [session_id, date])
 
                 connex.commit()
                 return True
@@ -83,7 +84,7 @@ class AuthDB():
                 print(e)
                 return(str(e))
 
-    def setTokenInvalid(self, user_id):
+    def setSessionInvalid(self, session_id):
         """
         set a token invalid
         :return:
@@ -92,7 +93,7 @@ class AuthDB():
         if connex != None:
             try:
                 cursor = connex.cursor()
-                cursor.callproc('set_token_invalid', [user_id])
+                cursor.callproc('set_session_invalid', [session_id])
 
                 connex.commit()
                 return True
@@ -100,6 +101,7 @@ class AuthDB():
                 print(e)
                 return(str(e))
 
+    # deprecated; will be removed in future update
     def BlacklistToken(self, jwt_token):
         """
         Blacklist a token
@@ -118,6 +120,7 @@ class AuthDB():
                 print(e)
                 return(str(e))
     
+    # deprecated; will be removed in future update
     def CheckIfTokenIsBlacklisted(self, token):
         """
         Check if a token is blacklisted

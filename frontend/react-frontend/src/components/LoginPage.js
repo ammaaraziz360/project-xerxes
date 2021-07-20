@@ -8,6 +8,7 @@ import EnterUsernameModal from './UsernameInputModal'
 
 import '../App.css'
 import React from 'react';
+import {Redirect} from 'react-router-dom';
 
 const clientId = "31312193628-o29ttjk3ogu3ftvbvurt91oi8t3akt0m.apps.googleusercontent.com"
 const cookies = new Cookies();
@@ -15,7 +16,7 @@ const cookies = new Cookies();
 // regular expression with only letters, numbers, and _!#$%&*.'=+
 const username_regex = new RegExp("^[a-zA-Z0-9_!#$%&*.'=+]*")
 
-const LoginPage = () => {
+const LoginPage = ({...Props}) => {
 
 
     const[toggleUsernameModal, setToggleUsernameModal] = useState(false);
@@ -26,8 +27,6 @@ const LoginPage = () => {
     const history = useHistory()
 
     useEffect(() => {
-        cookies.remove('token', { path: '/' })
-
         fetch(`https://api.ipify.org?format=json`, {
             method: 'GET',
             mode: 'cors',
@@ -76,8 +75,9 @@ const LoginPage = () => {
                 console.log(data)
                 if ("user_exists" in data){
                     cookies.set('user_id', data.user_id, { path: '/' })
+                    cookies.set('SID', data.session_id, { path: '/' })
                     if(data['user_exists'] == "True"){
-                        history.push("/home")
+                        console.log("logged in")
                     }
                     else {
                         setToggleUsernameModal(!toggleUsernameModal)
@@ -97,6 +97,10 @@ const LoginPage = () => {
         setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
         setToggleModal(!toggleModal)
     }
+
+    // if(Props.isLoggedInState){
+    //     return <Redirect to={"/profile"}/>
+    // }
 
     return(
         <div>
@@ -124,7 +128,8 @@ const LoginPage = () => {
             </div>
             {toggleUsernameModal 
                 ? <EnterUsernameModal toggleModal = {toggleUsernameModal}
-                                    setToggleModal = {setToggleUsernameModal}/>
+                                    setToggleModal = {setToggleUsernameModal}
+                                    setIsLoggedIn={Props.setIsLoggedIn}/>
                 : null
             }
             <BlankModal toggleModal = {toggleModal}

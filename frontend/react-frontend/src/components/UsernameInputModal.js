@@ -19,7 +19,7 @@ const cookies = new Cookies();
 // regular expression to validate username
 const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
 
-const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
+const EnterUsernameModal = ({toggleModal, setToggleModal, setIsLoggedIn}) => {
     const history = useHistory();
 
     const[ErrorAlertText, setAlertErrorText] = useState({'message': 'Banned username, pick a new username', 'style': 'danger'})
@@ -49,23 +49,27 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
                 'Authorization': cookies.get('token'),
                 'user_id': cookies.get('user_id'),
                 'ip': sessionStorage.getItem('ip'),
-                'user_agent': navigator.userAgent,            },
-        }) 
+                'user_agent': navigator.userAgent,
+                'SID': cookies.get('SID')
+            },
+        })
             .then(res => {
                 if (res.status === 200) {
-                    cookies.set('token', res.headers.get('x-jwt'), {path: '/'})
-                    return res.json()
-                }
+                    if(res.headers.get('X-JWT') != null) {
+                        cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
+                        setIsLoggedIn(true)
+                        return res.json()
+                    }
+                } 
                 else {
                     throw new Error("Internal Server Error")
                 }
             })
             .then(data => {
-                console.log(data)
                 setBannedWords(data.banned_words)
             })
             .catch(err => {
-                useHistory.push('/login')
+                history.push('/login')
             })
     }, [toggleModal])
 
@@ -116,7 +120,8 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
                     'Authorization': cookies.get('token'),
                     'user_id': cookies.get('user_id'),
                     'ip': sessionStorage.getItem('ip'),
-                    'user_agent': navigator.userAgent
+                    'user_agent': navigator.userAgent,
+                    'SID': cookies.get('SID')
                 },
                 body: JSON.stringify(username)
             }).then(res => {
@@ -175,14 +180,14 @@ const EnterUsernameModal = ({toggleModal, setToggleModal}) => {
                         </Form.Group>
                         
                         <div className='mt-4'>
-                            <Form.Group controlId="formBasicCheckbox">
+                            <Form.Group controlId="formBasicCheckboxTOS">
                                 <Form.Check 
                                     type="checkbox" 
                                     label="I agree to the terms of service" 
                                     onChange={() => setTosCheck(!tosCheck)}
                                 />
                             </Form.Group>
-                            <Form.Group controlId="formBasicCheckbox">
+                            <Form.Group controlId="formBasicCheckboxPP">
                                 <Form.Check 
                                     type="checkbox" 
                                     label="I have read and agree to the Privacy Policy"
