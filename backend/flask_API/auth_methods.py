@@ -52,17 +52,23 @@ def AuthenticateUser(headers):
                 if date_diff < 5:
                     authDB.updateSessionRecordDate(session_id)
                     authDB.CloseConnection()
+                    print("TIME WITHIN LIMIT, TOKEN AUTHENTICATED")
                     return jwt_auth.encode_auth_token(user_id)
                 else:
                     authDB.updateSessionRecordDate(session_id)
+                    authDB.setSessionInvalid(session_id)
                     authDB.CloseConnection()
+                    print("TIME NOT WITHIN LIMIT, NOT AUTHENTICATED")
                     return False
             else:
                 authDB.updateSessionRecordDate(session_id)
+                authDB.setSessionInvalid(session_id)
                 authDB.CloseConnection()
+                print("IP ADDRESS OR USER AGENT NOT MATCHING, NOT AUTHENTICATED")
                 return False
         else:
             authDB.CloseConnection()
+            print("SESSION NOT VALID")
             return False
 
 

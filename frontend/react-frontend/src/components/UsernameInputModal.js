@@ -19,7 +19,7 @@ const cookies = new Cookies();
 // regular expression to validate username
 const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
 
-const EnterUsernameModal = ({toggleModal, setToggleModal, setIsLoggedIn}) => {
+const EnterUsernameModal = ({...Props}) => {
     const history = useHistory();
 
     const[ErrorAlertText, setAlertErrorText] = useState({'message': 'Banned username, pick a new username', 'style': 'danger'})
@@ -57,11 +57,12 @@ const EnterUsernameModal = ({toggleModal, setToggleModal, setIsLoggedIn}) => {
                 if (res.status === 200) {
                     if(res.headers.get('X-JWT') != null) {
                         cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
-                        setIsLoggedIn(true)
-                        return res.json()
+                        console.log(res.headers.get('X-JWT'))
                     }
+                    return res.json()
                 } 
                 else {
+                    sessionStorage.setItem('logged_id', false)
                     throw new Error("Internal Server Error")
                 }
             })
@@ -69,9 +70,9 @@ const EnterUsernameModal = ({toggleModal, setToggleModal, setIsLoggedIn}) => {
                 setBannedWords(data.banned_words)
             })
             .catch(err => {
-                history.push('/login')
+                console.log(err)
             })
-    }, [toggleModal])
+    }, [Props.toggleModal])
 
     useEffect(() =>{
   
@@ -126,16 +127,26 @@ const EnterUsernameModal = ({toggleModal, setToggleModal, setIsLoggedIn}) => {
                 body: JSON.stringify(username)
             }).then(res => {
                 if(res.status === 200){
-                    cookies.set('token', res.headers.get('x-jwt'), {path: '/'})
+                    if(res.headers.get('X-JWT') != null) {
+                        cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
+                        console.log(res.headers.get('X-JWT'))
+                    }
+                    Props.setIsLoggedIn(false)
                     setReadyToUnmount({status: true, message: '/profile'})
                 }
                 else if (res.status === 400) {
-                    cookies.set('token', res.headers.get('x-jwt'), {path: '/'})
+                    if(res.headers.get('X-JWT') != null) {
+                        cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
+                        console.log(res.headers.get('X-JWT'))
+                    }
+                    Props.setIsLoggedIn(false)
                     setSubmissionStatus(false)
                     return res.json()
                 }
                 else{
+                    Props.setIsLoggedIn(false)
                     setReadyToUnmount({status: true, message: '/login'})
+                    return res.json()
                 }
             }).then(data => {
                 throw new Error(data.error)
@@ -156,7 +167,7 @@ const EnterUsernameModal = ({toggleModal, setToggleModal, setIsLoggedIn}) => {
 
     return(
         <div>
-            <Modal animation={false} backdrop="static" keyboard={false} show={toggleModal} onHide={() => setToggleModal(false)}>
+            <Modal animation={false} backdrop="static" keyboard={false} show={Props.toggleModal} onHide={() => Props.setToggleModal(false)}>
                 <Modal.Header>
                 <Modal.Title>Welcome to Blogoo</Modal.Title>
                 </Modal.Header>

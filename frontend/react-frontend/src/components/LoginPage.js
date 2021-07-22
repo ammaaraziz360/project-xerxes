@@ -1,6 +1,6 @@
 import { useEffect, useState, useReducer } from 'react';
 import { GoogleLogin } from 'react-google-login';
-import {useHistory } from 'react-router';
+import {useHistory} from 'react-router';
 import Cookies from 'universal-cookie'
 
 import BlankModal from './Modal';
@@ -18,6 +18,7 @@ const username_regex = new RegExp("^[a-zA-Z0-9_!#$%&*.'=+]*")
 
 const LoginPage = ({...Props}) => {
 
+    const [ReadyToUnmount, setReadyToUnmount] = useState({status: false, message: ''});
 
     const[toggleUsernameModal, setToggleUsernameModal] = useState(false);
     const[toggleModal, setToggleModal] = useState(false);
@@ -77,30 +78,36 @@ const LoginPage = ({...Props}) => {
                     cookies.set('user_id', data.user_id, { path: '/' })
                     cookies.set('SID', data.session_id, { path: '/' })
                     if(data['user_exists'] == "True"){
-                        console.log("logged in")
+                        setReadyToUnmount({status: true, message: '/profile'})
+                        Props.setIsLoggedIn(true)
                     }
                     else {
+                        Props.setIsLoggedIn(false)
                         setToggleUsernameModal(!toggleUsernameModal)
                     }
                 }
                 else{
+                    sessionStorage.setItem('logged_in', 'False')
                     throw new Error("Internal server error, try again later")
                 }
             })
             .catch(error => {
-                setModalText({'title': 'Something went wrong', 'body': error.message})
+                setModalText({'title': 'Something went very wrong', 'body': error.message})
                 setToggleModal(!toggleModal)
             })
     }
 
     const NoResponseGoogle = () => {
-        setModalText({'title': 'Something went wrong', 'body': 'Login faluire, please try again'})
+        sessionStorage.setItem('logged_in', 'False')
+        setModalText({'title': 'Something went very wrong', 'body': 'Login faluire, please try again'})
         setToggleModal(!toggleModal)
     }
 
-    // if(Props.isLoggedInState){
-    //     return <Redirect to={"/profile"}/>
-    // }
+    useEffect(() => {
+        if(Props.isLoggedIn){
+            history.push('/profile')
+        }
+    }, [Props.isLoggedIn])
 
     return(
         <div>
@@ -129,7 +136,8 @@ const LoginPage = ({...Props}) => {
             {toggleUsernameModal 
                 ? <EnterUsernameModal toggleModal = {toggleUsernameModal}
                                     setToggleModal = {setToggleUsernameModal}
-                                    setIsLoggedIn={Props.setIsLoggedIn}/>
+                                    setIsLoggedIn={Props.setIsLoggedIn}
+                                    isLoggedIn={Props.isLoggedIn}/>
                 : null
             }
             <BlankModal toggleModal = {toggleModal}

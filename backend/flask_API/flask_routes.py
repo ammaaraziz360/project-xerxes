@@ -111,7 +111,6 @@ def getBannedUsernames():
             return make_response(jsonify({"error": "Invalid Token"}), 401)
         
         banned_words = resource_methods.getBannedUsernames()
-        
         resp = make_response(jsonify({'banned_words': banned_words}), 200)
         if new_jwt_token != True:
             resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'

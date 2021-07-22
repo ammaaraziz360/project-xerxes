@@ -17,7 +17,13 @@ import { Redirect } from 'react-router';
 const cookie = new Cookies();
 
 const ProfilePage = ({...Props}) => {
+    const history = useHistory();
     
+    useEffect(() => {
+        if (Props.isLoggedIn == false){
+            history.push('/login');
+        }
+    }, [Props.isLoggedIn]);
     return (
         <h1>This is the home page; user logged in: {cookie.get('user_id')}</h1>
     );

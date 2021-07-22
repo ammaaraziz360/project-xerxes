@@ -17,30 +17,25 @@ import './App.css';
 const cookie = new Cookies();
 
 function App() {
+  
+  const[isLoggedInState, setIsLoggedInState] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoggedInState, setIsLoggedInState] = useState(false);
-
-
+  
   return (
     <div className="App">
       <Router>
         <NavBar isLoggedIn={isLoggedIn}
-                setIsLoggedIn={setIsLoggedIn}
-                isLoggedInState={isLoggedInState}
-                setIsLoggedInState = {setIsLoggedInState}/>
+                setIsLoggedIn={setIsLoggedIn}/>
         <Switch>
           <Route path='/login' >
             <LoginPage isLoggedIn={isLoggedIn}
                         setIsLoggedIn={setIsLoggedIn}
-                        isLoggedInState={isLoggedInState}
-                        setIsLoggedInState={setIsLoggedInState}
-                        />
+            />
           </Route>
           <Route path='/profile'>
-            <ProfilePage
-              isLoggedInState={isLoggedInState}
-              setIsLoggedInState={setIsLoggedInState}
-            />
+            <ProfilePage isLoggedIn={isLoggedIn}
+                          setIsLoggedIn={setIsLoggedIn}
+              />
           </Route>
         </Switch>
       </Router>
