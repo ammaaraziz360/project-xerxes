@@ -19,10 +19,72 @@ const cookie = new Cookies();
 
 
 const NavBar = ({...Props}) => {
+    const [userProfile, setUserProfile] = useState({pfp_url: ''});
+    const history = useHistory();
 
+    useEffect(() => {
+        if(Props.isLoggedIn) {
+            setUserProfile({pfp_url: ''});
+            fetch('http://127.0.0.1:5000/api/users/profile', {
+                method: 'GET',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': cookie.get('token'),
+                    'user_id': cookie.get('user_id'),
+                    'ip': sessionStorage.getItem('ip'),
+                    'user_agent': navigator.userAgent,
+                    'SID': cookie.get('SID')
+                },
+        })
+            .then(res => {
+                if (res.status === 200) {
+                    if(res.headers.get('X-JWT') != null) {
+                        cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                        console.log(res.headers.get('X-JWT'))
+                    }
+                    return res.json()
+                } 
+                else {
+                    history.push('/login')
+                }
+            })
+            .then(data => {
+                console.log(data)
+                setUserProfile(data)
+            })
+            .catch(err => {
+                console.log(err)
+            })
+        }
+    }, [Props.isLoggedIn]);
 
     const LogOut = () => {
-        Props.setIsLoggedIn(false);
+        fetch('http://127.0.0.1:5000/api/users/logout', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': cookie.get('token'),
+                'user_id': cookie.get('user_id'),
+                'ip': sessionStorage.getItem('ip'),
+                'user_agent': navigator.userAgent,
+                'SID': cookie.get('SID')
+            },
+        }).then(res=> {
+            if(res.status === 200) {
+                cookie.remove('token', {path: '/'})
+                cookie.remove('user_id', {path: '/'})
+                cookie.remove('ip', {path: '/'})
+                cookie.remove('user_agent', {path: '/'})
+                cookie.remove('SID', {path: '/'})
+                Props.setIsLoggedIn(false);
+                history.push('/login')
+            }
+            else{
+                Props.setIsLoggedIn(false);
+            }
+        })
     }
     return (
         <div className="sub naver">
@@ -31,7 +93,7 @@ const NavBar = ({...Props}) => {
                     
                     <div className="d-flex col-3 align-items-center">
                         <Link to="/login" className='nav-brand'>
-                            <h2>blogoo</h2>
+                            <h2>Blogoo</h2>
                         </Link>
                     </div>
                         <div className="d-flex col-6 justify-content-center align-items-center">
@@ -41,7 +103,7 @@ const NavBar = ({...Props}) => {
                         <div className="dropdown sub">
                             
                             <a className="" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                                {Props.isLoggedIn ? <img src="https://lh3.googleusercontent.com/a-/AOh14GjQ75MzIig737ug-yQInIeKnEcbUhkbHjY4vMj4-w=s96-c" className="image-fluid pfp"></img>
+                                {Props.isLoggedIn ? <img src={userProfile.pfp} className="image-fluid pfp"></img>
                                             : <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" className="image-fluid pfp"></img>
                                 }
                             </a>

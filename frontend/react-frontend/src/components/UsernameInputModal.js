@@ -131,7 +131,7 @@ const EnterUsernameModal = ({...Props}) => {
                         cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
                         console.log(res.headers.get('X-JWT'))
                     }
-                    Props.setIsLoggedIn(false)
+                    Props.setIsLoggedIn(true)
                     setReadyToUnmount({status: true, message: '/profile'})
                 }
                 else if (res.status === 400) {

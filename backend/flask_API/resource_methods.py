@@ -31,3 +31,12 @@ def UpdateUser(updated_items: dict):
     result = resorDb.UpdateUser(updated_items)
     resorDb.CloseConnection()
     return(result)
+
+def getUserProfile(user_id):
+    """
+    gets a user profile
+    """
+    resorDb = ResourceDB(Credentials('bloggit-db'))
+    result = resorDb.getUserProfile(user_id)
+    resorDb.CloseConnection()
+    return(result)

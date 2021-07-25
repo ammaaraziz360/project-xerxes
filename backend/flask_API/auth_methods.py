@@ -30,13 +30,16 @@ def AuthenticateUser(headers):
             if ip_address == record[2] and user_agent == record[3]:
                 authDB.updateSessionRecordDate(session_id)
                 authDB.CloseConnection()
+                print("Authenticated")
                 return True
             else:
                 authDB.updateSessionRecordDate(session_id)
                 authDB.setSessionInvalid(user_id)
+                print("Info not matching not Authenticated")
                 return False
         else:
             authDB.CloseConnection()
+            print("session not valid not Authenticated")
             return False        
     else:
         # if token is expired
@@ -110,7 +113,18 @@ def AuthorizeUser(request):
         print(e)
         return {"error": str(e)}
         
-def LogoutUser():
+def LogoutUser(headers):
+    
+
+    try:
+        session_id = headers['SID']
+        authDB = AuthDB(Credentials('blogoo-auth'))
+        authDB.setSessionInvalid(session_id)
+        authDB.CloseConnection()
+        return True
+    except Exception as e:
+        print(e)
+        return {"error": str(e)}
     pass
 
 def CreateTokenRecord(auth_table):

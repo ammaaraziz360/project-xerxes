@@ -120,4 +120,48 @@ def getBannedUsernames():
         return make_response(jsonify({'error': [str(e)]}), 401)
     
     
+@app.route('/api/users/logout', methods=['POST'])
+def logoutUser():
+    """
+    Logout user
+    """
+    try:
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token == False:
+            return make_response(jsonify({"error": "Invalid Token"}), 401)
+        
+        result = auth_methods.LogoutUser(request.headers)
+        if result == True:
+            resp = make_response(jsonify({"message": "User logged out successfully"}), 200)
+        return resp
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({'error': [str(e)]}), 401)
+    
+@app.route('/api/users/profile', methods=['GET'])
+def getUserProfile():
+    """
+    Get user profile
+    """
+    try:
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token == False:
+            return make_response(jsonify({"error": "Invalid Token"}), 401)
+        
+        user_id = request.headers['user_id']
+        user_dict = resource_methods.getUserProfile(user_id)
+        if user_dict == None:
+            return make_response(jsonify({"error": "User not found"}), 404)
+        resp = make_response(jsonify(user_dict), 200)
+        if new_jwt_token != True:
+            resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+            resp.headers['X-JWT'] = new_jwt_token
+        print(user_dict)
+        return resp
+    except Exception as e:
+        return make_response(jsonify({'error': str(e)}), 401)
+
+
 app.run()

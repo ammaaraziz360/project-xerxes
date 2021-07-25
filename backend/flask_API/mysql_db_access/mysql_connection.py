@@ -121,6 +121,25 @@ class ResourceDB():
             except Exception as e:
                 return str(e)
         return 'Server failed to connect'
+    
+    def getUserProfile(self, user_id):
+        """
+        get user profile
+        :param user_id:
+        :return:
+        """
+        connex = self.connection
+        keys = ['username', 'first_name', 'last_name', 'pfp', 'creation_date', 'last_login', 'bio', 'location', 'facebook_url', 'youtube_url', 'twitter_url', 'instagram_url', 'website_url']
+        if connex != None:
+            try:
+                cursor = connex.cursor(dictionary=True)
+                cursor.callproc('get_user_profile', [user_id])
+                for result in cursor.stored_results():
+                    for i in result.fetchall():
+                        return dict(zip(keys, i))
+            except Exception as e:
+                return str(e)
+        return 'Server failed to connect'
     def CloseConnection(self):
         """
         Close the connection
