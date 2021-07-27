@@ -2,8 +2,12 @@ import { useEffect, useState, useReducer } from 'react';
 import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 import {BiEdit} from 'react-icons/bi'
+import EditSocialsModal from './EditSocialsModal';
 
 const Profile = ({ userProfile, OwnAccount }) => {
+    const [EditSocials, setEditSocials] = useState(false);
+
+
 
     return(
         <div className="container">
@@ -25,12 +29,14 @@ const Profile = ({ userProfile, OwnAccount }) => {
                     <div className="row mt-2 mb-0 stats-div sub align-items-center">
                         <div className="col-3">
                             <div className="row">
-                                <div className="d-flex col-6">
+                                <div className="d-flex col-6 align-items-center">
                                     <strong>Socials</strong>
                                 </div>
                                 {OwnAccount 
-                                        ? <div className="d-flex col-6 justify-content-end align-items-center">
-                                                <BiEdit/>
+                                        ? <div className="d-flex col-6 justify-content-end align-items-center edit_btn">
+                                                <a onClick={() => setEditSocials(!EditSocials)}>
+                                                    <BiEdit/>
+                                                </a>
                                             </div>
                                         : null}
                             </div>
@@ -87,7 +93,10 @@ const Profile = ({ userProfile, OwnAccount }) => {
 
                 </div>
             </div>
+            <EditSocialsModal EditSocials={EditSocials}
+                                SetEditSocials={setEditSocials}/>
         </div>
+
     )
 }
 
