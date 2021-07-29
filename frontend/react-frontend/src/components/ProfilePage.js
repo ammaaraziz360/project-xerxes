@@ -2,17 +2,9 @@ import { useEffect, useState, useReducer } from 'react';
 import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 
-import Modal from 'react-bootstrap/Modal'
-import Button from 'react-bootstrap/Button'
-import InputGroup from 'react-bootstrap/InputGroup'
-import FormControl from 'react-bootstrap/FormControl'
-import Form from 'react-bootstrap/Form'
-
-import Alerts from './ErrorAlert';
 
 import '../App.css'
 import React from 'react';
-import { Redirect } from 'react-router';
 import Profile from './Profile';
 
 const cookie = new Cookies();

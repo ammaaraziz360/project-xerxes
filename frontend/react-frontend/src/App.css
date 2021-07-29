@@ -141,6 +141,9 @@ body {
 .edit_btn a:hover{
 	color: #d9c5b2ff!important;
 }
+.edit_btn a:focus{
+	background-color: #d9c5b2ff!important;
+}
 .modal-content {
 	background-color: #34312dff!important;
 	color: white;
