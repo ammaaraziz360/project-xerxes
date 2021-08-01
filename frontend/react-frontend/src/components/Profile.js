@@ -4,7 +4,10 @@ import Cookies from 'universal-cookie'
 import {BiEdit} from 'react-icons/bi'
 import EditSocialsModal from './EditSocialsModal';
 
-const Profile = ({ userProfile, OwnAccount }) => {
+import {FaTwitter, FaFacebookF,FaYoutube, FaInstagram} from 'react-icons/fa';
+import {BsLink45Deg} from 'react-icons/bs';
+
+const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) => {
     const [EditSocials, setEditSocials] = useState(false);
 
 
@@ -47,12 +50,12 @@ const Profile = ({ userProfile, OwnAccount }) => {
                     </div>
                     <div className="row mt-0">
                         <div className="d-flex col-3 p-2 align-items-center">
-                            <div className="d-flex flex-column bd-highlight mb-3">
-                                {userProfile.twitter_url !== "no_link" ? <p>Twitter</p> : null}
-                                {userProfile.facebook_url !== "no_link" ? <p>Facebook</p> : null} 
-                                {userProfile.youtube_url !== "no_link" ? <p>Youtube</p> : null} 
-                                {userProfile.instagram_url !== "no_link" ? <p>Instagram</p> : null} 
-                                {userProfile.website_url !== "no_link" ? <p>Website</p> : null}   
+                            <div className="d-flex flex-column bd-highlight mb-3 socials">
+                                {userProfile.twitter_url !== "no_link" ?  <a href={userProfile.twitter_url} target="_blank"><FaTwitter/></a> : null}
+                                {userProfile.facebook_url !== "no_link" ? <a href={userProfile.facebook_url} target="_blank"><FaFacebookF/></a> : null} 
+                                {userProfile.youtube_url !== "no_link" ? <a href={userProfile.youtube_url} target="_blank"><FaYoutube/></a> : null} 
+                                {userProfile.instagram_url !== "no_link" ? <a href={userProfile.instagram_url} target="_blank"><FaInstagram/></a> : null} 
+                                {userProfile.website_url !== "no_link" ? <a href={userProfile.website_url } target="_blank"><BsLink45Deg/></a> : null}   
                             </div>
                         </div>
                         <div className="d-flex col-9 p-2 align-items-center">
@@ -94,7 +97,10 @@ const Profile = ({ userProfile, OwnAccount }) => {
                 </div>
             </div>
             <EditSocialsModal EditSocials={EditSocials}
-                                SetEditSocials={setEditSocials}/>
+                                SetEditSocials={setEditSocials}
+                                userInfo={userProfile}
+                                refreshProfile = {refreshProfile}
+                                setRefreshProfile = {setRefreshProfile}/>
         </div>
 
     )

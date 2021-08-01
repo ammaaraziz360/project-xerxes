@@ -19,12 +19,13 @@ const yt_regex = /^(https?:\/\/)?(www\.)?(youtube\.com)\/(.*)/i;
 // regex for instagram
 const ig_regex = /^(https?:\/\/)?(www\.)?(instagram\.com)\/(.*)/i;
 
+const cookies = new Cookies();
 
-const EditSocialsModal = ({EditSocials, SetEditSocials}) => {
+const EditSocialsModal = ({EditSocials, SetEditSocials, userInfo, refreshProfile, setRefreshProfile}) => {
     const [AlertToggle, setAlertToggle] = useState(false);
     const [AlertText, setAlertText] = useState('');
     const[disableButton, setDisableButton] = useState(true);
-    const [input, setInput] = useState('');
+    const [input, setInput] = useState(false);
 
     const [twitter_url, setTwitter_url] = useState('');
     const [facebook_url, setFacebook_url] = useState('');
@@ -32,13 +33,34 @@ const EditSocialsModal = ({EditSocials, SetEditSocials}) => {
     const [youtube_url, setYoutube_url] = useState('');
     const [website_url, setWebsite_url] = useState('');
 
+
+    useEffect(() => {
+        setTwitter_url(userInfo.twitter_url);
+        setFacebook_url(userInfo.facebook_url);
+        setInstagram_url(userInfo.instagram_url);
+        setYoutube_url(userInfo.youtube_url);
+        setWebsite_url(userInfo.website_url);
+
+        var urls = [twitter_url, facebook_url, instagram_url, youtube_url, website_url];
+        var setters = [setTwitter_url, setFacebook_url, setInstagram_url, setYoutube_url, setWebsite_url];
+        for (var i = 0; i < urls.length; i++) {
+            if (urls[i] == 'no_link') {
+                setters[i]("");
+            }
+        }
+
+    }, [EditSocials])
+
     if(EditSocials == false){
+
         return null;
     }
+
 
     const HandleSubmit = () => {
         if(facebook_url.trim().length > 0 && !facebook_url.match(fb_regex))
         {
+            console.log(facebook_url);
             setAlertText({message: 'Please enter a valid Facebook profile URL', style: 'danger'});
             setAlertToggle(true);
             return;
@@ -83,7 +105,47 @@ const EditSocialsModal = ({EditSocials, SetEditSocials}) => {
             setAlertToggle(false);
         }
 
-        setDisableButton(false);
+        var socials = {
+            twitter: twitter_url.trim(),
+            facebook: facebook_url.trim(),
+            instagram: instagram_url.trim(),
+            youtube: youtube_url.trim(),
+            website: website_url.trim()
+        };
+
+        
+        for (const key in socials) {
+            if (socials[key].trim().length == 0) {
+                socials[key] = "no_link";
+            }
+        }
+
+        fetch('http://127.0.0.1:5000/api/users/socials', { 
+            method: 'PUT',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': cookies.get('token'),
+                'user_id': cookies.get('user_id'),
+                'ip': sessionStorage.getItem('ip'),
+                'user_agent': navigator.userAgent,
+                'SID': cookies.get('SID')
+            },
+            body: JSON.stringify(socials)
+        }).then(response => {
+            if(response.status == 200){
+                setAlertText({message: 'Your social links have been updated', style: 'success'});
+                setAlertToggle(true);
+                setRefreshProfile(!refreshProfile);
+            }
+            else{
+                setAlertText({message: 'Error editing socials', style: 'danger'});
+                setAlertToggle(true);
+            }
+            return response.json();
+        }).then(response => {
+            console.log(response);
+        })
     }
     
 
@@ -104,7 +166,7 @@ const EditSocialsModal = ({EditSocials, SetEditSocials}) => {
                             placeholder="Enter URL"
                             aria-label="Username"
                             aria-describedby="basic-addon1"
-                            value = {twitter_url}
+                            defaultValue = {twitter_url}
                             onChange = {(e) => {setTwitter_url(e.target.value)}}
                             />
                     </InputGroup>
@@ -114,7 +176,7 @@ const EditSocialsModal = ({EditSocials, SetEditSocials}) => {
                             placeholder="Enter URL"
                             aria-label="Username"
                             aria-describedby="basic-addon1"
-                            value = {facebook_url}
+                            defaultValue = {facebook_url}
                             onChange = {(e) => {setFacebook_url(e.target.value)}}
                             />
                     </InputGroup>
@@ -124,7 +186,7 @@ const EditSocialsModal = ({EditSocials, SetEditSocials}) => {
                             placeholder="Enter URL"
                             aria-label="Username"
                             aria-describedby="basic-addon1"
-                            value = {youtube_url}
+                            defaultValue = {youtube_url}
                             onChange = {(e) => {setYoutube_url(e.target.value)}}
                             />
                     </InputGroup>
@@ -134,7 +196,7 @@ const EditSocialsModal = ({EditSocials, SetEditSocials}) => {
                             placeholder="Enter URL"
                             aria-label="Username"
                             aria-describedby="basic-addon1"
-                            value = {instagram_url}
+                            defaultValue = {instagram_url}
                             onChange = {(e) => {setInstagram_url(e.target.value)}}
                             />
                     </InputGroup>
@@ -144,7 +206,7 @@ const EditSocialsModal = ({EditSocials, SetEditSocials}) => {
                             placeholder="Enter URL"
                             aria-label="Username"
                             aria-describedby="basic-addon1"
-                            value = {website_url}
+                            defaultValue = {website_url}
                             onChange = {(e) => {setWebsite_url(e.target.value)}}
                             />
                     </InputGroup>

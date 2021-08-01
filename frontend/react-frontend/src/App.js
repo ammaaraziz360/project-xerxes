@@ -17,8 +17,7 @@ import './App.css';
 const cookie = new Cookies();
 
 function App() {
-  
-  const[isLoggedInState, setIsLoggedInState] = useState(false);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   return (

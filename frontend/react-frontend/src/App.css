@@ -155,3 +155,6 @@ body {
 .modal-content .btn:hover{
 	background-color: #34312dff!important;
 }
+.socials a{
+	color: white!important;
+}

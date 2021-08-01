@@ -52,7 +52,7 @@ def AuthenticateUser(headers):
                 date_diff = (datetime.now() - record[5]).total_seconds()
                 date_diff = divmod(date_diff, 60)[0]
 
-                if date_diff < 5:
+                if date_diff < 30:
                     authDB.updateSessionRecordDate(session_id)
                     authDB.CloseConnection()
                     print("TIME WITHIN LIMIT, TOKEN AUTHENTICATED")

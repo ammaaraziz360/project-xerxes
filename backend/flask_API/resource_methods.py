@@ -40,3 +40,12 @@ def getUserProfile(user_id):
     result = resorDb.getUserProfile(user_id)
     resorDb.CloseConnection()
     return(result)
+
+def editUserSocials(user_id, socials):
+    """
+    updates a user's socials
+    """
+    resorDb = ResourceDB(Credentials('bloggit-db'))
+    result = resorDb.editUserSocials(user_id, socials)
+    resorDb.CloseConnection()
+    return(result)

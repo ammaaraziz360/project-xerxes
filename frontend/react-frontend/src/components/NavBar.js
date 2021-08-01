@@ -23,7 +23,7 @@ const NavBar = ({...Props}) => {
     const history = useHistory();
 
     useEffect(() => {
-        if(Props.isLoggedIn) {
+        //if(Props.isLoggedIn) {
             setUserProfile({pfp_url: ''});
             fetch('http://127.0.0.1:5000/api/users/profile', {
                 method: 'GET',
@@ -56,7 +56,7 @@ const NavBar = ({...Props}) => {
             .catch(err => {
                 console.log(err)
             })
-        }
+        //}
     }, [Props.isLoggedIn]);
 
     const LogOut = () => {
@@ -79,11 +79,15 @@ const NavBar = ({...Props}) => {
                 cookie.remove('user_agent', {path: '/'})
                 cookie.remove('SID', {path: '/'})
                 Props.setIsLoggedIn(false);
+                sessionStorage.setItem("loggedIn" , false);
                 history.push('/login')
             }
             else{
+                sessionStorage.setItem("loggedIn" , false);
                 Props.setIsLoggedIn(false);
             }
+        }).catch(err=> {
+            history.push('/login')
         })
     }
     return (

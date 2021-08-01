@@ -140,6 +140,26 @@ class ResourceDB():
             except Exception as e:
                 return str(e)
         return 'Server failed to connect'
+
+    def editUserSocials(self, user_id, social_info):
+        """
+        edit user socials
+        :param user_id:
+        :param social_info:
+        :return:
+        """
+        connex = self.connection
+        if connex != None:
+            try:
+                print(social_info)
+                cursor = connex.cursor()
+                cursor.callproc('update_user_socials', [user_id, social_info['twitter'], social_info['facebook'], social_info['youtube'],  social_info['instagram'], social_info['website']])
+                connex.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return str(e)
+        return 'Server failed to connect'
     def CloseConnection(self):
         """
         Close the connection

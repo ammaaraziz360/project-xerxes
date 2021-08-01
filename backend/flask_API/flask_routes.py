@@ -164,4 +164,29 @@ def getUserProfile():
         return make_response(jsonify({'error': str(e)}), 401)
 
 
+@app.route('/api/users/socials', methods=['PUT'])
+def updateUserSocials():
+    """
+    Update user socials
+    """
+    try:
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token == False:
+            return make_response(jsonify({"error": "Invalid Token"}), 401)
+        
+        result = resource_methods.editUserSocials(request.headers['user_id'], request.json)
+
+        if result != True:
+            return make_response(jsonify({"error": result}), 400)
+        resp = make_response(jsonify("Socials updated sucessfully"), 200)
+        if new_jwt_token != True:
+            resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+            resp.headers['X-JWT'] = new_jwt_token
+
+        return resp
+    except Exception as e:
+        return make_response(jsonify({'error': str(e)}), 401)
+
+
 app.run()
