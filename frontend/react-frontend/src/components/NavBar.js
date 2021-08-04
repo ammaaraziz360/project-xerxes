@@ -19,11 +19,10 @@ const cookie = new Cookies();
 
 
 const NavBar = ({...Props}) => {
-    const [userProfile, setUserProfile] = useState({pfp_url: ''});
+    const [userProfile, setUserProfile] = useState(null);
     const history = useHistory();
 
     useEffect(() => {
-        //if(Props.isLoggedIn) {
             setUserProfile({pfp_url: ''});
             fetch('http://127.0.0.1:5000/api/users/profile', {
                 method: 'GET',
@@ -56,7 +55,6 @@ const NavBar = ({...Props}) => {
             .catch(err => {
                 console.log(err)
             })
-        //}
     }, [Props.isLoggedIn]);
 
     const LogOut = () => {
@@ -107,13 +105,13 @@ const NavBar = ({...Props}) => {
                         <div className="dropdown sub">
                             
                             <a className="" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                                {Props.isLoggedIn ? <img src={userProfile.pfp} className="image-fluid pfp"></img>
+                                {userProfile != null ? <img src={userProfile.pfp} className="image-fluid pfp"></img>
                                             : <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" className="image-fluid pfp"></img>
                                 }
                             </a>
 
                             <ul className="dropdown-menu m-3" aria-labelledby="dropdownMenuLink">
-                                {Props.isLoggedIn ? [<li key={1}><Link to="/" className="dropdown-item">Profile</Link></li>,
+                                {userProfile != null ? [<li key={1}><Link to="/" className="dropdown-item">Profile</Link></li>,
                                             <li key={2}><Link to="/"className="dropdown-item">Settings</Link></li>,
                                             <li key={3}><a className="dropdown-item" onClick={() => LogOut() }>Log out</a></li>]
                                             : <li><Link to="/login" className="dropdown-item" >Log In</Link></li>
