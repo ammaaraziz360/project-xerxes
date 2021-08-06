@@ -158,3 +158,10 @@ body {
 .socials a{
 	color: white!important;
 }
+textarea {
+	background-color: #34312dff!important;
+	border-bottom-left-radius: 15px!important;
+	border-bottom-right-radius: 15px!important;
+	color: white!important;
+	height: 200px;
+}

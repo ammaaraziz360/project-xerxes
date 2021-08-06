@@ -3,13 +3,16 @@ import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 import {BiEdit} from 'react-icons/bi'
 import EditSocialsModal from './EditSocialsModal';
+import EditBioModal from './EditBioModal';
 
 import {FaTwitter, FaFacebookF,FaYoutube, FaInstagram} from 'react-icons/fa';
 import {BsLink45Deg} from 'react-icons/bs';
 
+import PostEditor from './PostEditor';
+
 const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) => {
     const [EditSocials, setEditSocials] = useState(false);
-
+    const [EditBio, setEditBio] = useState(false);
 
 
     return(
@@ -44,8 +47,19 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                                         : null}
                             </div>
                         </div> 
-                        <div className="col-9 p-2 align-items-center">
-                            <strong>Bio</strong>
+                        <div className="col-9 p-2">
+                            <div className="row">
+                                <div className="d-flex col-6 align-items-center">
+                                        <strong>Bio</strong>
+                                </div>
+                                {OwnAccount 
+                                        ? <div className="d-flex col-6 justify-content-end align-items-center edit_btn">
+                                                <a onClick={() => setEditBio(!EditBio)}>
+                                                    <BiEdit/>
+                                                </a>
+                                            </div>
+                                        : null}
+                            </div>
                         </div>
                     </div>
                     <div className="row mt-0">
@@ -65,7 +79,6 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                     <div className="row sub stats-div p-1 mt-2">
                         <div className="d-flex col-3 justify-content-center align-items-center">
                             <strong>Followers</strong>
-                            <hr/>
                         </div>
                         <div className="d-flex col-3 justify-content-center align-items-center">
                             <strong>Following</strong>
@@ -96,11 +109,25 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
 
                 </div>
             </div>
+            <div>
+                <div className="row">
+                    <div className="col-2">
+                    </div>
+                    <div className="col-md-8 col-xs-12 profile-header p-4">
+                        {OwnAccount ? <PostEditor/> : null}
+                    </div>
+                    <div className="col-2">
+                    </div>
+                </div>
+            </div>
             <EditSocialsModal EditSocials={EditSocials}
                                 SetEditSocials={setEditSocials}
                                 userInfo={userProfile}
                                 refreshProfile = {refreshProfile}
                                 setRefreshProfile = {setRefreshProfile}/>
+            <EditBioModal EditBio={EditBio}
+                          SetEditBio={setEditBio}
+                          userInfo={userProfile}/>
         </div>
 
     )

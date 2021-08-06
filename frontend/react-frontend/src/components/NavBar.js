@@ -111,7 +111,7 @@ const NavBar = ({...Props}) => {
                             </a>
 
                             <ul className="dropdown-menu m-3" aria-labelledby="dropdownMenuLink">
-                                {userProfile != null ? [<li key={1}><Link to="/" className="dropdown-item">Profile</Link></li>,
+                                {userProfile != null ? [<li key={1}><Link to="/profile" className="dropdown-item">Profile</Link></li>,
                                             <li key={2}><Link to="/"className="dropdown-item">Settings</Link></li>,
                                             <li key={3}><a className="dropdown-item" onClick={() => LogOut() }>Log out</a></li>]
                                             : <li><Link to="/login" className="dropdown-item" >Log In</Link></li>
