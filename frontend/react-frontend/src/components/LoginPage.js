@@ -99,7 +99,7 @@ const LoginPage = ({...Props}) => {
 
     const NoResponseGoogle = () => {
         sessionStorage.setItem('logged_in', 'False')
-        setModalText({'title': 'Something went very wrong', 'body': 'Login faluire, please try again'})
+        setModalText({'title': 'Something went very wrong', 'body': 'Login failure, please try again'})
         setToggleModal(!toggleModal)
     }
 

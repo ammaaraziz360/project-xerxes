@@ -148,20 +148,35 @@ body {
 	background-color: #34312dff!important;
 	color: white;
 }
-.modal-content .btn{
-	color: black;
+.btn{
+	border-radius: 25px!important;
 	background-color: white!important;
+	color: black!important;
 }
-.modal-content .btn:hover{
+.btn:hover{
+	border-radius: 25px;
 	background-color: #34312dff!important;
+	color: white!important;
 }
 .socials a{
 	color: white!important;
 }
-textarea {
+.post-elements textarea {
 	background-color: #34312dff!important;
 	border-bottom-left-radius: 15px!important;
 	border-bottom-right-radius: 15px!important;
 	color: white!important;
 	height: 200px;
+}
+.post-elements input {
+	background-color: #34312dff!important;
+	color: white!important;
+}
+.hr {
+	border-style: solid;
+	border-color: #7e7f83ff!important;
+	border-width: 1px!important;
+	border-top: none;
+	border-left: none;
+	border-right: none;
 }
