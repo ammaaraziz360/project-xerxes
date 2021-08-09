@@ -1,1 +1,2 @@
-# Blogoo.App codenamed Project Xerxes will revolutionize blogging, stay tuned for updates.
+## Blogoo.app
+### Codenamed Project Xerxes, Blogoo will revolutionize blogging, stay tuned for updates.
