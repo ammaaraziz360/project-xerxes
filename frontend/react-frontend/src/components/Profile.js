@@ -4,7 +4,7 @@ import Cookies from 'universal-cookie'
 import {BiEdit} from 'react-icons/bi'
 import EditSocialsModal from './EditSocialsModal';
 import EditBioModal from './EditBioModal';
-
+import {Button} from 'react-bootstrap';
 import {FaTwitter, FaFacebookF,FaYoutube, FaInstagram} from 'react-icons/fa';
 import {BsLink45Deg} from 'react-icons/bs';
 
@@ -115,6 +115,17 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                     </div>
                     <div className="col-md-8 col-xs-12 profile-header p-4">
                         {OwnAccount ? <PostEditor/> : null}
+                    </div>
+                    <div className="col-2">
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-2">
+                    </div>
+                    <div className="col-md-8 col-xs-12 profile-header p-4">
+                        {userProfile.Posts.map(post => {
+                            return <p key={post.post_id} dangerouslySetInnerHTML={{__html: post.body_html}}></p>
+                        })}
                     </div>
                     <div className="col-2">
                     </div>

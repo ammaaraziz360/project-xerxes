@@ -49,7 +49,6 @@ const NavBar = ({...Props}) => {
                 }
             })
             .then(data => {
-                console.log(data)
                 setUserProfile(data)
             })
             .catch(err => {

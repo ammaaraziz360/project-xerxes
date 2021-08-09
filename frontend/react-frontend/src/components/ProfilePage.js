@@ -3,6 +3,7 @@ import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 
 
+
 import '../App.css'
 import React from 'react';
 import Profile from './Profile';
@@ -15,7 +16,8 @@ const youtubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?
 
 
 const ProfilePage = ({...Props}) => {
-    const [userProfile, setUserProfile] = useState({username:'', first_name:'', last_name:'', pfp:'', creation_date:'', last_login:'', bio:'', location:'', facebook_url:'', youtube_url:'', twitter_url:'', instagram_url:'', website_url:''});
+    var user_profile_obj = {};
+    const [userProfile, setUserProfile] = useState({username:'', first_name:'', last_name:'', pfp:'', creation_date:'', last_login:'', bio:'', location:'', facebook_url:'', youtube_url:'', twitter_url:'', instagram_url:'', website_url:'', Posts: []});
     const history = useHistory();
     
     const [refreshProfile, setRefreshProfile] = useState(false);
@@ -46,7 +48,6 @@ const ProfilePage = ({...Props}) => {
             }
         })
         .then(data => {
-            console.log(data)
             setUserProfile(data)
         })
         .catch(err => {

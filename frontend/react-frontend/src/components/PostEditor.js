@@ -2,12 +2,20 @@ import { useEffect, useState, useReducer } from 'react';
 import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 import React from 'react';
+import Alerts from './ErrorAlert';
 
-import { InputGroup, FormControl, Button } from 'react-bootstrap';
+import { InputGroup, FormControl, Button, Alert } from 'react-bootstrap';
 const PostEditor = () => {
+    const cookie = new Cookies();
+    const history = useHistory();
+    const [postTitle, setPostTitle] = useState('');
 
-    const [post, setPost] = useState("We [want] | (to bold) | (this)")
+    const [post, setPost] = useState("")
     const [postHTML, setPostHTML] = useState("")
+
+    const [AlertToggle, setAlertToggle] = useState(false)
+    const [AlertMessage, setAlertMessage] = useState({message: "", style: "success"})
+
 
     const GeneratePreview = () => {
         var generatedHTML = "<div>"
@@ -88,6 +96,65 @@ const PostEditor = () => {
         console.log(generatedHTML)
     }
 
+    const SubmitPost = () => {
+        GeneratePreview()
+
+        if (postTitle.trim() == ""){
+            setAlertMessage({message: 'Blog post must have a title, try again', style: 'danger'})
+            setAlertToggle(true)
+            return
+        }else{
+            setAlertToggle(false)
+        }
+
+        if (post.trim() == ""){
+            setAlertMessage({message: 'Blog post must have content, try again', style: 'danger'})
+            setAlertToggle(true)
+            return
+        }else{
+            setAlertToggle(false)
+        }
+
+        var post_data = {title: postTitle, 
+                        body_raw: post, 
+                        body_html: postHTML, 
+                        reply_post_id: null}
+        fetch('http://127.0.0.1:5000/api/posts', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': cookie.get('token'),
+                'user_id': cookie.get('user_id'),
+                'ip': sessionStorage.getItem('ip'),
+                'user_agent': navigator.userAgent,
+                'SID': cookie.get('SID')
+            },
+            body: JSON.stringify(post_data)
+        })
+        .then(res => {
+            if (res.status === 200) {
+                if(res.headers.get('X-JWT') != null) {
+                    cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                }
+                setAlertMessage({message: 'Blog successfully added', style: 'success'})
+                setAlertToggle(true)
+            } 
+            else if (res.status === 401) {
+                //history.push('/login')
+                console.log('401')
+            }
+            else {
+                setAlertMessage({message: 'Error: Blog not posted, try again', style: 'danger'})
+                setAlertToggle(true)
+            }
+        })
+        .catch(err => {
+            setAlertMessage({message: 'Error: Blog not posted, try again', style: 'danger'})
+            setAlertToggle(true)
+        })
+    }
+
     return (
         <div>
             <div className="text-editor post-elements">
@@ -100,6 +167,7 @@ const PostEditor = () => {
                             placeholder="Title"
                             aria-label="Username"
                             aria-describedby="basic-addon1"
+                            onChange={(e) => setPostTitle(e.target.value)}
                             />
                     <FormControl as="textarea" 
                                 aria-label="bio text area" 
@@ -108,13 +176,17 @@ const PostEditor = () => {
                                 />
                     </div>
                     <div className="d-flex mt-3 justify-content-end">
-                        <Button variant="primary" onClick={GeneratePreview}>
+                        <Button onClick={GeneratePreview}>
                             Preview
                         </Button>
-                        <Button variant="primary" onClick={GeneratePreview}>
+                        <Button onClick={SubmitPost}>
                             Post
                         </Button>
                     </div>
+                    <div className="mt-3">
+                        <Alerts AlertToggle={AlertToggle} AlertText={AlertMessage}/>
+                    </div>
+                    
                     <h5 className="hr pb-3">Preview</h5>
             </div>
             <div id="preview">

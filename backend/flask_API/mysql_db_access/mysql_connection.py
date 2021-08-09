@@ -130,13 +130,21 @@ class ResourceDB():
         """
         connex = self.connection
         keys = ['username', 'first_name', 'last_name', 'pfp', 'creation_date', 'last_login', 'bio', 'location', 'facebook_url', 'youtube_url', 'twitter_url', 'instagram_url', 'website_url']
+        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views']
         if connex != None:
             try:
+                results = {}
                 cursor = connex.cursor(dictionary=True)
                 cursor.callproc('get_user_profile', [user_id])
                 for result in cursor.stored_results():
                     for i in result.fetchall():
-                        return dict(zip(keys, i))
+                        results = dict(zip(keys, i))
+                results['Posts'] = []
+                cursor.callproc('get_user_posts', [user_id])
+                for resulter in cursor.stored_results():
+                    for x in resulter.fetchall():
+                        results['Posts'].append(dict(zip(post_keys, x)))
+                return results
             except Exception as e:
                 return str(e)
         return 'Server failed to connect'
@@ -158,6 +166,25 @@ class ResourceDB():
                 return True
             except Exception as e:
                 print(e)
+                return str(e)
+        return 'Server failed to connect'
+    
+    def insertPost(self, user_id, post_info: dict):
+        """
+        insert a post
+        :param user_id:
+        :param post_info:
+        :return:
+        """
+        connex = self.connection
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                print(datetime.now())
+                cursor.callproc('insert_post', [user_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), post_info['title'], post_info['body_raw'], post_info['body_html'],post_info['reply_post_id']])
+                connex.commit()
+                return True
+            except Exception as e:
                 return str(e)
         return 'Server failed to connect'
     def CloseConnection(self):

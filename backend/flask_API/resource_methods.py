@@ -49,3 +49,12 @@ def editUserSocials(user_id, socials):
     result = resorDb.editUserSocials(user_id, socials)
     resorDb.CloseConnection()
     return(result)
+
+def insertPost(user_id, post_details):
+    """
+    adds a post to the database
+    """
+    resorDb = ResourceDB(Credentials('bloggit-db'))
+    result = resorDb.insertPost(user_id, post_details)
+    resorDb.CloseConnection()
+    return(result)
