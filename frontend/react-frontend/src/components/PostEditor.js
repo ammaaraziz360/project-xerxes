@@ -11,7 +11,7 @@ const PostEditor = () => {
     const [postTitle, setPostTitle] = useState('');
 
     const [post, setPost] = useState("")
-    const [postHTML, setPostHTML] = useState("")
+    var postHTML = ""
 
     const [AlertToggle, setAlertToggle] = useState(false)
     const [AlertMessage, setAlertMessage] = useState({message: "", style: "success"})
@@ -92,8 +92,7 @@ const PostEditor = () => {
         generatedHTML += "</div>"
 
         document.getElementById("preview").innerHTML = generatedHTML
-        setPostHTML(generatedHTML)
-        console.log(generatedHTML)
+        postHTML = generatedHTML
     }
 
     const SubmitPost = () => {

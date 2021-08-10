@@ -9,6 +9,7 @@ import {FaTwitter, FaFacebookF,FaYoutube, FaInstagram} from 'react-icons/fa';
 import {BsLink45Deg} from 'react-icons/bs';
 
 import PostEditor from './PostEditor';
+import Post from './Post';
 
 const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) => {
     const [EditSocials, setEditSocials] = useState(false);
@@ -124,7 +125,7 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                     </div>
                     <div className="col-md-8 col-xs-12 profile-header p-4">
                         {userProfile.Posts.map(post => {
-                            return <p key={post.post_id} dangerouslySetInnerHTML={{__html: post.body_html}}></p>
+                            return <Post post_info={post} user_info={userProfile} key={post.id}/>
                         })}
                     </div>
                     <div className="col-2">
