@@ -57,6 +57,7 @@ font-family: 'Qahiri', sans-serif; */
 	border-radius: 25px;
 }
 .naver{
+	z-index: 9999;
 	color: white;
 	position: sticky;
     top: 0;
