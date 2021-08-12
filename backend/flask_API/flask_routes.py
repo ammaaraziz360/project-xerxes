@@ -139,8 +139,8 @@ def logoutUser():
         print(e)
         return make_response(jsonify({'error': [str(e)]}), 401)
     
-@app.route('/api/users/profile', methods=['GET'])
-def getUserProfile():
+@app.route('/api/users/profile/<user_id>', methods=['GET'])
+def getUserProfile(user_id):
     """
     Get user profile
     """
@@ -150,8 +150,8 @@ def getUserProfile():
         if new_jwt_token == False:
             return make_response(jsonify({"error": "Invalid Token"}), 401)
         
-        user_id = request.headers['user_id']
-        user_dict = resource_methods.getUserProfile(user_id)
+        requester_id = request.headers['user_id']
+        user_dict = resource_methods.getUserProfile(user_id, requester_id)
         if user_dict == None:
             return make_response(jsonify({"error": "User not found"}), 404)
         resp = make_response(jsonify(user_dict), 200)

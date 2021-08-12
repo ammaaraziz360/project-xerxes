@@ -24,7 +24,7 @@ const ProfilePage = ({...Props}) => {
 
 
     useEffect(() => {
-        fetch('http://127.0.0.1:5000/api/users/profile', {
+        fetch(`http://127.0.0.1:5000/api/users/profile/${cookie.get('user_id')}`, {
             method: 'GET',
             mode: 'cors',
             headers: {
