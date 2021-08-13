@@ -15,11 +15,70 @@ const cookie = new Cookies();
 
 
 const Post = ({post_info, user_info, loggedin_user_info}) => {
+    const history = useHistory();
 
+    const [Liked, setLiked] = useState(post_info.liked);
+    const [Disliked, setDisliked] = useState(post_info.disliked);
 
-    const dislike = () => {
-        post_info.disliked = 'false'
+    const[likes, setLikes] = useState(post_info.likes);
+    const[dislikes, setDislikes] = useState(post_info.dislikes);
+
+    const like_dislike_controller = (liker) => {
+        if (liker === 'dislike' && Disliked === 'true' && Liked === 'false') {
+            setDisliked('false');
+            setDislikes(dislikes - 1);
+        } else if (liker ==='dislike' && Disliked === 'false' && Liked === 'false') {
+            setDisliked('true');
+            setDislikes(dislikes + 1);
+        } else if (liker ==='dislike' && Disliked === 'false' && Liked === 'true') {
+            setDisliked('true');
+            setLiked('false');
+            setDislikes(dislikes + 1);
+            setLikes(likes - 1);
+        } else if (liker ==='like' && Liked === 'true' && Disliked === 'false') {
+            setLiked('false');
+            setLikes(likes - 1);
+        } else if (liker ==='like' && Liked === 'false' && Disliked === 'false') {
+            setLiked('true');
+            setLikes(likes + 1);
+        } else if (liker ==='like' && Liked === 'false' && Disliked === 'true') {
+            setLiked('true');
+            setDisliked('false');
+            setLikes(likes + 1);
+            setDislikes(dislikes - 1);
+        }
     }
+
+    useEffect(() => {
+        var like_dislike_payload = {liked: Liked, disliked: Disliked};
+
+        fetch(`http://127.0.0.1:5000/api/posts/${post_info.post_id}/like`, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': cookie.get('token'),
+                'user_id': cookie.get('user_id'),
+                'ip': sessionStorage.getItem('ip'),
+                'user_agent': navigator.userAgent,
+                'SID': cookie.get('SID')
+            },
+            body: JSON.stringify(like_dislike_payload)
+        })
+        .then(res => {
+            if (res.status === 200) {
+                if(res.headers.get('X-JWT') != null) {
+                    cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                }
+            } 
+            else {
+                history.push('/login')
+            }
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    }, [Liked, Disliked])
 
     return (
         <div className="mt-3">
@@ -60,24 +119,24 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                         </div>
                     </div>
                     <div className="col-3 col-xs-0 d-lg-flex d-none">
-                            { post_info.liked ?
-                                <Button variant="primary">
+                            { Liked === 'true' ?
+                                <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('like')}>
                                     <FiThumbsUp/>
-                                    <span className="p-1">{post_info.likes}</span>
+                                    <span className="p-1">{likes}</span>
                                 </Button>
-                                : <Button variant="primary" className="bg-light text-dark">
+                                : <Button variant="primary" onClick={() => like_dislike_controller('like')}>
                                     <FiThumbsUp/>
-                                    <span className="p-1">{post_info.likes}</span>
+                                    <span className="p-1">{likes}</span>
                                 </Button>
                             }
-                            { post_info.dislikes ?
-                                <Button variant="primary" className="bg-light text-dark" onClick={dislike()}>
+                            { Disliked === 'true' ?
+                                <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('dislike')}>
                                     <FiThumbsDown/>
-                                    <span className="p-1">{post_info.dislikes}</span>
+                                    <span className="p-1">{dislikes}</span>
                                 </Button>
-                                : <Button variant="primary">
+                                : <Button variant="primary" onClick={() => like_dislike_controller('dislike')}>
                                     <FiThumbsDown/>
-                                    <span className="p-1">{post_info.dislikes}</span>
+                                    <span className="p-1">{dislikes}</span>
                                 </Button>
                             }
                     </div>
@@ -96,24 +155,24 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                 </div>
                 <div className="row p-2 align-items-center d-lg-none">
                     <div className="col-6">
-                            { post_info.liked ?
-                                <Button variant="primary">
+                            { Liked === 'true' ?
+                                <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('like')}>
                                     <FiThumbsUp/>
-                                    <span className="p-1">{post_info.likes}</span>
+                                    <span className="p-1">{likes}</span>
                                 </Button>
-                                : <Button variant="primary" className="bg-light text-dark">
+                                : <Button variant="primary" onClick={() => like_dislike_controller('like')}>
                                     <FiThumbsUp/>
-                                    <span className="p-1">{post_info.likes}</span>
+                                    <span className="p-1">{likes}</span>
                                 </Button>
                             }
-                            { post_info.dislikes ?
-                                <Button variant="primary" className="bg-light text-dark">
+                            { Disliked === 'true' ?
+                                <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('dislike')}>
                                     <FiThumbsDown/>
-                                    <span className="p-1">{post_info.dislikes}</span>
+                                    <span className="p-1">{dislikes}</span>
                                 </Button>
-                                : <Button variant="primary">
+                                : <Button variant="primary" onClick={() => like_dislike_controller('dislike')}>
                                     <FiThumbsDown/>
-                                    <span className="p-1">{post_info.dislikes}</span>
+                                    <span className="p-1">{dislikes}</span>
                                 </Button>
                             }
                     </div>

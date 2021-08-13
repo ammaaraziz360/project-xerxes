@@ -189,6 +189,35 @@ class ResourceDB():
             except Exception as e:
                 return str(e)
         return 'Server failed to connect'
+    
+    def likePost(self, user_id, post_id, like_info):
+        """
+        like a post
+        :param user_id:
+        :param post_id:
+        :param like_info:
+        :return:
+        """
+        connex = self.connection
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                if like_info['liked'] == 'true':
+                    print('liked')
+                    cursor.callproc('like_post', [user_id, post_id])
+                    connex.commit()
+                elif like_info['disliked'] == 'true':
+                    print('disliked')
+                    cursor.callproc('dislike_post', [user_id, post_id])
+                    connex.commit()
+                elif like_info['liked'] == 'false' and like_info['disliked'] == 'false':
+                    print('unliked')
+                    cursor.callproc('unlike_undislike', [user_id, post_id])
+                    connex.commit()
+                return True
+            except Exception as e:
+                return str(e)
+        return 'Server failed to connect'
     def CloseConnection(self):
         """
         Close the connection

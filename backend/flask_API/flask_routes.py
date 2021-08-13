@@ -211,4 +211,27 @@ def insertPost():
         print(e)
         return make_response(jsonify({'error': str(e)}), 401)
 
+@app.route('/api/posts/<post_id>/like', methods=['POST'])
+def likePost(post_id):
+    """
+    Like or dislike post or unlike or undislike post
+    """
+    try:
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token == False:
+            return make_response(jsonify({"error": "Invalid Token"}), 401)
+        
+        result = resource_methods.likePost(post_id, request.headers['user_id'], request.json)
+        if result == True:
+            resp = make_response(jsonify({"message": "Post liked successfully"}), 200)
+        else:
+            resp = make_response(jsonify({"error": "Post not liked"}), 400)
+        if new_jwt_token != True:
+            resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+            resp.headers['X-JWT'] = new_jwt_token
+        return resp
+    except Exception as e:
+        return make_response(jsonify({'error': str(e)}), 401)
+
 app.run()

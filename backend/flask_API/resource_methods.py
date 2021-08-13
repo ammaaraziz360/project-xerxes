@@ -58,3 +58,12 @@ def insertPost(user_id, post_details):
     result = resorDb.insertPost(user_id, post_details)
     resorDb.CloseConnection()
     return(result)
+
+def likePost(post_id, user_id, like_info):
+    """
+    adds a like or dislike or unlikes or undislikes to the database
+    """
+    resorDb = ResourceDB(Credentials('bloggit-db'))
+    result = resorDb.likePost(user_id, post_id, like_info)
+    resorDb.CloseConnection()
+    return(result)
