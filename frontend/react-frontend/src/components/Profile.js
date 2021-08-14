@@ -11,10 +11,9 @@ import {BsLink45Deg} from 'react-icons/bs';
 import PostEditor from './PostEditor';
 import Post from './Post';
 
-const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) => {
+const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}) => {
     const [EditSocials, setEditSocials] = useState(false);
     const [EditBio, setEditBio] = useState(false);
-
 
     return(
         <div className="container">
@@ -27,10 +26,17 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                             <img src={userProfile.pfp} alt="avatar" className="img-fluid pfp-large" />
                         </div>
                         <div className="d-flex col-9 profile-info justify-content-center align-items-center sub">
-                            <div className="d-flex flex-column">
+                            <div className="d-flex flex-column p-3">
                                 <div><h3>{userProfile.first_name} {userProfile.last_name}</h3></div>
                                 <div className="muted"><h5>@{userProfile.username}</h5></div>
+                                {userProfile.OwnAccount ? 
+                                <Button className="mt-2">
+                                    Follow
+                                </Button>
+                                :null}
+                                
                             </div>
+                            
                         </div>
                     </div>
                     <div className="row mt-2 mb-0 stats-div sub align-items-center">
@@ -39,7 +45,7 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                                 <div className="d-flex col-6 align-items-center">
                                     <strong>Socials</strong>
                                 </div>
-                                {OwnAccount 
+                                {userProfile.OwnAccount 
                                         ? <div className="d-flex col-6 justify-content-end align-items-center edit_btn">
                                                 <a onClick={() => setEditSocials(!EditSocials)}>
                                                     <BiEdit/>
@@ -53,7 +59,7 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                                 <div className="d-flex col-6 align-items-center">
                                         <strong>Bio</strong>
                                 </div>
-                                {OwnAccount 
+                                {userProfile.OwnAccount
                                         ? <div className="d-flex col-6 justify-content-end align-items-center edit_btn">
                                                 <a onClick={() => setEditBio(!EditBio)}>
                                                     <BiEdit/>
@@ -93,10 +99,10 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                     </div>
                     <div className="row p-1">
                         <div className="d-flex col-3 justify-content-center align-items-center">
-                            55
+                            {userProfile.followers}
                         </div>
                         <div className="d-flex col-3 justify-content-center align-items-center">
-                            65
+                            {userProfile.following}
                         </div>
                         <div className="d-flex col-3 justify-content-center align-items-center">
                             {(userProfile.creation_date).split(" ")[2] + " " + (userProfile.creation_date).split(" ")[1] + ", " + (userProfile.creation_date).split(" ")[3]}
@@ -115,7 +121,7 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                     <div className="col-2">
                     </div>
                     <div className="col-md-8 col-xs-12 profile-header p-4">
-                        {OwnAccount ? <PostEditor/> : null}
+                        {userProfile.OwnAccount ? <PostEditor/> : null}
                     </div>
                     <div className="col-2">
                     </div>
@@ -125,7 +131,7 @@ const Profile = ({ userProfile, OwnAccount, refreshProfile, setRefreshProfile}) 
                     </div>
                     <div className="col-md-8 col-xs-12 profile-header p-4">
                         {userProfile.Posts.map(post => {
-                            return <Post post_info={post} user_info={userProfile} loggedin_user_info={userProfile} key={post.id}/>
+                            return <Post post_info={post} user_info={userProfile} loggedin_user_info={loggedinUser}/>
                         })}
                     </div>
                     <div className="col-2">

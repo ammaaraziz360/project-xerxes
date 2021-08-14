@@ -1,5 +1,5 @@
 import { useEffect, useState, useReducer } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import Cookies from 'universal-cookie'
 
 
@@ -16,13 +16,49 @@ const youtubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?
 
 
 const ProfilePage = ({...Props}) => {
-    const [userProfile, setUserProfile] = useState({username:'', first_name:'', last_name:'', pfp:'', creation_date:'', last_login:'', bio:'', location:'', facebook_url:'', youtube_url:'', twitter_url:'', instagram_url:'', website_url:'', Posts: []});
+    const [userProfile, setUserProfile] = useState({username:'', first_name:'', last_name:'', pfp:'', creation_date:'', 
+    last_login:'', bio:'', location:'',followers: '',following: '' ,facebook_url:'', youtube_url:'', 
+    twitter_url:'', instagram_url:'', website_url:'', Posts: [], OwnAccount: false});
+
+    const [loggedinUser, setLoggedinUser] =  useState({username:'', first_name:'', last_name:'', pfp:'', creation_date:'', 
+    last_login:'', bio:'', location:'',followers: '',following: '' ,facebook_url:'', youtube_url:'', 
+    twitter_url:'', instagram_url:'', website_url:'', Posts: [], OwnAccount: false});
+
     const history = useHistory();
     
     const [refreshProfile, setRefreshProfile] = useState(false);
 
+    const { username } = useParams();
 
     useEffect(() => {
+        fetch(`http://127.0.0.1:5000/api/users/profile/${username}`, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': cookie.get('token'),
+                'user_id': cookie.get('user_id'),
+                'ip': sessionStorage.getItem('ip'),
+                'user_agent': navigator.userAgent,
+                'SID': cookie.get('SID')
+            },
+        })
+        .then(res => {
+            if (res.status === 200) {
+                return res.json();
+            } 
+            else{
+                history.push('/404')
+            }
+        })
+        .then(data => {
+            setUserProfile(data)
+        })
+        .catch(err => {
+            console.log(err)
+        })
+
+        // get own profile
         fetch(`http://127.0.0.1:5000/api/users/profile/${cookie.get('user_id')}`, {
             method: 'GET',
             mode: 'cors',
@@ -37,26 +73,24 @@ const ProfilePage = ({...Props}) => {
         })
         .then(res => {
             if (res.status === 200) {
-                if(res.headers.get('X-JWT') != null) {
-                    cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
-                }
                 return res.json()
-            } 
-            else {
-                history.push('/login')
+            }
+            else{
+                return null
             }
         })
         .then(data => {
-            setUserProfile(data)
+            setLoggedinUser(data)
         })
         .catch(err => {
             console.log(err)
         })
+        
     }, [refreshProfile]);
 
     return (
         <Profile userProfile={userProfile}
-                OwnAccount={true}
+                loggedinUser={loggedinUser}
                 refreshProfile = {refreshProfile}
                 setRefreshProfile = {setRefreshProfile} />
     );

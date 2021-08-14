@@ -24,6 +24,11 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
     const[dislikes, setDislikes] = useState(post_info.dislikes);
 
     const like_dislike_controller = (liker) => {
+        if(loggedin_user_info == null){
+            console.log("You are not logged in")
+            return;
+        }
+
         if (liker === 'dislike' && Disliked === 'true' && Liked === 'false') {
             setDisliked('false');
             setDislikes(dislikes - 1);
@@ -72,7 +77,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                 }
             } 
             else {
-                history.push('/login')
+                console.log("You are not loggedin");
             }
         })
         .catch(err => {
@@ -81,7 +86,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
     }, [Liked, Disliked])
 
     return (
-        <div className="mt-3">
+        <div className="mt-3" key={post_info.post_id}>
             <div className="stats-div sub p-3">
                 <div className="d-flex row align-items-center">
                     <div className="col-6">
@@ -108,7 +113,9 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                     <div className="col-lg-6 col-xs-12">
                         <div className="input-group">
                             <div className="input-group-prepend pr-2">
-                                <img src={loggedin_user_info.pfp} className="pfp-small-2" alt="user image"/>
+                                {loggedin_user_info !== null ? <img src={loggedin_user_info.pfp} className="pfp-small-2" alt="user image"/> 
+                                : <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" className="pfp-small-2" alt="user image"/>
+                                }
                             </div>
                             <input className="form-control search-bar" type="text" placeholder="Add a comment"></input>
                             <div className="input-group-append">

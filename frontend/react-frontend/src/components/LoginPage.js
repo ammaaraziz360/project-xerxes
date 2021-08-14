@@ -18,8 +18,6 @@ const username_regex = new RegExp("^[a-zA-Z0-9_!#$%&*.'=+]*")
 
 const LoginPage = ({...Props}) => {
 
-    const [ReadyToUnmount, setReadyToUnmount] = useState({status: false, message: ''});
-
     const[toggleUsernameModal, setToggleUsernameModal] = useState(false);
     const[toggleModal, setToggleModal] = useState(false);
 
@@ -78,8 +76,8 @@ const LoginPage = ({...Props}) => {
                     cookies.set('user_id', data.user_id, { path: '/' })
                     cookies.set('SID', data.session_id, { path: '/' })
                     if(data['user_exists'] == "True"){
-                        setReadyToUnmount({status: true, message: '/profile'})
                         Props.setIsLoggedIn(true)
+                        history.push(`/user/${cookies.get('user_id')}`)
                     }
                     else {
                         Props.setIsLoggedIn(false)
@@ -87,7 +85,7 @@ const LoginPage = ({...Props}) => {
                     }
                 }
                 else{
-                    sessionStorage.setItem('logged_in', 'False')
+                    Props.setIsLoggedIn(false)
                     throw new Error("Internal server error, try again later")
                 }
             })
@@ -102,12 +100,6 @@ const LoginPage = ({...Props}) => {
         setModalText({'title': 'Something went very wrong', 'body': 'Login failure, please try again'})
         setToggleModal(!toggleModal)
     }
-
-    useEffect(() => {
-        if(Props.isLoggedIn){
-            history.push('/profile')
-        }
-    }, [Props.isLoggedIn])
 
     return(
         <div>

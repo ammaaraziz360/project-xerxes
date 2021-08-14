@@ -122,33 +122,46 @@ class ResourceDB():
                 return str(e)
         return 'Server failed to connect'
     
-    def getUserProfile(self, user_id, requester_id):
+    def getUserProfile(self, username, requester_id):
         """
         get user profile
         :param user_id:
         :return:
         """
+        # username may come in as a user_id so we need to convert it to a username
         connex = self.connection
-        keys = ['username', 'first_name', 'last_name', 'pfp', 'creation_date', 'last_login', 'bio', 'location', 'facebook_url', 'youtube_url', 'twitter_url', 'instagram_url', 'website_url']
+        keys = ['user_id','username', 'first_name', 'last_name', 'pfp', 'creation_date', 'last_login', 'bio', 'location','followers','following', 'facebook_url', 'youtube_url', 'twitter_url', 'instagram_url', 'website_url']
         post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked']
         if connex != None:
             try:
                 results = {}
                 cursor = connex.cursor(dictionary=True)
-                cursor.callproc('get_user_profile', [user_id])
+                # username may come in as a user_id so we need to convert it to a username
+                cursor.callproc('get_username', [username])
+                for result in cursor.stored_results():
+                    for i in result.fetchall():
+                        if i[0] != None:
+                            print(i[0])
+                            username = i[0]
+
+                cursor.callproc('get_user_profile', [username])
                 for result in cursor.stored_results():
                     for i in result.fetchall():
                         results = dict(zip(keys, i))
                 results['Posts'] = []
-                cursor.callproc('get_user_posts', [user_id, requester_id])
+                cursor.callproc('get_user_posts', [results['user_id'], requester_id])
                 for resulter in cursor.stored_results():
                     for x in resulter.fetchall():
                         results['Posts'].append(dict(zip(post_keys, x)))
 
-                print(results['Posts'][0])
+                if results['user_id'] == requester_id:
+                    results['OwnAccount'] = True
+                else:
+                    results['OwnAccount'] = False
+
                 return results
             except Exception as e:
-                return str(e)
+                return None
         return 'Server failed to connect'
 
     def editUserSocials(self, user_id, social_info):
