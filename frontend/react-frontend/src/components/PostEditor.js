@@ -1,11 +1,14 @@
-import { useEffect, useState, useReducer } from 'react';
+import { useEffect, useState, useReducer, useContext } from 'react';
 import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 import React from 'react';
 import Alerts from './ErrorAlert';
+import {LoggedInContext} from './LoggedInContext';
 
 import { InputGroup, FormControl, Button, Alert } from 'react-bootstrap';
 const PostEditor = () => {
+    const logged_in_state = useContext(LoggedInContext) 
+
     const cookie = new Cookies();
     const history = useHistory();
     const [postTitle, setPostTitle] = useState('');
@@ -140,8 +143,9 @@ const PostEditor = () => {
                 setAlertToggle(true)
             } 
             else if (res.status === 401) {
-                //history.push('/login')
-                console.log('401')
+                localStorage.setItem('logged_in', 'false');
+                logged_in_state.setIsLoggedIn(false);
+                history.push('/login')
             }
             else {
                 setAlertMessage({message: 'Error: Blog not posted, try again', style: 'danger'})

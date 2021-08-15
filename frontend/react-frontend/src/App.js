@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState} from "react";
 import Cookies from 'universal-cookie'
 
 import LoginPage from "./components/LoginPage";
@@ -14,37 +14,38 @@ import {
   Link
 } from "react-router-dom";
 import './App.css';
+import { LoggedInContext } from "./components/LoggedInContext";
 
 const cookie = new Cookies();
 
 function App() {
+  if(localStorage.getItem("logged_in") === null) {
+    localStorage.setItem("logged_in", "false");
+  }
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("logged_in") === "true" ? true : false);
+
   return (
     <div className="App">
-      <Router>
-        <NavBar isLoggedIn={isLoggedIn}
-                setIsLoggedIn={setIsLoggedIn}/>
-        <Switch>
-          <Route path='/login' >
-            <LoginPage isLoggedIn={isLoggedIn}
-                        setIsLoggedIn={setIsLoggedIn}
-            />
-          </Route>
-          <Route path='/user/:username'>
-            <ProfilePage isLoggedIn={isLoggedIn}
-                          setIsLoggedIn={setIsLoggedIn}
-              />
-          </Route>
-          <Route path='/404'>
-            <NotFoundPage />
-          </Route>
-          <Route path='*' >
-            <NotFoundPage/>
-          </Route>
-        </Switch>
-      </Router>
+      <LoggedInContext.Provider value={{isLoggedIn, setIsLoggedIn}}>
+        <Router>
+          <NavBar/>
+          <Switch>
+            <Route path='/login' >
+              <LoginPage/>
+            </Route>
+            <Route path='/user/:username'>
+              <ProfilePage/>
+            </Route>
+            <Route path='/404'>
+              <NotFoundPage />
+            </Route>
+            <Route path='*' >
+              <NotFoundPage/>
+            </Route>
+          </Switch>
+        </Router>
+      </LoggedInContext.Provider>
     </div>
   );
 }

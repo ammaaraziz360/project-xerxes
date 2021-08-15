@@ -1,10 +1,12 @@
 import { Modal } from 'react-bootstrap';
-import { useEffect, useState, useReducer } from 'react';
+import { useEffect, useState, useReducer, useContext } from 'react';
 import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 import React from 'react';
 import { InputGroup, FormControl, Button, Form } from 'react-bootstrap';
 import Alerts from './ErrorAlert';
+import { LoggedInContext } from './LoggedInContext';
+
 
 import {FaTwitter, FaFacebookF,FaYoutube, FaInstagram} from 'react-icons/fa';
 import {BsLink45Deg} from 'react-icons/bs';
@@ -22,6 +24,8 @@ const ig_regex = /^(https?:\/\/)?(www\.)?(instagram\.com)\/(.*)/i;
 const cookies = new Cookies();
 
 const EditSocialsModal = ({EditSocials, SetEditSocials, userInfo, refreshProfile, setRefreshProfile}) => {
+    const history = useHistory();
+
     const [AlertToggle, setAlertToggle] = useState(false);
     const [AlertText, setAlertText] = useState('');
     const[disableButton, setDisableButton] = useState(true);
@@ -33,6 +37,7 @@ const EditSocialsModal = ({EditSocials, SetEditSocials, userInfo, refreshProfile
     const [youtube_url, setYoutube_url] = useState('');
     const [website_url, setWebsite_url] = useState('');
 
+    const logged_in_state = useContext(LoggedInContext)
 
     useEffect(() => {
         setTwitter_url(userInfo.twitter_url);
@@ -134,9 +139,17 @@ const EditSocialsModal = ({EditSocials, SetEditSocials, userInfo, refreshProfile
             body: JSON.stringify(socials)
         }).then(response => {
             if(response.status == 200){
+                if(response.headers.get('X-JWT') != null) {
+                    cookies.set('token', response.headers.get('X-JWT'), {path: '/'})
+                }
                 setAlertText({message: 'Your social links have been updated', style: 'success'});
                 setAlertToggle(true);
                 setRefreshProfile(!refreshProfile);
+            }
+            else if (response.status == 401){
+                sessionStorage.setItem('logged_in', 'false');
+                logged_in_state.setIsLoggedIn(false);
+                history.push('/login');
             }
             else{
                 setAlertText({message: 'Error editing socials', style: 'danger'});
@@ -145,6 +158,8 @@ const EditSocialsModal = ({EditSocials, SetEditSocials, userInfo, refreshProfile
             return response.json();
         }).then(response => {
             console.log(response);
+        }).catch(error => {
+            console.log(error);
         })
     }
     

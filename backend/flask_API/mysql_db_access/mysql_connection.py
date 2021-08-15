@@ -141,7 +141,6 @@ class ResourceDB():
                 for result in cursor.stored_results():
                     for i in result.fetchall():
                         if i[0] != None:
-                            print(i[0])
                             username = i[0]
 
                 cursor.callproc('get_user_profile', [username])
@@ -156,9 +155,17 @@ class ResourceDB():
 
                 if results['user_id'] == requester_id:
                     results['OwnAccount'] = True
+                    results['follows'] = False
                 else:
                     results['OwnAccount'] = False
-
+                    print([requester_id, results['user_id']])
+                    cursor.callproc('check_user_follows', [requester_id, results['user_id']])
+                    for result in cursor.stored_results():
+                        for i in result.fetchall():
+                            if i[0] == 1:
+                                results['follows'] = True
+                            else:
+                                results['follows'] = False
                 return results
             except Exception as e:
                 return None

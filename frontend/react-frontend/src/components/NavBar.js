@@ -1,19 +1,24 @@
-import { useEffect, useState, useReducer } from 'react';
+import { useEffect, useState, useReducer, useContext } from 'react';
 import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 
 import { Link } from 'react-router-dom';
 import '../App.css'
 import React from 'react';
+import { LoggedInContext } from './LoggedInContext';
 
 const cookie = new Cookies();
 
 
-const NavBar = ({...Props}) => {
+const NavBar = () => {
+
+    const logged_in_state = useContext(LoggedInContext)
+
     const [userProfile, setUserProfile] = useState(null);
     const history = useHistory();
 
     useEffect(() => {
+        if (logged_in_state.isLoggedIn) {
             fetch(`http://127.0.0.1:5000/api/users/profile/${cookie.get('user_id')}`, {
                 method: 'GET',
                 mode: 'cors',
@@ -25,17 +30,17 @@ const NavBar = ({...Props}) => {
                     'user_agent': navigator.userAgent,
                     'SID': cookie.get('SID')
                 },
-        })
+            })
             .then(res => {
                 if (res.status === 200) {
                     if(res.headers.get('X-JWT') != null) {
                         cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
                     }
-                    Props.setIsLoggedIn(true);
                     return res.json()
                 } 
                 else {
-                    Props.setIsLoggedIn(false);
+                    localStorage.setItem('logged_in', 'false');
+                    logged_in_state.setIsLoggedIn(false);
                     return null
                 }
             })
@@ -45,7 +50,16 @@ const NavBar = ({...Props}) => {
             .catch(err => {
                 console.log(err)
             })
-    }, []);
+        } else{
+            cookie.remove('token', {path: '/'})
+            cookie.remove('user_id', {path: '/'})
+            cookie.remove('ip', {path: '/'})
+            cookie.remove('user_agent', {path: '/'})
+            cookie.remove('SID', {path: '/'})
+            setUserProfile(null)
+        }
+
+    }, [logged_in_state.isLoggedIn]);
 
     const LogOut = () => {
         fetch('http://127.0.0.1:5000/api/users/logout', {
@@ -67,9 +81,12 @@ const NavBar = ({...Props}) => {
                 cookie.remove('user_agent', {path: '/'})
                 cookie.remove('SID', {path: '/'})
             }
-            Props.setIsLoggedIn(false);
+            localStorage.setItem('logged_in', 'false');
+            logged_in_state.setIsLoggedIn(false);
             history.push('/login')
         }).catch(err=> {
+            localStorage.setItem('logged_in', 'false');
+            logged_in_state.setIsLoggedIn(false);
             history.push('/login')
         })
     }
@@ -90,13 +107,13 @@ const NavBar = ({...Props}) => {
                         <div className="dropdown sub">
                             
                             <a className="" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                                {userProfile != null && Props.isLoggedIn ? <img src={userProfile.pfp} className="image-fluid pfp"></img>
+                                {userProfile != null ? <img src={userProfile.pfp} className="image-fluid pfp"></img>
                                             : <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" className="image-fluid pfp"></img>
                                 }
                             </a>
 
                             <ul className="dropdown-menu m-3" aria-labelledby="dropdownMenuLink">
-                                {userProfile != null && Props.isLoggedIn ? [<li key={1}><Link to="/profile" className="dropdown-item">Profile</Link></li>,
+                                {userProfile != null ? [<li key={1}><Link to="/profile" className="dropdown-item">Profile</Link></li>,
                                             <li key={2}><Link to="/"className="dropdown-item">Settings</Link></li>,
                                             <li key={3}><a className="dropdown-item" onClick={() => LogOut() }>Log out</a></li>]
                                             : <li><Link to="/login" className="dropdown-item" >Log In</Link></li>

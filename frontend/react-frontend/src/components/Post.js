@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer } from 'react';
+import { useEffect, useState, useReducer, useContext } from 'react';
 import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 import {IoPerson, IoCalendarClearOutline} from 'react-icons/io5'
@@ -9,12 +9,17 @@ import '../App.css'
 import React from 'react';
 import Profile from './Profile';
 
+import { LoggedInContext } from './LoggedInContext';
+
 const cookie = new Cookies();
 
 // regular expression for youtube channel validation
 
 
 const Post = ({post_info, user_info, loggedin_user_info}) => {
+
+    const logged_in_state = useContext(LoggedInContext)
+    
     const history = useHistory();
 
     const [Liked, setLiked] = useState(post_info.liked);
@@ -76,7 +81,10 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                     cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
                 }
             } 
-            else {
+            else if (res.status === 401) {
+                // todo: modal to tell user to login
+                localStorage.setItem('logged_in', 'false');
+                logged_in_state.setIsLoggedIn(false);
                 console.log("You are not loggedin");
             }
         })

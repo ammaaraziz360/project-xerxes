@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer } from 'react';
+import { useEffect, useState, useReducer, useContext } from 'react';
 import { useHistory } from 'react-router';
 import Cookies from 'universal-cookie'
 
@@ -13,6 +13,8 @@ import Alerts from './ErrorAlert';
 import '../App.css'
 import React from 'react';
 
+import { LoggedInContext } from './LoggedInContext';
+
 const cookies = new Cookies();
 const ytregex = '(?:https?:)?\/\/(?:[A-z]+\.)?youtube.com\/channel\/(?P<id>[A-z0-9-\_]+)\/?'
 const twitRegex = '(?:https?:)?\/\/(?:[A-z]+\.)?twitter\.com\/@?(?!home|share|privacy|tos)(?P<username>[A-z0-9_]+)\/?'
@@ -24,6 +26,8 @@ const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
 
 const EnterUsernameModal = ({...Props}) => {
     const history = useHistory();
+    const logged_in_state = useContext(LoggedInContext) 
+
 
     const[ErrorAlertText, setAlertErrorText] = useState({'message': 'Banned username, pick a new username', 'style': 'danger'})
     const[usernameErrorAlertText, setUsernameAlertText] = useState({'message': '', 'style': 'danger'})
@@ -55,8 +59,7 @@ const EnterUsernameModal = ({...Props}) => {
                 'user_agent': navigator.userAgent,
                 'SID': cookies.get('SID')
             },
-        })
-            .then(res => {
+        }).then(res => {
                 if (res.status === 200) {
                     if(res.headers.get('X-JWT') != null) {
                         cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
@@ -65,8 +68,9 @@ const EnterUsernameModal = ({...Props}) => {
                     return res.json()
                 } 
                 else {
-                    sessionStorage.setItem('logged_id', false)
-                    throw new Error("Internal Server Error")
+                    localStorage.setItem('logged_in', 'false');
+                    logged_in_state.setIsLoggedIn(false);
+                    history.push('/login');
                 }
             })
             .then(data => {
@@ -111,14 +115,11 @@ const EnterUsernameModal = ({...Props}) => {
     })
 
     useEffect(() => {
-        const abortController = new AbortController();
-        const signal = abortController.signal;
         var username = {username: input}
         if(submissionStatus){
             fetch('http://127.0.0.1:5000/api/users', { 
                 method: 'PUT',
                 mode: 'cors',
-                signal: signal,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': cookies.get('token'),
@@ -132,22 +133,19 @@ const EnterUsernameModal = ({...Props}) => {
                 if(res.status === 200){
                     if(res.headers.get('X-JWT') != null) {
                         cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
-                        console.log(res.headers.get('X-JWT'))
                     }
-                    Props.setIsLoggedIn(true)
-                    setReadyToUnmount({status: true, message: '/profile'})
+                    localStorage.setItem('logged_in', 'true');
+                    logged_in_state.setIsLoggedIn(true);
+                    setReadyToUnmount({status: true, message: `/user/${cookies.get('user_id')}`})
                 }
                 else if (res.status === 400) {
                     if(res.headers.get('X-JWT') != null) {
                         cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
-                        console.log(res.headers.get('X-JWT'))
                     }
-                    Props.setIsLoggedIn(false)
                     setSubmissionStatus(false)
                     return res.json()
                 }
                 else{
-                    Props.setIsLoggedIn(false)
                     setReadyToUnmount({status: true, message: '/login'})
                     return res.json()
                 }

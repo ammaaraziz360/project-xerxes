@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer } from 'react';
+import { useEffect, useState, useReducer, useContext } from 'react';
 import { GoogleLogin } from 'react-google-login';
 import {useHistory} from 'react-router';
 import Cookies from 'universal-cookie'
@@ -9,6 +9,7 @@ import EnterUsernameModal from './UsernameInputModal'
 import '../App.css'
 import React from 'react';
 import {Redirect} from 'react-router-dom';
+import { LoggedInContext } from './LoggedInContext';
 
 const clientId = "31312193628-o29ttjk3ogu3ftvbvurt91oi8t3akt0m.apps.googleusercontent.com"
 const cookies = new Cookies();
@@ -17,6 +18,8 @@ const cookies = new Cookies();
 const username_regex = new RegExp("^[a-zA-Z0-9_!#$%&*.'=+]*")
 
 const LoginPage = ({...Props}) => {
+
+    const logged_in_state = useContext(LoggedInContext) 
 
     const[toggleUsernameModal, setToggleUsernameModal] = useState(false);
     const[toggleModal, setToggleModal] = useState(false);
@@ -76,16 +79,19 @@ const LoginPage = ({...Props}) => {
                     cookies.set('user_id', data.user_id, { path: '/' })
                     cookies.set('SID', data.session_id, { path: '/' })
                     if(data['user_exists'] == "True"){
-                        Props.setIsLoggedIn(true)
+                        localStorage.setItem('logged_in', 'true')
+                        logged_in_state.setIsLoggedIn(true);
                         history.push(`/user/${cookies.get('user_id')}`)
                     }
                     else {
-                        Props.setIsLoggedIn(false)
+                        localStorage.setItem('logged_in', 'false')
+                        logged_in_state.setIsLoggedIn(false);
                         setToggleUsernameModal(!toggleUsernameModal)
                     }
                 }
                 else{
-                    Props.setIsLoggedIn(false)
+                    localStorage.setItem('logged_in', 'false')
+                    logged_in_state.setIsLoggedIn(false);
                     throw new Error("Internal server error, try again later")
                 }
             })
@@ -96,7 +102,7 @@ const LoginPage = ({...Props}) => {
     }
 
     const NoResponseGoogle = () => {
-        sessionStorage.setItem('logged_in', 'False')
+        localStorage.setItem('logged_in', 'false')
         setModalText({'title': 'Something went very wrong', 'body': 'Login failure, please try again'})
         setToggleModal(!toggleModal)
     }

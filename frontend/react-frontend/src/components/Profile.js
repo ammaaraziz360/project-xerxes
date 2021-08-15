@@ -29,10 +29,10 @@ const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}
                             <div className="d-flex flex-column p-3">
                                 <div><h3>{userProfile.first_name} {userProfile.last_name}</h3></div>
                                 <div className="muted"><h5>@{userProfile.username}</h5></div>
-                                {userProfile.OwnAccount ? 
-                                <Button className="mt-2">
-                                    Follow
-                                </Button>
+                                {!userProfile.OwnAccount ? 
+                                    <Button className="mt-2">
+                                        Follow
+                                    </Button>
                                 :null}
                                 
                             </div>
@@ -120,9 +120,11 @@ const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}
                 <div className="row">
                     <div className="col-2">
                     </div>
+                    {userProfile.OwnAccount ?
                     <div className="col-md-8 col-xs-12 profile-header p-4">
-                        {userProfile.OwnAccount ? <PostEditor/> : null}
+                         <PostEditor/> 
                     </div>
+                    : null}
                     <div className="col-2">
                     </div>
                 </div>
@@ -130,9 +132,12 @@ const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}
                     <div className="col-2">
                     </div>
                     <div className="col-md-8 col-xs-12 profile-header p-4">
-                        {userProfile.Posts.map(post => {
-                            return <Post post_info={post} user_info={userProfile} loggedin_user_info={loggedinUser}/>
-                        })}
+                        {userProfile.Posts.length > 0 ?
+                            userProfile.Posts.map(post => {
+                                return <Post post_info={post} user_info={userProfile} loggedin_user_info={loggedinUser}/>
+                            })
+                            : <h5 className="text-center">No posts yet</h5>
+                        }
                     </div>
                     <div className="col-2">
                     </div>
