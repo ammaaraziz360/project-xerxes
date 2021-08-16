@@ -226,4 +226,27 @@ def likePost(post_id):
     except Exception as e:
         return make_response(jsonify({'error': str(e)}), 401)
 
+@app.route('/api/users/<follow_id>/follow', methods=['POST'])
+def followUser(follow_id):
+    """
+    Follow or unfollow user
+    """
+    try:
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+        if new_jwt_token == False:
+            return make_response(jsonify({"error": "Invalid Token"}), 401)
+        
+        result = resource_methods.followUser(request.headers['user_id'], follow_id, request.json)
+        if result == True:
+            resp = make_response(jsonify({"message": "User followed successfully"}), 200)
+        else:
+            resp = make_response(jsonify({"error": "User not followed"}), 400)
+        if new_jwt_token != True:
+            resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+            resp.headers['X-JWT'] = new_jwt_token
+        return resp
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({'error': str(e)}), 401)
+
 app.run()

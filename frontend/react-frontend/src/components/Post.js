@@ -83,8 +83,6 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
             } 
             else if (res.status === 401) {
                 // todo: modal to tell user to login
-                localStorage.setItem('logged_in', 'false');
-                logged_in_state.setIsLoggedIn(false);
                 console.log("You are not loggedin");
             }
         })

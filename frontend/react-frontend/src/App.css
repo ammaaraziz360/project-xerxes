@@ -181,7 +181,10 @@ body {
 	background-color: white!important;
 	color: black!important;
 }
-
+#following:hover{
+	background-color: #d9c5b2ff!important;
+	border-color: #d9c5b2ff!important;
+}
 
 .socials a{
 	color: white!important;

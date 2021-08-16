@@ -5,6 +5,7 @@ import {BiEdit} from 'react-icons/bi'
 import EditSocialsModal from './EditSocialsModal';
 import EditBioModal from './EditBioModal';
 import {Button} from 'react-bootstrap';
+import FollowButton from './FollowButton';
 import {FaTwitter, FaFacebookF,FaYoutube, FaInstagram} from 'react-icons/fa';
 import {BsLink45Deg} from 'react-icons/bs';
 
@@ -29,10 +30,11 @@ const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}
                             <div className="d-flex flex-column p-3">
                                 <div><h3>{userProfile.first_name} {userProfile.last_name}</h3></div>
                                 <div className="muted"><h5>@{userProfile.username}</h5></div>
+                                
                                 {!userProfile.OwnAccount ? 
-                                    <Button className="mt-2">
-                                        Follow
-                                    </Button>
+                                    <div>
+                                    <FollowButton userProfile={userProfile} className="mt-3"/>
+                                    </div>
                                 :null}
                                 
                             </div>

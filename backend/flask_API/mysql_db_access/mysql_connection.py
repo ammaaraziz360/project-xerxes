@@ -238,6 +238,29 @@ class ResourceDB():
             except Exception as e:
                 return str(e)
         return 'Server failed to connect'
+
+    def followUser(self, user_id, follow_id, follow_info):
+        """
+        follow or unfollow a user
+        :param user_id:
+        :param follow_id:
+        :return:
+        """
+        connex = self.connection
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                if follow_info['following'] == True:
+                    cursor.callproc('follow_user', [user_id, follow_id])
+                    connex.commit()
+                else:
+                    cursor.callproc('unfollow_user', [user_id, follow_id])
+                    connex.commit()
+                return True
+            except Exception as e:
+                return None
+        return 'Server failed to connect'
+
     def CloseConnection(self):
         """
         Close the connection

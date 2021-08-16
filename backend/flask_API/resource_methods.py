@@ -67,3 +67,12 @@ def likePost(post_id, user_id, like_info):
     result = resorDb.likePost(user_id, post_id, like_info)
     resorDb.CloseConnection()
     return(result)
+
+def followUser(user_id, follower_id, follow_info):
+    """
+    adds a follow or unfollow to the database
+    """
+    resorDb = ResourceDB(Credentials('bloggit-db'))
+    result = resorDb.followUser(user_id, follower_id, follow_info)
+    resorDb.CloseConnection()
+    return(result)
