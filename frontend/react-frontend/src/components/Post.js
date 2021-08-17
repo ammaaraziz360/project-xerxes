@@ -28,6 +28,14 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
     const[likes, setLikes] = useState(post_info.likes);
     const[dislikes, setDislikes] = useState(post_info.dislikes);
 
+
+    useEffect(() => {
+        setLiked(post_info.liked)
+        setDisliked(post_info.disliked)
+        setLikes(post_info.likes)
+        setDislikes(post_info.dislikes)
+    }, [post_info])
+
     const like_dislike_controller = (liker) => {
         if(loggedin_user_info == null){
             console.log("You are not logged in")
@@ -154,7 +162,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                             }
                     </div>
                     <div className="d-flex col-3 justify-content-end d-lg-flex d-none">
-                        <Button variant="primary">
+                        <Button variant="primary" onClick={() => history.push('/404')}>
                             <GoCommentDiscussion/>
                         </Button>
                         <Button variant="primary">

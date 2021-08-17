@@ -249,4 +249,21 @@ def followUser(follow_id):
         print(e)
         return make_response(jsonify({'error': str(e)}), 401)
 
+@app.route('/api/posts/<post_id>', methods=['GET'])
+def getPost(post_id):
+    """
+    Get post
+    """
+    try:
+        requester_id = request.headers['user_id']
+        user_dict = resource_methods.getPost(post_id, requester_id)
+        if user_dict == None:
+            return make_response(jsonify({"error": "Post not found"}), 404)
+        resp = make_response(jsonify(user_dict), 200)
+
+        return resp
+    except Exception as e:
+        return make_response(jsonify({'error': str(e)}), 401)
+
+
 app.run()

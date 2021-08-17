@@ -5,6 +5,7 @@ import LoginPage from "./components/LoginPage";
 import ProfilePage from "./components/ProfilePage";
 import NotFoundPage from "./components/404Page";
 import NavBar from "./components/NavBar";
+import PostPage from "./components/PostPage";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import {
@@ -36,6 +37,9 @@ function App() {
             </Route>
             <Route path='/user/:username'>
               <ProfilePage/>
+            </Route>
+            <Route path='/post/:id'>
+              <PostPage />
             </Route>
             <Route path='/404'>
               <NotFoundPage />

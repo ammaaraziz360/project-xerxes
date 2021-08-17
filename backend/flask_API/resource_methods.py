@@ -76,3 +76,13 @@ def followUser(user_id, follower_id, follow_info):
     result = resorDb.followUser(user_id, follower_id, follow_info)
     resorDb.CloseConnection()
     return(result)
+def getPost(post_id, requester_id):
+    """
+    gets a post
+    """
+    post_json = {'Author': {},'Post': {}}
+    resorDb = ResourceDB(Credentials('bloggit-db'))
+    post_json['Post'] = resorDb.getPost(post_id, requester_id)
+    post_json['Author'] = resorDb.getUserProfile(post_json['Post']['author_id'], requester_id, False)
+    resorDb.CloseConnection()
+    return(post_json)

@@ -122,7 +122,7 @@ class ResourceDB():
                 return str(e)
         return 'Server failed to connect'
     
-    def getUserProfile(self, username, requester_id):
+    def getUserProfile(self, username, requester_id, get_posts=True):
         """
         get user profile
         :param user_id:
@@ -147,15 +147,17 @@ class ResourceDB():
                 for result in cursor.stored_results():
                     for i in result.fetchall():
                         results = dict(zip(keys, i))
-                results['Posts'] = []
-                cursor.callproc('get_user_posts', [results['user_id'], requester_id])
-                for resulter in cursor.stored_results():
-                    for x in resulter.fetchall():
-                        results['Posts'].append(dict(zip(post_keys, x)))
 
-                if results['user_id'] == requester_id:
-                    results['OwnAccount'] = True
-                    results['follows'] = False
+                if get_posts:
+                    results['Posts'] = []
+                    cursor.callproc('get_user_posts', [results['user_id'], requester_id])
+                    for resulter in cursor.stored_results():
+                        for x in resulter.fetchall():
+                            results['Posts'].append(dict(zip(post_keys, x)))
+
+                    if results['user_id'] == requester_id:
+                        results['OwnAccount'] = True
+                        results['follows'] = False
                 else:
                     results['OwnAccount'] = False
                     print([requester_id, results['user_id']])
@@ -258,6 +260,38 @@ class ResourceDB():
                     connex.commit()
                 return True
             except Exception as e:
+                return None
+        return 'Server failed to connect'
+    
+    def getPost(self, post_id, requester_id):
+        """
+        get a post
+        :param post_id:
+        :return:
+        """
+        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked']
+        connex = self.connection
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                cursor.callproc('get_post', [post_id, requester_id])
+                for result in cursor.stored_results():
+                    for i in result.fetchall():
+                        post_keys = dict(zip(post_keys, i))
+
+                if post_keys['liked'] != None:
+                    post_keys['liked'] = 'true'
+                else:
+                    post_keys['liked'] = 'false'
+
+                if post_keys['disliked'] != None:
+                    post_keys['disliked'] = 'true'
+                else:
+                    post_keys['disliked'] = 'false'
+
+                return post_keys
+            except Exception as e:
+                print(e)
                 return None
         return 'Server failed to connect'
 
