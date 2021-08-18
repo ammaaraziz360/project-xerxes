@@ -1,6 +1,8 @@
 import mysql.connector as mysqlconnex
 from mysql_db_access.mysql_creds import Credentials
 from datetime import datetime
+import traceback
+
 
 class ResourceDB():
     def __init__(self, credentials: Credentials):
@@ -155,9 +157,9 @@ class ResourceDB():
                         for x in resulter.fetchall():
                             results['Posts'].append(dict(zip(post_keys, x)))
 
-                    if results['user_id'] == requester_id:
-                        results['OwnAccount'] = True
-                        results['follows'] = False
+                if results['user_id'] == str(requester_id):
+                    results['OwnAccount'] = True
+                    results['follows'] = False
                 else:
                     results['OwnAccount'] = False
                     print([requester_id, results['user_id']])
@@ -269,29 +271,65 @@ class ResourceDB():
         :param post_id:
         :return:
         """
-        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked']
+        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments']
+        user_keys = ['pfp', 'first_name', 'last_name', 'username']
         connex = self.connection
         if connex != None:
             try:
                 cursor = connex.cursor()
-                cursor.callproc('get_post', [post_id, requester_id])
-                for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        post_keys = dict(zip(post_keys, i))
+                posts = []
+                
+                while True:
+                    cursor.callproc('get_post', [post_id, requester_id])
+                    for result in cursor.stored_results():
+                        for i in result.fetchall():
+                            posts.append(dict(zip(post_keys, i)))
 
-                if post_keys['liked'] != None:
-                    post_keys['liked'] = 'true'
+                    posts[-1]['poster_info'] = {}
+                    cursor.callproc('post_user_info', [posts[-1]['author_id']])
+                    for result in cursor.stored_results():
+                        for i in result.fetchall():
+                            posts[-1]['poster_info'] = dict(zip(user_keys, i))
+
+                    if posts[-1]['liked'] != None:
+                        posts[-1]['liked'] = 'true'
+                    else:
+                        posts[-1]['liked'] = 'false'
+
+                    if posts[-1]['disliked'] != None:
+                        posts[-1]['disliked'] = 'true'
+                    else:
+                        posts[-1]['disliked'] = 'false'
+                    
+                    if posts[-1]['reply_post_id'] != None:
+                        post_id = posts[-1]['reply_post_id']
+                    else:
+                        break
+                if posts == []:
+                    return None
+                elif len(posts) == 1:
+                    posts[0]['comments'] = []
+                    
+                    cursor.callproc('get_comments', [post_id, requester_id])
+                    for result in cursor.stored_results():
+                        for i in result.fetchall():
+                            posts[0]['comments'].append(dict(zip(post_keys, i)))
+                            posts[0]['comments'][-1]['comments'] = []
+                            posts[0]['comments'][-1]['poster_info'] = {}
+                            cursor.callproc('post_user_info', [posts[0]['comments'][-1]['author_id']])
+                            for result in cursor.stored_results():
+                                for i in result.fetchall():
+                                    posts[0]['comments'][-1]['poster_info'] = dict(zip(post_keys, i))
+
                 else:
-                    post_keys['liked'] = 'false'
+                    for post in posts:
+                        post['comments'] = []
+                    for i in range(len(posts)-1):
+                        posts[i+1]['comments'].append(posts[i])
 
-                if post_keys['disliked'] != None:
-                    post_keys['disliked'] = 'true'
-                else:
-                    post_keys['disliked'] = 'false'
-
-                return post_keys
+                return posts[-1]
             except Exception as e:
-                print(e)
+                print(traceback.print_exc())
                 return None
         return 'Server failed to connect'
 

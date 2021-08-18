@@ -10,7 +10,7 @@ import React from 'react';
 import Profile from './Profile';
 
 import { LoggedInContext } from './LoggedInContext';
-
+import {Comment} from './Comment';
 const cookie = new Cookies();
 
 // regular expression for youtube channel validation
@@ -211,7 +211,6 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                     </div>
                 </div>
             </div>
-            
         </div>
     )
 }

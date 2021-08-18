@@ -1,7 +1,7 @@
 import { useEffect, useState, useReducer, useContext } from 'react';
 import { useHistory, useParams } from 'react-router';
 import Cookies from 'universal-cookie'
-
+import LoadingSpinner from './LoadingSpinner';
 import { LoggedInContext } from './LoggedInContext';
 
 import '../App.css'
@@ -19,13 +19,9 @@ const ProfilePage = ({...Props}) => {
 
     const logged_in_state = useContext(LoggedInContext) 
 
-    const [userProfile, setUserProfile] = useState({username:'', first_name:'', last_name:'', pfp:'', creation_date:'', 
-    last_login:'', bio:'', location:'',followers: '',following: '' ,facebook_url:'', youtube_url:'', 
-    twitter_url:'', instagram_url:'', website_url:'', Posts: [], OwnAccount: false});
+    const [userProfile, setUserProfile] = useState(null);
 
-    const [loggedinUser, setLoggedinUser] =  useState({username:'', first_name:'', last_name:'', pfp:'', creation_date:'', 
-    last_login:'', bio:'', location:'',followers: '',following: '' ,facebook_url:'', youtube_url:'', 
-    twitter_url:'', instagram_url:'', website_url:'', Posts: [], OwnAccount: false});
+    const [loggedinUser, setLoggedinUser] =  useState(null);
 
     const history = useHistory();
     
@@ -63,7 +59,7 @@ const ProfilePage = ({...Props}) => {
 
         // get own profile
         if(logged_in_state.isLoggedIn){
-            fetch(`http://127.0.0.1:5000/api/users/profile/${cookie.get('user_id')}`, {
+            fetch(`http://127.0.0.1:5000/api/users/profile`, {
                 method: 'GET',
                 mode: 'cors',
                 headers: {
@@ -79,7 +75,7 @@ const ProfilePage = ({...Props}) => {
                 if (res.status === 200) {
                     return res.json()
                 }
-                else{
+                else if (res.status === 401) {
                     logged_in_state.setIsLoggedIn(false);
                     return null
                 }
@@ -97,10 +93,12 @@ const ProfilePage = ({...Props}) => {
     }, [refreshProfile]);
 
     return (
-        <Profile userProfile={userProfile}
-                loggedinUser={loggedinUser}
-                refreshProfile = {refreshProfile}
-                setRefreshProfile = {setRefreshProfile} />
+        userProfile != null && loggedinUser != null ?
+            <Profile userProfile={userProfile}
+                    loggedinUser={loggedinUser}
+                    refreshProfile = {refreshProfile}
+                    setRefreshProfile = {setRefreshProfile} />
+        :   <LoadingSpinner />
     );
 }
 

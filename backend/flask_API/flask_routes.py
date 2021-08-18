@@ -5,6 +5,7 @@ from authentication import google_auth_verify, jwt_auth
 from mysql_db_access import mysql_connection, jwt_authdb
 import resource_methods
 import auth_methods
+import traceback
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -155,6 +156,29 @@ def getUserProfile(username):
     except Exception as e:
         return make_response(jsonify({'error': str(e)}), 401)
 
+@app.route('/api/users/profile', methods=['GET'])
+def getLoggedInUserProfile():
+    """
+    Get logged in user profile
+    """
+    try:
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token == False:
+            return make_response(jsonify({"error": "Invalid Token"}), 401)
+            
+        requester_id = request.headers['user_id']
+        user_dict = resource_methods.getUserProfile(requester_id, requester_id)
+        if user_dict == None:
+            return make_response(jsonify({"error": "User not found"}), 404)
+        resp = make_response(jsonify(user_dict), 200)
+
+        return resp
+    except Exception as e:
+        return make_response(jsonify({'error': str(e)}), 401)
+    
+
+@app.route('/api/users/profile', methods=['PUT'])
 
 @app.route('/api/users/socials', methods=['PUT'])
 def updateUserSocials():
@@ -263,6 +287,7 @@ def getPost(post_id):
 
         return resp
     except Exception as e:
+        print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)
 
 

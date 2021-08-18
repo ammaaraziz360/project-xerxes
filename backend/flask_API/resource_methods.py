@@ -80,9 +80,13 @@ def getPost(post_id, requester_id):
     """
     gets a post
     """
-    post_json = {'Author': {},'Post': {}}
+    # post_json = {'Authors': [],'Posts': []}
     resorDb = ResourceDB(Credentials('bloggit-db'))
-    post_json['Post'] = resorDb.getPost(post_id, requester_id)
-    post_json['Author'] = resorDb.getUserProfile(post_json['Post']['author_id'], requester_id, False)
+    post_json = resorDb.getPost(post_id, requester_id)
+    # for i in post_json['Posts']:
+    #     post_json['Authors'].append(resorDb.getUserProfile(i['author_id'], requester_id, False))
+
+    # post_json['Authors'] = post_json['Authors'][::-1]
+    # post_json['Posts'] = post_json['Posts'][::-1]
     resorDb.CloseConnection()
     return(post_json)

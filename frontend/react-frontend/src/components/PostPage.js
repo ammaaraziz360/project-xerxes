@@ -5,6 +5,8 @@ import React from 'react';
 import { LoggedInContext } from './LoggedInContext';
 import Post from './Post';
 import { Form } from 'react-bootstrap';
+import Comment from './Comment';
+import LoadingSpinner from './LoadingSpinner';
 
 
 const PostPage = () => {
@@ -17,18 +19,8 @@ const PostPage = () => {
     last_login:'', bio:'', location:'',followers: '',following: '' ,facebook_url:'', youtube_url:'', 
     twitter_url:'', instagram_url:'', website_url:'', Posts: [], OwnAccount: false}
 
-    const [loggedinUser, setLoggedinUser] =  useState(base_user);
-    const [PostInfo, setPostInfo] = useState({"author_id": "",
-    "body_html": "",
-    "body_raw": "",
-    "date_posted": "",
-    dislikes: 0,
-    likes: 0,
-    "post_id": 0,
-    "reply_post_id": '',
-    "title": "",
-    "views": 0});
-    const[Author, setAuthor] =  useState(base_user);
+    const [loggedinUser, setLoggedinUser] =  useState(null);
+    const [PostInfo, setPostInfo] = useState(null)
 
     useEffect(() => {
         fetch(`http://127.0.0.1:5000/api/posts/${id}`, {
@@ -52,8 +44,7 @@ const PostPage = () => {
                 }
             })
             .then(data => {
-                setAuthor(data.Author);
-                setPostInfo(data.Post)
+                setPostInfo(data)
             })
             .catch(err => {
                 console.log(err)
@@ -97,11 +88,17 @@ const PostPage = () => {
                 <div className="col-2">
                 </div>
                 <div className="col-md-8 col-xs-12 profile-header p-4">
-                    <Post post_info={PostInfo} user_info={Author} loggedin_user_info={loggedinUser} /> 
+                    { PostInfo != null 
+                        ?   <div>
+                                <Post post_info={PostInfo} user_info={PostInfo.poster_info} loggedin_user_info={loggedinUser}/>
+                            </div>
+                            
+                    : <LoadingSpinner/>}
                 </div>
                 <div className="col-2">
                 </div>
             </div>
+            
         </div>
     )
 

@@ -19,7 +19,7 @@ const NavBar = () => {
 
     useEffect(() => {
         if (logged_in_state.isLoggedIn) {
-            fetch(`http://127.0.0.1:5000/api/users/profile/${cookie.get('user_id')}`, {
+            fetch(`http://127.0.0.1:5000/api/users/profile`, {
                 method: 'GET',
                 mode: 'cors',
                 headers: {
@@ -38,7 +38,7 @@ const NavBar = () => {
                     }
                     return res.json()
                 } 
-                else {
+                else if (res.status === 401) {
                     localStorage.setItem('logged_in', 'false');
                     logged_in_state.setIsLoggedIn(false);
                     return null
