@@ -291,4 +291,4 @@ def getPost(post_id):
         return make_response(jsonify({'error': str(e)}), 401)
 
 
-app.run()
+app.run(threaded=True)

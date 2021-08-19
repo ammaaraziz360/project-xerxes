@@ -156,6 +156,7 @@ class ResourceDB():
                     for resulter in cursor.stored_results():
                         for x in resulter.fetchall():
                             results['Posts'].append(dict(zip(post_keys, x)))
+                            results['Posts'][-1]['number_of_comments'] = self.CalculateCommentsDepth(results['Posts'][-1]['post_id'])
 
                 if results['user_id'] == str(requester_id):
                     results['OwnAccount'] = True
@@ -271,7 +272,7 @@ class ResourceDB():
         :param post_id:
         :return:
         """
-        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments']
+        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments', 'number_of_comments']
         user_keys = ['pfp', 'first_name', 'last_name', 'username']
         connex = self.connection
         if connex != None:
@@ -279,12 +280,13 @@ class ResourceDB():
                 cursor = connex.cursor()
                 posts = []
                 
+                self.CalculateCommentsDepth(post_id)
                 while True:
                     cursor.callproc('get_post', [post_id, requester_id])
                     for result in cursor.stored_results():
                         for i in result.fetchall():
                             posts.append(dict(zip(post_keys, i)))
-
+                    posts[-1]['number_of_comments'] = self.CalculateCommentsDepth(post_id)
                     posts[-1]['poster_info'] = {}
                     cursor.callproc('post_user_info', [posts[-1]['author_id']])
                     for result in cursor.stored_results():
@@ -316,20 +318,45 @@ class ResourceDB():
                             posts[0]['comments'].append(dict(zip(post_keys, i)))
                             posts[0]['comments'][-1]['comments'] = []
                             posts[0]['comments'][-1]['poster_info'] = {}
+                            posts[0]['comments'][-1]['number_of_comments'] = self.CalculateCommentsDepth(posts[0]['comments'][-1]['post_id'])
                             cursor.callproc('post_user_info', [posts[0]['comments'][-1]['author_id']])
                             for result in cursor.stored_results():
                                 for i in result.fetchall():
-                                    posts[0]['comments'][-1]['poster_info'] = dict(zip(post_keys, i))
-
+                                    posts[0]['comments'][-1]['poster_info'] = dict(zip(user_keys, i))
                 else:
                     for post in posts:
                         post['comments'] = []
                     for i in range(len(posts)-1):
                         posts[i+1]['comments'].append(posts[i])
-
+                
                 return posts[-1]
             except Exception as e:
                 print(traceback.print_exc())
+                return None
+        return 'Server failed to connect'
+    def CalculateCommentsDepth(self, post_id):
+        """
+        calculate how many comments under a post
+        :param post_id:
+        :return:
+        """
+        connex = self.connection
+        if connex != None:
+            try:
+                depth = 0
+                stack = [post_id]
+                cursor = connex.cursor()
+                while stack != []:
+                    cursor.callproc('get_comment_children', [stack[0]])
+                    for result in cursor.stored_results():
+                        for i in result.fetchall():
+                            if i[0] != None:
+                                stack.append(i[0])
+                                depth += 1
+                    stack.pop(0)
+                            
+                return depth
+            except Exception as e:
                 return None
         return 'Server failed to connect'
 

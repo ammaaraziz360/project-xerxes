@@ -208,3 +208,6 @@ body {
 	border-left: none;
 	border-right: none;
 }
+.border-left{
+	border-left: 4px solid #343536!important;
+}

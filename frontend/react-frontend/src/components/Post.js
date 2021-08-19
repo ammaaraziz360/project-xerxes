@@ -1,5 +1,5 @@
 import { useEffect, useState, useReducer, useContext } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory, Redirect } from 'react-router';
 import Cookies from 'universal-cookie'
 import {IoPerson, IoCalendarClearOutline} from 'react-icons/io5'
 import {Popover, OverlayTrigger, Button} from 'react-bootstrap'
@@ -9,9 +9,12 @@ import '../App.css'
 import React from 'react';
 import Profile from './Profile';
 
+import LikeDislikeButton from '../LikeDislikeButton';
+
 import { LoggedInContext } from './LoggedInContext';
-import {Comment} from './Comment';
+import Comment from './Comment';
 const cookie = new Cookies();
+
 
 // regular expression for youtube channel validation
 
@@ -22,82 +25,10 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
     
     const history = useHistory();
 
-    const [Liked, setLiked] = useState(post_info.liked);
-    const [Disliked, setDisliked] = useState(post_info.disliked);
-
-    const[likes, setLikes] = useState(post_info.likes);
-    const[dislikes, setDislikes] = useState(post_info.dislikes);
-
-
-    useEffect(() => {
-        setLiked(post_info.liked)
-        setDisliked(post_info.disliked)
-        setLikes(post_info.likes)
-        setDislikes(post_info.dislikes)
-    }, [post_info])
-
-    const like_dislike_controller = (liker) => {
-        if(loggedin_user_info == null){
-            console.log("You are not logged in")
-            return;
-        }
-
-        if (liker === 'dislike' && Disliked === 'true' && Liked === 'false') {
-            setDisliked('false');
-            setDislikes(dislikes - 1);
-        } else if (liker ==='dislike' && Disliked === 'false' && Liked === 'false') {
-            setDisliked('true');
-            setDislikes(dislikes + 1);
-        } else if (liker ==='dislike' && Disliked === 'false' && Liked === 'true') {
-            setDisliked('true');
-            setLiked('false');
-            setDislikes(dislikes + 1);
-            setLikes(likes - 1);
-        } else if (liker ==='like' && Liked === 'true' && Disliked === 'false') {
-            setLiked('false');
-            setLikes(likes - 1);
-        } else if (liker ==='like' && Liked === 'false' && Disliked === 'false') {
-            setLiked('true');
-            setLikes(likes + 1);
-        } else if (liker ==='like' && Liked === 'false' && Disliked === 'true') {
-            setLiked('true');
-            setDisliked('false');
-            setLikes(likes + 1);
-            setDislikes(dislikes - 1);
-        }
+    const view_post = () => {
+        history.replace(`/post/${post_info.post_id}`);
+        history.go(0)
     }
-
-    useEffect(() => {
-        var like_dislike_payload = {liked: Liked, disliked: Disliked};
-
-        fetch(`http://127.0.0.1:5000/api/posts/${post_info.post_id}/like`, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': cookie.get('token'),
-                'user_id': cookie.get('user_id'),
-                'ip': sessionStorage.getItem('ip'),
-                'user_agent': navigator.userAgent,
-                'SID': cookie.get('SID')
-            },
-            body: JSON.stringify(like_dislike_payload)
-        })
-        .then(res => {
-            if (res.status === 200) {
-                if(res.headers.get('X-JWT') != null) {
-                    cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
-                }
-            } 
-            else if (res.status === 401) {
-                // todo: modal to tell user to login
-                console.log("You are not loggedin");
-            }
-        })
-        .catch(err => {
-            console.log(err)
-        })
-    }, [Liked, Disliked])
 
     return (
         <div className="mt-3" key={post_info.post_id}>
@@ -140,30 +71,12 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                         </div>
                     </div>
                     <div className="col-3 col-xs-0 d-lg-flex d-none">
-                            { Liked === 'true' ?
-                                <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('like')}>
-                                    <FiThumbsUp/>
-                                    <span className="p-1">{likes}</span>
-                                </Button>
-                                : <Button variant="primary" onClick={() => like_dislike_controller('like')}>
-                                    <FiThumbsUp/>
-                                    <span className="p-1">{likes}</span>
-                                </Button>
-                            }
-                            { Disliked === 'true' ?
-                                <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('dislike')}>
-                                    <FiThumbsDown/>
-                                    <span className="p-1">{dislikes}</span>
-                                </Button>
-                                : <Button variant="primary" onClick={() => like_dislike_controller('dislike')}>
-                                    <FiThumbsDown/>
-                                    <span className="p-1">{dislikes}</span>
-                                </Button>
-                            }
+                        <LikeDislikeButton post_info={post_info}/>
                     </div>
                     <div className="d-flex col-3 justify-content-end d-lg-flex d-none">
-                        <Button variant="primary" onClick={() => history.push('/404')}>
+                        <Button variant="primary" onClick={() => view_post()}>
                             <GoCommentDiscussion/>
+                            <span className="p-1">{post_info.number_of_comments}</span>
                         </Button>
                         <Button variant="primary">
                             <FiShare2/>
@@ -176,31 +89,13 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                 </div>
                 <div className="row p-2 align-items-center d-lg-none">
                     <div className="col-6">
-                            { Liked === 'true' ?
-                                <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('like')}>
-                                    <FiThumbsUp/>
-                                    <span className="p-1">{likes}</span>
-                                </Button>
-                                : <Button variant="primary" onClick={() => like_dislike_controller('like')}>
-                                    <FiThumbsUp/>
-                                    <span className="p-1">{likes}</span>
-                                </Button>
-                            }
-                            { Disliked === 'true' ?
-                                <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('dislike')}>
-                                    <FiThumbsDown/>
-                                    <span className="p-1">{dislikes}</span>
-                                </Button>
-                                : <Button variant="primary" onClick={() => like_dislike_controller('dislike')}>
-                                    <FiThumbsDown/>
-                                    <span className="p-1">{dislikes}</span>
-                                </Button>
-                            }
+                            <LikeDislikeButton post_info={post_info}/>
                     </div>
 
                     <div className="d-flex col-6 justify-content-end">
                         <Button variant="primary">
                             <GoCommentDiscussion/>
+                            <span className="p-1">{post_info.number_of_comments}</span>
                         </Button>
                         <Button variant="primary">
                             <FiShare2/>
@@ -211,6 +106,15 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                     </div>
                 </div>
             </div>
+            {
+                'comments' in post_info ? 
+                    post_info.comments.map((post) => {
+                        return <Comment post_info={post} user_info={post.poster_info} loggedin_user_info={loggedin_user_info} key={post.post_id}/>
+                    })  
+                : null
+                
+            }
+            
         </div>
     )
 }

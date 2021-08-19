@@ -16,6 +16,10 @@ const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}
     const [EditSocials, setEditSocials] = useState(false);
     const [EditBio, setEditBio] = useState(false);
 
+    useEffect(() => {
+        console.log(userProfile)
+    }, [])
+
     return(
         <div className="container">
             <div className="row">
@@ -136,7 +140,7 @@ const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}
                     <div className="col-md-8 col-xs-12 profile-header p-4">
                         {userProfile.Posts.length > 0 ?
                             userProfile.Posts.map(post => {
-                                return <Post post_info={post} user_info={userProfile} loggedin_user_info={loggedinUser}/>
+                                return <Post post_info={post} user_info={userProfile} loggedin_user_info={loggedinUser} key={post.post_id}/>
                             })
                             : <h5 className="text-center">No posts yet</h5>
                         }

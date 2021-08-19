@@ -89,10 +89,7 @@ const PostPage = () => {
                 </div>
                 <div className="col-md-8 col-xs-12 profile-header p-4">
                     { PostInfo != null 
-                        ?   <div>
-                                <Post post_info={PostInfo} user_info={PostInfo.poster_info} loggedin_user_info={loggedinUser}/>
-                            </div>
-                            
+                            ? <Post post_info={PostInfo} user_info={PostInfo.poster_info} loggedin_user_info={loggedinUser}/>
                     : <LoadingSpinner/>}
                 </div>
                 <div className="col-2">

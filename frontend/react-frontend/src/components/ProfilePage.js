@@ -10,10 +10,6 @@ import Profile from './Profile';
 
 const cookie = new Cookies();
 
-// regular expression for youtube channel validation
-const youtubeRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
-
-
 
 const ProfilePage = ({...Props}) => {
 
@@ -93,7 +89,7 @@ const ProfilePage = ({...Props}) => {
     }, [refreshProfile]);
 
     return (
-        userProfile != null && loggedinUser != null ?
+        userProfile != null ?
             <Profile userProfile={userProfile}
                     loggedinUser={loggedinUser}
                     refreshProfile = {refreshProfile}
