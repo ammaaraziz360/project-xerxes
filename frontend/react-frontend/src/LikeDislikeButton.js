@@ -78,7 +78,7 @@ const LikeDislikeButton = ({post_info, loggedin_user_info}) => {
     }, [Liked, Disliked])
 
     return (
-        <div>
+        <div className="d-inline-flex">
             { Liked === 'true' ?
                 <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('like')}>
                     <FiThumbsUp/>

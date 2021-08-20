@@ -8,6 +8,7 @@ import {GoCommentDiscussion} from 'react-icons/go'
 import '../App.css'
 import React from 'react';
 import Profile from './Profile';
+import ReplyBox from './ReplyBox';
 
 import LikeDislikeButton from '../LikeDislikeButton';
 
@@ -31,7 +32,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
     }
 
     return (
-        <div className="mt-3" key={post_info.post_id}>
+        <div className="mt-3">
             <div className="stats-div sub p-3">
                 <div className="d-flex row align-items-center">
                     <div className="col-6">
@@ -56,19 +57,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
             <div className="stats-div-2 sub">
                 <div className="row p-2 align-items-center">
                     <div className="col-lg-6 col-xs-12">
-                        <div className="input-group">
-                            <div className="input-group-prepend pr-2">
-                                {loggedin_user_info !== null ? <img src={loggedin_user_info.pfp} className="pfp-small-2" alt="user image"/> 
-                                : <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" className="pfp-small-2" alt="user image"/>
-                                }
-                            </div>
-                            <input className="form-control search-bar" type="text" placeholder="Add a comment"></input>
-                            <div className="input-group-append">
-                                <Button variant="primary" id="side-btn">
-                                    Post
-                                </Button>
-                            </div>
-                        </div>
+                        <ReplyBox loggedin_user_info={loggedin_user_info} post_id={post_info.post_id}/>
                     </div>
                     <div className="col-3 col-xs-0 d-lg-flex d-none">
                         <LikeDislikeButton post_info={post_info}/>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useReducer, useContext } from 'react';
-import { useHistory, useParams } from 'react-router';
+import { useHistory, useParams, Redirect } from 'react-router';
 import Cookies from 'universal-cookie'
 import React from 'react';
 import { LoggedInContext } from './LoggedInContext';
@@ -84,6 +84,10 @@ const PostPage = () => {
         
     return(
         <div className="container">
+            {PostInfo !== null 
+                ?<Redirect to={`/post/${id}/${(PostInfo.title).replace(/\s+/g, '-')}`}/>
+                : null
+            }
             <div className="row">
                 <div className="col-2">
                 </div>

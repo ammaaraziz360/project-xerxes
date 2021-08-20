@@ -334,6 +334,37 @@ class ResourceDB():
                 print(traceback.print_exc())
                 return None
         return 'Server failed to connect'
+
+    def getPostComments(self, post_id, requester_id):
+        """
+        get comments for a post
+        :param post_id:
+        :return:
+        """
+        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments', 'number_of_comments']
+        user_keys = ['pfp', 'first_name', 'last_name', 'username']
+        connex = self.connection
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                comments = []
+
+                cursor.callproc('get_comments', [post_id, requester_id])
+
+                for result in cursor.stored_results():
+                    for i in result.fetchall():
+                        comments.append(dict(zip(post_keys, i)))
+                        comments[-1]['number_of_comments'] = self.CalculateCommentsDepth(comments[-1]['post_id'])
+                        comments[-1]['poster_info'] = {}
+                        comments[-1]['comments'] = []
+                        cursor.callproc('post_user_info', [comments[-1]['author_id']])
+                        for result in cursor.stored_results():
+                            for i in result.fetchall():
+                                comments[-1]['poster_info'] = dict(zip(user_keys, i))
+                return comments
+            except Exception as e:
+                print(traceback.print_exc())
+                return e
     def CalculateCommentsDepth(self, post_id):
         """
         calculate how many comments under a post
@@ -344,16 +375,16 @@ class ResourceDB():
         if connex != None:
             try:
                 depth = 0
-                stack = [post_id]
+                post_queue = [post_id]
                 cursor = connex.cursor()
-                while stack != []:
-                    cursor.callproc('get_comment_children', [stack[0]])
+                while post_queue != []:
+                    cursor.callproc('get_comment_children', [post_queue[0]])
                     for result in cursor.stored_results():
                         for i in result.fetchall():
                             if i[0] != None:
-                                stack.append(i[0])
+                                post_queue.append(i[0])
                                 depth += 1
-                    stack.pop(0)
+                    post_queue.pop(0)
                             
                 return depth
             except Exception as e:

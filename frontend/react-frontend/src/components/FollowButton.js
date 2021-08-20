@@ -13,7 +13,7 @@ const FollowButton = ({userProfile}) => {
     const [isHover, setIsHover] = useState(false);
 
     useEffect(() => {
-        if (following !== null) {
+        if (following !== null && logged_in_state) {
             fetch(`http://127.0.0.1:5000/api/users/${userProfile.user_id}/follow`, {
                     method: 'POST',
                     mode: 'cors',
@@ -46,15 +46,18 @@ const FollowButton = ({userProfile}) => {
         setFollowing(userProfile.follows);
     }, [userProfile]);
     
+    const FollowUser = (follow) => {
+        logged_in_state.isLoggedIn ? setFollowing(follow) : console.log('You are not logged in');;
+    }
 
     return (
         <div>
             {following ?
-                <Button id="following" className="bg-light text-dark" onClick={() => setFollowing(false)} onMouseOver={()=> setIsHover(true)} onMouseOut={() => setIsHover(false)}>
+                <Button id="following" className="bg-light text-dark" onClick={() => FollowUser(false)} onMouseOver={()=> setIsHover(true)} onMouseOut={() => setIsHover(false)}>
                     { isHover ?  "Unfollow" : "Following" }
                 </Button>
                 : 
-                <Button onClick={() => setFollowing(true)}>
+                <Button onClick={() => FollowUser(true)}>
                     Follow
                 </Button>
             }

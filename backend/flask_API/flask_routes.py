@@ -290,5 +290,23 @@ def getPost(post_id):
         print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)
 
+@app.route('/api/posts/<post_id>/comments', methods=['GET'])
+def getPostComments(post_id):
+    """
+    Get post comments
+    """
+    try:
+        requester_id = request.headers['user_id']
+        comments = resource_methods.getPostComments(post_id, requester_id)
+        if comments == None:
+            return make_response(jsonify({"error": "Post not found"}), 404)
+        print(comments)
+        resp = make_response(jsonify(comments), 200)
+
+        return resp
+    except Exception as e:
+        print(traceback.print_exc())
+        return make_response(jsonify({'error': str(e)}), 401)
+
 
 app.run(threaded=True)

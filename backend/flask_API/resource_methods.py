@@ -90,3 +90,12 @@ def getPost(post_id, requester_id):
     # post_json['Posts'] = post_json['Posts'][::-1]
     resorDb.CloseConnection()
     return(post_json)
+
+def getPostComments(post_id, requester_id):
+    """
+    gets a post's comments
+    """
+    resorDb = ResourceDB(Credentials('bloggit-db'))
+    result = resorDb.getPostComments(post_id, requester_id)
+    resorDb.CloseConnection()
+    return(result)
