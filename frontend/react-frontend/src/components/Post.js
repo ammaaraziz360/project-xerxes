@@ -1,5 +1,6 @@
 import { useEffect, useState, useReducer, useContext } from 'react';
-import { useHistory, Redirect } from 'react-router';
+import { useHistory, Redirect} from 'react-router';
+import { Link } from 'react-router-dom';
 import Cookies from 'universal-cookie'
 import {IoPerson, IoCalendarClearOutline} from 'react-icons/io5'
 import {Popover, OverlayTrigger, Button} from 'react-bootstrap'
@@ -10,7 +11,7 @@ import React from 'react';
 import Profile from './Profile';
 import ReplyBox from './ReplyBox';
 
-import LikeDislikeButton from '../LikeDislikeButton';
+import LikeDislikeButton from './LikeDislikeButton';
 
 import { LoggedInContext } from './LoggedInContext';
 import Comment from './Comment';
@@ -32,7 +33,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
     }
 
     return (
-        <div className="mt-3">
+        <div className="mt-2">
             <div className="stats-div sub p-3">
                 <div className="d-flex row align-items-center">
                     <div className="col-6">
@@ -40,17 +41,21 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                         <h4>{post_info.title}</h4>
                     </div>
                     <div className="d-flex col-6 justify-content-end align-items-center">
-                    <img src={user_info.pfp} className="img-fluid d-inline pfp-small" alt="user image"/>
-                        <div className="d-flex flex-column bd-highlight p-2">
+                        <Link to={`/user/${user_info.username}`}>
+                            <img src={user_info.pfp} className="img-fluid d-inline pfp-small" alt="user image"/>
+                        </Link>
+                        <span className="d-flex flex-column bd-highlight p-2">
                             <div className="bd-highlight"><strong>{user_info.first_name} {user_info.last_name}</strong></div>
                             <div className="bd-highlight">@{user_info.username}</div>
-                        </div>
+                        </span>
+                        
                     </div>
+                    
                 </div>
                 
             </div>
             <div className="p-3 profile-header ">
-                <div className="muted-regular">{post_info.date_posted}</div>
+                <div className="muted-regular">{new Date(post_info.date_posted).toLocaleString()}</div>
                 <div className="hr pb-3 muted-regular">{post_info.views} Views</div>
                 <div className="mt-3" dangerouslySetInnerHTML={{__html: post_info.body_html}} ></div>
             </div>
@@ -81,7 +86,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                             <LikeDislikeButton post_info={post_info}/>
                     </div>
 
-                    <div className="d-flex col-6 justify-content-end">
+                    <div className="d-inline-flex col-6 justify-content-end">
                         <Button variant="primary">
                             <GoCommentDiscussion/>
                             <span className="p-1">{post_info.number_of_comments}</span>

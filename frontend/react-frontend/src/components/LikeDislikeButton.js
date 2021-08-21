@@ -3,7 +3,7 @@ import Cookies from 'universal-cookie'
 import {FiThumbsUp, FiThumbsDown, FiShare2, FiMoreHorizontal} from 'react-icons/fi'
 import {Button} from 'react-bootstrap'
 import React from 'react';
-
+import { LoggedInContext } from './LoggedInContext';
 
 
 const LikeDislikeButton = ({post_info, loggedin_user_info}) => {
@@ -14,8 +14,11 @@ const LikeDislikeButton = ({post_info, loggedin_user_info}) => {
     const[likes, setLikes] = useState(post_info.likes);
     const[dislikes, setDislikes] = useState(post_info.dislikes);
 
+    const logged_in_state = useContext(LoggedInContext)
+
+
     const like_dislike_controller = (liker) => {
-        if(loggedin_user_info == null){
+        if(logged_in_state.isLoggedIn == false){
             console.log("You are not logged in")
             return;
         }
@@ -80,7 +83,7 @@ const LikeDislikeButton = ({post_info, loggedin_user_info}) => {
     return (
         <div className="d-inline-flex">
             { Liked === 'true' ?
-                <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('like')}>
+                <Button variant="primary" className="bg-light text-dark " onClick={() => like_dislike_controller('like')}>
                     <FiThumbsUp/>
                     <span className="p-1">{likes}</span>
                 </Button>

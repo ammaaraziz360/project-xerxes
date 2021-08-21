@@ -68,8 +68,6 @@ const ReplyBox = ({loggedin_user_info, post_id}) => {
         }
     }
 
-    useEffect(() => { console.log(postText)} , [postText])
-
     return (
         <div className="input-group">
             <div className="input-group-prepend pe-1">
@@ -83,7 +81,9 @@ const ReplyBox = ({loggedin_user_info, post_id}) => {
                     Post
                 </Button>
             </div>
-            <ErrorAlert AlertToggle={AlertToggle} setAlertToggle={setAlertToggle} AlertText={AlertMessage}/>
+            <div>
+                <ErrorAlert AlertToggle={AlertToggle} setAlertToggle={setAlertToggle} AlertText={AlertMessage}/>
+            </div>
         </div>
     )
 }

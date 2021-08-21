@@ -207,8 +207,7 @@ class ResourceDB():
         if connex != None:
             try:
                 cursor = connex.cursor()
-                print(datetime.now())
-                cursor.callproc('insert_post', [user_id, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), post_info['title'], post_info['body_raw'], post_info['body_html'],post_info['reply_post_id']])
+                cursor.callproc('insert_post', [user_id, datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"), post_info['title'], post_info['body_raw'], post_info['body_html'],post_info['reply_post_id']])
                 connex.commit()
                 return True
             except Exception as e:
@@ -273,26 +272,20 @@ class ResourceDB():
         :return:
         """
         post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments', 'number_of_comments']
-        user_keys = ['pfp', 'first_name', 'last_name', 'username']
+        user_keys = ['first_name', 'last_name','pfp',  'username']
         connex = self.connection
         if connex != None:
             try:
                 cursor = connex.cursor()
                 posts = []
                 
-                self.CalculateCommentsDepth(post_id)
                 while True:
                     cursor.callproc('get_post', [post_id, requester_id])
                     for result in cursor.stored_results():
                         for i in result.fetchall():
-                            posts.append(dict(zip(post_keys, i)))
+                            posts.append(dict(zip(post_keys, i[0:12])))
+                            posts[-1]['poster_info'] = dict(zip(user_keys, i[12:]))
                     posts[-1]['number_of_comments'] = self.CalculateCommentsDepth(post_id)
-                    posts[-1]['poster_info'] = {}
-                    cursor.callproc('post_user_info', [posts[-1]['author_id']])
-                    for result in cursor.stored_results():
-                        for i in result.fetchall():
-                            posts[-1]['poster_info'] = dict(zip(user_keys, i))
-
                     if posts[-1]['liked'] != None:
                         posts[-1]['liked'] = 'true'
                     else:
@@ -310,19 +303,8 @@ class ResourceDB():
                 if posts == []:
                     return None
                 elif len(posts) == 1:
-                    posts[0]['comments'] = []
+                    posts[0]['comments'] = self.getPostComments(posts[0]['post_id'], requester_id)
                     
-                    cursor.callproc('get_comments', [post_id, requester_id])
-                    for result in cursor.stored_results():
-                        for i in result.fetchall():
-                            posts[0]['comments'].append(dict(zip(post_keys, i)))
-                            posts[0]['comments'][-1]['comments'] = []
-                            posts[0]['comments'][-1]['poster_info'] = {}
-                            posts[0]['comments'][-1]['number_of_comments'] = self.CalculateCommentsDepth(posts[0]['comments'][-1]['post_id'])
-                            cursor.callproc('post_user_info', [posts[0]['comments'][-1]['author_id']])
-                            for result in cursor.stored_results():
-                                for i in result.fetchall():
-                                    posts[0]['comments'][-1]['poster_info'] = dict(zip(user_keys, i))
                 else:
                     for post in posts:
                         post['comments'] = []
@@ -342,7 +324,7 @@ class ResourceDB():
         :return:
         """
         post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments', 'number_of_comments']
-        user_keys = ['pfp', 'first_name', 'last_name', 'username']
+        user_keys = ['first_name', 'last_name','pfp',  'username']
         connex = self.connection
         if connex != None:
             try:
@@ -353,14 +335,11 @@ class ResourceDB():
 
                 for result in cursor.stored_results():
                     for i in result.fetchall():
-                        comments.append(dict(zip(post_keys, i)))
+                        comments.append(dict(zip(post_keys, i[:12])))
                         comments[-1]['number_of_comments'] = self.CalculateCommentsDepth(comments[-1]['post_id'])
                         comments[-1]['poster_info'] = {}
                         comments[-1]['comments'] = []
-                        cursor.callproc('post_user_info', [comments[-1]['author_id']])
-                        for result in cursor.stored_results():
-                            for i in result.fetchall():
-                                comments[-1]['poster_info'] = dict(zip(user_keys, i))
+                        comments[-1]['poster_info'] = dict(zip(user_keys, i[12:]))
                 return comments
             except Exception as e:
                 print(traceback.print_exc())
@@ -374,19 +353,12 @@ class ResourceDB():
         connex = self.connection
         if connex != None:
             try:
-                depth = 0
-                post_queue = [post_id]
                 cursor = connex.cursor()
-                while post_queue != []:
-                    cursor.callproc('get_comment_children', [post_queue[0]])
-                    for result in cursor.stored_results():
-                        for i in result.fetchall():
-                            if i[0] != None:
-                                post_queue.append(i[0])
-                                depth += 1
-                    post_queue.pop(0)
-                            
-                return depth
+                cursor.callproc('get_comment_children', [post_id])
+                for result in cursor.stored_results():
+                    for i in result.fetchall():
+                        return i[0]
+                             
             except Exception as e:
                 return None
         return 'Server failed to connect'

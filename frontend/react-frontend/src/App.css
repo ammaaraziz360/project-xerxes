@@ -57,11 +57,12 @@ font-family: 'Qahiri', sans-serif; */
 	border-radius: 25px;
 }
 .naver{
-	z-index: 9999;
+	z-index: 1000;
 	color: white;
 	position: sticky;
     top: 0;
 }
+
 .search-bar{
 	background-color: #14110fff!important;
 	color: white!important;
@@ -171,15 +172,15 @@ body {
 	color: white;
 }
 .btn{
-	border-radius: 25px!important;
-	background-color: #34312dff !important;
-	color: white!important;
-	border-color: white!important;
+	border-radius: 15px!important;
+	background-color: #14110fff !important;
+	border-color: gray!important;
+	color: rgb(201, 201, 201)!important;
 }
 .btn:hover{
-	border-radius: 25px;
-	background-color: white!important;
-	color: black!important;
+	border-radius: 12px;
+	color: white!important;
+	border-color: white!important;
 }
 #following:hover{
 	background-color: #d9c5b2ff!important;
@@ -209,5 +210,12 @@ body {
 	border-right: none;
 }
 .border-left{
-	border-left: 4px solid #343536!important;
+	border-left: 4px solid gray!important;
+}
+.name  {
+	font-size: small!important;
+}
+.comment{
+	border-color: white!important;
+	border-radius: 12px!important;	
 }

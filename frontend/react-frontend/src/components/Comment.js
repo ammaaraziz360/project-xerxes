@@ -9,9 +9,9 @@ import { GoReply } from 'react-icons/go';
 import {GoCommentDiscussion} from 'react-icons/go'
 import React from 'react';
 import ReplyBox from './ReplyBox';
+import { Link } from 'react-router-dom';
 
-
-import LikeDislikeButton from '../LikeDislikeButton';
+import LikeDislikeButton from './LikeDislikeButton';
 import LoadingSpinner from './LoadingSpinner';
 
 const Comment = ({post_info, user_info, loggedin_user_info}) => {
@@ -51,12 +51,41 @@ const Comment = ({post_info, user_info, loggedin_user_info}) => {
     },[comments]);
 
 
+    // find differnce in time between current time and time of comment
+    const timeDifference = () => {
+        var date_of_comment = new Date(post_info.date_posted);
+        var current_date = new Date();
+        var difference = current_date.getTime() - date_of_comment.getTime();
+        if (difference < 60000) {
+            return 'Just now';
+        } else if (difference < 3600000) {
+            return Math.floor(difference/60000) + ' minutes ago';
+        } else if (difference < 86400000) {
+            return Math.floor(difference/3600000) + ' hours ago';
+        } else if (difference < 604800000) {
+            return Math.floor(difference/86400000) + ' days ago';
+        } else if (difference < 2419200000) {
+            return Math.floor(difference/604800000) + ' weeks ago';
+        } else {
+            return Math.floor(difference/2419200000) + ' months ago';
+        }
+    }
+        
+
     return (
-        <div className="comment mt-4 ">
+        <div className="comment mt-4 p-2">
             <div className="row">
                 <div className="col-12">
+                    <Link to={`/user/${user_info.username}`}>
                     <img src={user_info.pfp} className="pfp-small-2" alt="user image"/>
-                    {user_info.username}
+                    </Link>
+                    <span className="ps-1 name muted">
+                        {user_info.username}
+                    </span>
+                    <span className="ps-1 name muted">
+                        · {timeDifference()}
+                    </span>
+                    
                 </div>
             </div>
             <div className="border-left ms-3">
@@ -64,9 +93,12 @@ const Comment = ({post_info, user_info, loggedin_user_info}) => {
                     <div className="col-12">
                         {post_info.body_raw}
                     </div>
+                    <div className="name muted mt-2">
+                        {new Date(post_info.date_posted).toLocaleString()}
+                    </div>
                 </div>
                 <div className="row ms-1 mt-2">
-                    <div className="d-flex col-6">
+                    <div className="d-flex col-12 align-content-center">
                         <LikeDislikeButton post_info={post_info} loggedin_user_info={loggedin_user_info}/>
                         <Button variant="primary" onClick={() => FetchComments()}>
                             <GoCommentDiscussion/>
