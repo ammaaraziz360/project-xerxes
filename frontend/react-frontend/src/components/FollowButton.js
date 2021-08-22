@@ -42,10 +42,6 @@ const FollowButton = ({userProfile}) => {
 
     }, [following]);
 
-    useEffect(() => {
-        setFollowing(userProfile.follows);
-    }, [userProfile]);
-    
     const FollowUser = (follow) => {
         logged_in_state.isLoggedIn ? setFollowing(follow) : console.log('You are not logged in');;
     }

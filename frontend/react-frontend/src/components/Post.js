@@ -37,7 +37,6 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
             <div className="stats-div sub p-3">
                 <div className="d-flex row align-items-center">
                     <div className="col-6">
-                    
                         <h4>{post_info.title}</h4>
                     </div>
                     <div className="d-flex col-6 justify-content-end align-items-center">

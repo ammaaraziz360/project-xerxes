@@ -134,8 +134,9 @@ body {
 	border-radius: 25px;
 }
 .stats-div{
-	border-top-right-radius: 15px;
-	border-top-left-radius: 15px;
+	border-radius: 15px;
+	/* border-top-right-radius: 15px;
+	border-top-left-radius: 15px; */
 }
 .stats-div-2{
 	border-bottom-right-radius: 15px;
@@ -149,7 +150,6 @@ body {
 	border-bottom-left-radius: 15px;
 }
 .muted {
-	font-size: 5px;
 	color: gray!important;
 }
 .muted-regular {
@@ -218,4 +218,14 @@ body {
 .comment{
 	border-color: white!important;
 	border-radius: 12px!important;	
+}
+.full-border{
+	border-style: solid;
+	border-color: #34312dff!important;
+	border-width: 1px!important;
+	border-radius: 12px
+}
+.full-border:hover{
+	border-color: rgba(217, 197, 178, 0.486)!important;
+	background-color: rgba(52, 49, 45, 0.301)!important;
 }

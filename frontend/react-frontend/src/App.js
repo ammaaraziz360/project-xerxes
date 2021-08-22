@@ -7,7 +7,7 @@ import NotFoundPage from "./components/404Page";
 import NavBar from "./components/NavBar";
 import PostPage from "./components/PostPage";
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import FollowersFollowingPage from "./components/FollowersFollowingPage";
 import {
   BrowserRouter as Router,
   Switch,
@@ -31,23 +31,37 @@ function App() {
       <LoggedInContext.Provider value={{isLoggedIn, setIsLoggedIn}}>
         <Router>
           <NavBar/>
-          <Switch>
-            <Route path='/login' >
-              <LoginPage/>
-            </Route>
-            <Route path='/user/:username'>
-              <ProfilePage/>
-            </Route>
-            <Route path='/post/:id'>
-              <PostPage />
-            </Route>
-            <Route path='/404'>
-              <NotFoundPage />
-            </Route>
-            <Route path='*' >
-              <NotFoundPage/>
-            </Route>
-          </Switch>
+          <div className="container">
+            <div className="row">
+              <div className="col-2">
+              </div>
+              <div className="col-md-8 col-xs-12">
+                <Switch>
+                  <Route exact path='/login' >
+                    <LoginPage/>
+                  </Route>
+                  <Route exact path='/user/:username'>
+                    <ProfilePage/>
+                  </Route>
+                  <Route exact path='/post/:id'>
+                    <PostPage />
+                  </Route> 
+                  <Route exact path='/user/:username/following'>
+                    <FollowersFollowingPage type="following"/>
+                  </Route>
+                  <Route exact path='/user/:username/followers'>
+                    <FollowersFollowingPage type="followers"/>
+                  </Route>
+                  <Route path='/404'>
+                    <NotFoundPage />
+                  </Route>
+                  <Route path='*' >
+                    <NotFoundPage/>
+                  </Route>
+                </Switch>
+              </div>
+            </div>
+          </div>
         </Router>
       </LoggedInContext.Provider>
     </div>

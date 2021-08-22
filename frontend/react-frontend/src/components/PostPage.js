@@ -88,18 +88,12 @@ const PostPage = () => {
                 ?<Redirect to={`/post/${id}/${(PostInfo.title).replace(/\s+/g, '-')}`}/>
                 : null
             }
-            <div className="row">
-                <div className="col-2">
-                </div>
-                <div className="col-md-8 col-xs-12 profile-header p-4">
-                    { PostInfo != null 
-                            ? <Post post_info={PostInfo} user_info={PostInfo.poster_info} loggedin_user_info={loggedinUser}/>
-                    : <LoadingSpinner/>}
-                </div>
-                <div className="col-2">
-                </div>
+
+            <div className="profile-header p-4">
+                { PostInfo != null 
+                        ? <Post post_info={PostInfo} user_info={PostInfo.poster_info} loggedin_user_info={loggedinUser}/>
+                : <LoadingSpinner/>}
             </div>
-            
         </div>
     )
 

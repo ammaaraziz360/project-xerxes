@@ -111,10 +111,7 @@ const LoginPage = ({...Props}) => {
         <div>
             <div className='vh-100 smokey_black container-fluid p-0'>
                 <div className="row m-0 h-100">
-                    <div className="d-flex col-xl-4 col-md-1 col-1 smokey_black p-0 align-items-center">
-                        
-                    </div>
-                    <div className="d-flex col-xl-4 col-md-10 col-10 p-0 align-items-center sub h-50 align-self-center border border-white rounded">
+                    <div className="d-flex p-0 align-items-center sub h-50 align-self-center border border-white rounded">
                         <div className="d-flex p-4 w-100 justify-content-center">
                                 <GoogleLogin
                                     clientId= {clientId}
@@ -126,9 +123,7 @@ const LoginPage = ({...Props}) => {
                                 />
                         </div>
                     </div>
-                    <div className="d-flex col-xl-4 col-md-1 col-1 smokey_black p-0 align-items-center">
-                        
-                    </div>
+
                 </div>
             </div>
             {toggleUsernameModal 

@@ -12,61 +12,58 @@ const ReplyBox = ({loggedin_user_info, post_id}) => {
     const [AlertToggle, setAlertToggle] = useState(false);
     const [AlertMessage,setAlertMessage] = useState({message: '', style: ''});
     const logged_in_state = useContext(LoggedInContext);
+    const [disableButton, setDisableButton] = useState(true);
 
     const SubmitPost = () => {
-        if (logged_in_state.isLoggedIn) {
-            if (postText.trim() == ""){
-                setAlertMessage({message: 'Comment must have content, try again', style: 'danger'})
+        var post_data = {title: null, 
+                        body_raw: postText, 
+                        body_html: null, 
+                        reply_post_id: post_id}
+        setPostText('');
+        fetch('http://127.0.0.1:5000/api/posts', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': cookie.get('token'),
+                'user_id': cookie.get('user_id'),
+                'ip': sessionStorage.getItem('ip'),
+                'user_agent': navigator.userAgent,
+                'SID': cookie.get('SID')
+            },
+            body: JSON.stringify(post_data)
+        })
+        .then(res => {
+            if (res.status === 200) {
+                if(res.headers.get('X-JWT') != null) {
+                    cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                }
+                setAlertMessage({message: 'Comment successfully added', style: 'success'})
                 setAlertToggle(true)
-                return
-            }else{
-                setAlertToggle(false)
+            } 
+            else if (res.status === 401) {
+                localStorage.setItem('logged_in', 'false');
+                logged_in_state.setIsLoggedIn(false);
             }
-
-            var post_data = {title: null, 
-                            body_raw: postText, 
-                            body_html: null, 
-                            reply_post_id: post_id}
-            fetch('http://127.0.0.1:5000/api/posts', {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': cookie.get('token'),
-                    'user_id': cookie.get('user_id'),
-                    'ip': sessionStorage.getItem('ip'),
-                    'user_agent': navigator.userAgent,
-                    'SID': cookie.get('SID')
-                },
-                body: JSON.stringify(post_data)
-            })
-            .then(res => {
-                if (res.status === 200) {
-                    if(res.headers.get('X-JWT') != null) {
-                        cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
-                    }
-                    setAlertMessage({message: 'Comment successfully added', style: 'success'})
-                    setAlertToggle(true)
-                } 
-                else if (res.status === 401) {
-                    localStorage.setItem('logged_in', 'false');
-                    logged_in_state.setIsLoggedIn(false);
-                }
-                else {
-                    setAlertMessage({message: 'Error: Comment not posted, try again', style: 'danger'})
-                    setAlertToggle(true)
-                }
-            })
-            .catch(err => {
+            else {
                 setAlertMessage({message: 'Error: Comment not posted, try again', style: 'danger'})
                 setAlertToggle(true)
-            })
-        }
-        else{
-            setAlertMessage({message: 'You must be logged in to post a comment', style: 'danger'})
+            }
+        })
+        .catch(err => {
+            setAlertMessage({message: 'Error: Comment not posted, try again', style: 'danger'})
             setAlertToggle(true)
-        }
+        })
     }
+
+    useEffect(() => {
+        if(postText.trim() != "" ){
+            setDisableButton(false)
+        }
+        else {
+            setDisableButton(true)
+        }   
+    }, [postText])
 
     return (
         <div className="input-group">
@@ -75,14 +72,11 @@ const ReplyBox = ({loggedin_user_info, post_id}) => {
                 : <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" className="pfp-small-2" alt="user image"/>
                 }
             </div>
-            <input className="form-control search-bar" type="text" placeholder="Add a comment" onChange={(e) => setPostText(e.target.value)}></input>
+            <input className="form-control search-bar" type="text" placeholder="Add a comment" value={postText} onChange={(e) => setPostText(e.target.value)}></input>
             <div className="input-group-append">
-                <Button variant="primary" id="side-btn" onClick={() => SubmitPost()}>
+                <Button variant="primary" id="side-btn" onClick={() => SubmitPost()} disabled={disableButton}>
                     Post
                 </Button>
-            </div>
-            <div>
-                <ErrorAlert AlertToggle={AlertToggle} setAlertToggle={setAlertToggle} AlertText={AlertMessage}/>
             </div>
         </div>
     )
