@@ -18,7 +18,7 @@ def createUser():
     Create a new user
     or sign in an existing user
 
-    returns a json object true or false about user existance
+    returns a json object true or false about user existence
     returns jwt token for user
     """
     result = auth_methods.AuthorizeUser(request)
