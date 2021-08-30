@@ -308,14 +308,14 @@ def getPostComments(post_id):
         print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)
 
-@app.route('/api/user/<user_id>/followers', methods=['GET'])
-def getUserFollowers(user_id):
+@app.route('/api/user/<username>/followers', methods=['GET'])
+def getUserFollowers(username):
     """
     Get user followers
     """
     try:
         requester_id = request.headers['user_id']
-        followers = resource_methods.getUserFollowers(user_id, requester_id)
+        followers = resource_methods.getUserFollowers(username, requester_id)
         if followers == None:
             return make_response(jsonify({"error": "User not found"}), 404)
         print(followers)
