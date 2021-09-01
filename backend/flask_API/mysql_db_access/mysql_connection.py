@@ -356,11 +356,24 @@ class ResourceDB():
         if connex != None:
             try:
                 cursor = connex.cursor()
+
+                cursor.callproc('get_username', [username])
+                for result in cursor.stored_results():
+                    for i in result.fetchall():
+                        if i[0] != None:
+                            username = i[0]
                 followers = []
                 cursor.callproc('get_followers', [username, requester_id])
                 for result in cursor.stored_results():
                     for i in result.fetchall():
                         followers.append(dict(zip(user_keys, i)))
+                
+                for follower in followers:
+                    if follower['user_id'] == requester_id:
+                        follower['OwnAccount'] = True
+                    else:
+                        follower['OwnAccount'] = False
+
                 return followers
             except Exception as e:
                 print(traceback.print_exc())

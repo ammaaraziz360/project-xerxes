@@ -112,17 +112,11 @@ const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}
                 </div>
             </div>
             <div>
-                <div className="row">
-                    <div className="col-2">
-                    </div>
                     {userProfile.OwnAccount ?
-                    <div className="col-md-8 col-xs-12 profile-header p-4">
+                    <div className="profile-header p-3">
                          <PostEditor/> 
                     </div>
                     : null}
-                    <div className="col-2">
-                    </div>
-                </div>
                 <div className="profile-header p-4">
                     {userProfile.Posts.length > 0 ?
                         userProfile.Posts.map(post => {

@@ -5,9 +5,11 @@ import { LoggedInContext } from './LoggedInContext';
 import LoadingSpinner from './LoadingSpinner';
 import FollowButton from './FollowButton';
 
+var cookie = new Cookies();
+
 const UserList = ({ user_info }) => {
     return (
-        <div className="full-border">
+        <div className="full-border mt-2">
             <div className="row p-3">
                 <div className="col-2">
                     <img src={user_info.pfp} className="img-fluid d-inline pfp-small" alt="user image"/>
@@ -18,9 +20,12 @@ const UserList = ({ user_info }) => {
                         @{user_info.username}
                     </div>
                 </div>
-                <div className="d-flex col-4 justify-content-end align-items-center">
-                    <FollowButton userProfile={user_info}/>
-                </div>
+                { !user_info.OwnAccount ?
+                    <div className="d-flex col-4 justify-content-end align-items-center">
+                        <FollowButton userProfile={user_info}/>
+                    </div>
+                    : null
+                }
             </div>
             <div className="row mb-3">
                 <div className="col-2"></div>
