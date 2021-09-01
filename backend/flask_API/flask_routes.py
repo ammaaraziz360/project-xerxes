@@ -34,6 +34,7 @@ def createUser():
             resp.headers['X-JWT'] = jwt_token
             return resp
     except Exception as e:
+        print(traceback.print_exc())
         return make_response(jsonify({'Error': str(e)}), 401)
 
 @app.route('/api/users', methods=['PUT'])

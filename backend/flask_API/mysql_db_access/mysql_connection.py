@@ -32,7 +32,7 @@ class ResourceDB():
 
         if connex != None:
             try:
-                cursor = connex.cursor(dictionary=True)
+                cursor = connex.cursor()
                 cursor.callproc('banned_phrases')
 
                 for result in cursor.stored_results():
@@ -137,7 +137,7 @@ class ResourceDB():
         if connex != None:
             try:
                 results = {}
-                cursor = connex.cursor(dictionary=True)
+                cursor = connex.cursor()
                 # username may come in as a user_id so we need to convert it to a username
                 cursor.callproc('get_username', [username])
                 for result in cursor.stored_results():
@@ -173,6 +173,7 @@ class ResourceDB():
                                 results['follows'] = False
                 return results
             except Exception as e:
+                print(traceback.print_exc())
                 return None
         return 'Server failed to connect'
 

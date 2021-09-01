@@ -43,7 +43,7 @@ function App() {
                   <Route exact path='/user/:username'>
                     <ProfilePage/>
                   </Route>
-                  <Route exact path='/post/:id'>
+                  <Route path='/post/:id'>
                     <PostPage />
                   </Route> 
                   <Route exact path='/user/:username/following'>

@@ -114,8 +114,6 @@ def AuthorizeUser(request):
         return {"error": str(e)}
         
 def LogoutUser(headers):
-    
-
     try:
         session_id = headers['SID']
         authDB = AuthDB(Credentials('blogoo-auth'))
@@ -125,7 +123,6 @@ def LogoutUser(headers):
     except Exception as e:
         print(e)
         return {"error": str(e)}
-    pass
 
 def CreateTokenRecord(auth_table):
     authDB = AuthDB(Credentials('blogoo-auth'))
