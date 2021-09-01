@@ -54,7 +54,7 @@ class AuthDB():
         if connex != None:
             try:
                 records = ()
-                cursor = connex.cursor(dictionary=True)
+                cursor = connex.cursor()
                 cursor.callproc('get_jwt_session', [session_id])
 
                 for result in cursor.stored_results():

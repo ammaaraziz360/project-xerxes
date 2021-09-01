@@ -147,11 +147,23 @@ def getUserProfile(username):
     Get user profile
     """
     try:
-        requester_id = request.headers['user_id']
+        requester_id = None
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token != False:
+            requester_id = request.headers['user_id']
+        
         user_dict = resource_methods.getUserProfile(username, requester_id)
         if user_dict == None:
-            return make_response(jsonify({"error": "User not found"}), 404)
-        resp = make_response(jsonify(user_dict), 200)
+            resp = make_response(jsonify({"error": "User not found"}), 404)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
+        else:
+            resp = make_response(jsonify(user_dict), 200)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
 
         return resp
     except Exception as e:
@@ -178,9 +190,6 @@ def getLoggedInUserProfile():
     except Exception as e:
         return make_response(jsonify({'error': str(e)}), 401)
     
-
-@app.route('/api/users/profile', methods=['PUT'])
-
 @app.route('/api/users/socials', methods=['PUT'])
 def updateUserSocials():
     """
@@ -280,11 +289,22 @@ def getPost(post_id):
     Get post
     """
     try:
-        requester_id = request.headers['user_id']
+        requester_id = None
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token != False:
+            requester_id = request.headers['user_id']
         user_dict = resource_methods.getPost(post_id, requester_id)
         if user_dict == None:
-            return make_response(jsonify({"error": "Post not found"}), 404)
-        resp = make_response(jsonify(user_dict), 200)
+            resp = make_response(jsonify({"error": "Post not found"}), 404)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
+        else:
+            resp = make_response(jsonify(user_dict), 200)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
 
         return resp
     except Exception as e:
@@ -297,12 +317,22 @@ def getPostComments(post_id):
     Get post comments
     """
     try:
-        requester_id = request.headers['user_id']
+        requester_id = None
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token != False:
+            requester_id = request.headers['user_id']
         comments = resource_methods.getPostComments(post_id, requester_id)
         if comments == None:
-            return make_response(jsonify({"error": "Post not found"}), 404)
-        print(comments)
-        resp = make_response(jsonify(comments), 200)
+            resp = make_response(jsonify({"error": "Post not found"}), 404)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
+        else:
+            resp = make_response(jsonify(comments), 200)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
 
         return resp
     except Exception as e:
@@ -315,12 +345,22 @@ def getUserFollowers(username):
     Get user followers
     """
     try:
-        requester_id = request.headers['user_id']
+        requester_id = None
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token != False:
+            requester_id = request.headers['user_id']
         followers = resource_methods.getUserFollowers(username, requester_id)
         if followers == None:
-            return make_response(jsonify({"error": "User not found"}), 404)
-        print(followers)
-        resp = make_response(jsonify(followers), 200)
+            resp = make_response(jsonify({"error": "User not found"}), 404)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
+        else:
+            resp = make_response(jsonify(followers), 200)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
 
         return resp
     except Exception as e:
@@ -333,11 +373,22 @@ def getUserFollowing(username):
     Get user following
     """
     try:
-        requester_id = request.headers['user_id']
+        requester_id = None
+        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+
+        if new_jwt_token != False:
+            requester_id = request.headers['user_id']
         following = resource_methods.getUserFollowing(username, requester_id)
         if following == None:
-            return make_response(jsonify({"error": "User not found"}), 404)
-        resp = make_response(jsonify(following), 200)
+            resp = make_response(jsonify({"error": "User not found"}), 404)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
+        else:
+            resp = make_response(jsonify(following), 200)
+            if(new_jwt_token != True or new_jwt_token != False):
+                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+                resp.headers['X-JWT'] = new_jwt_token
 
         return resp
     except Exception as e:
