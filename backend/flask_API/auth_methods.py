@@ -26,6 +26,8 @@ def AuthenticateUser(headers):
         record = authDB.getSessionRecord(session_id)
         # check if request ip address ans user agent is same as the one in the database
         # if true, blacklist the old token and return new token
+        if record == ():
+            return False
         if record[4] == 1:
             if ip_address == record[2] and user_agent == record[3]:
                 authDB.updateSessionRecordDate(session_id)
@@ -43,8 +45,10 @@ def AuthenticateUser(headers):
             return False        
     else:
         # if token is expired
-        print('Not Authenicated')
+        print('Not Authenticated')
         record = authDB.getSessionRecord(session_id)
+        if record == ():
+            return False
         if record[4] == 1:
             if ip_address == record[2] and user_agent == record[3]:
                 # TODO: find difference in time from the updated record and current time

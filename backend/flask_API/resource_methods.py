@@ -108,3 +108,12 @@ def getUserFollowers(username, requester_id):
     result = resorDb.getUserFollowers(username, requester_id)
     resorDb.CloseConnection()
     return(result)
+
+def getUserFollowing(username, requester_id):
+    """
+    gets a user's followers
+    """
+    resorDb = ResourceDB(Credentials('bloggit-db'))
+    result = resorDb.getUserFollowing(username, requester_id)
+    resorDb.CloseConnection()
+    return(result)

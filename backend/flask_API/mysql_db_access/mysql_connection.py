@@ -345,9 +345,10 @@ class ResourceDB():
             except Exception as e:
                 print(traceback.print_exc())
                 return e
+    
     def getUserFollowers(self, username, requester_id):
         """
-        get followers of a user
+        get following of a user
         :param user_id:
         :return:
         """
@@ -379,6 +380,42 @@ class ResourceDB():
                 print(traceback.print_exc())
                 return e
         return 'Server failed to connect'
+    
+    def getUserFollowing(self, username, requester_id):
+        """
+        get followers of a user
+        :param user_id:
+        :return:
+        """
+        user_keys =  ['user_id','username', 'first_name', 'last_name', 'pfp', 'bio', 'follows']
+        connex = self.connection
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+
+                cursor.callproc('get_username', [username])
+                for result in cursor.stored_results():
+                    for i in result.fetchall():
+                        if i[0] != None:
+                            username = i[0]
+                followers = []
+                cursor.callproc('get_following', [username, requester_id])
+                for result in cursor.stored_results():
+                    for i in result.fetchall():
+                        followers.append(dict(zip(user_keys, i)))
+                
+                for follower in followers:
+                    if follower['user_id'] == requester_id:
+                        follower['OwnAccount'] = True
+                    else:
+                        follower['OwnAccount'] = False
+
+                return followers
+            except Exception as e:
+                print(traceback.print_exc())
+                return e
+        return 'Server failed to connect'
+
     def CalculateCommentsDepth(self, post_id):
         """
         calculate how many comments under a post

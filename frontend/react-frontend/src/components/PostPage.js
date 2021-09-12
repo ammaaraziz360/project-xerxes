@@ -37,6 +37,9 @@ const PostPage = () => {
             })
             .then(res => {
                 if (res.status === 200) {
+                    if(res.headers.get('X-JWT') != null) {
+                        cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                    }
                     return res.json();
                 } 
                 else{
@@ -65,6 +68,9 @@ const PostPage = () => {
             })
             .then(res => {
                 if (res.status === 200) {
+                    if(res.headers.get('X-JWT') != null) {
+                        cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                    }
                     return res.json()
                 }
                 else{
