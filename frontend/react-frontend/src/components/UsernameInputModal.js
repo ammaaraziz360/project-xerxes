@@ -28,11 +28,8 @@ const EnterUsernameModal = ({...Props}) => {
     const history = useHistory();
     const logged_in_state = useContext(LoggedInContext) 
 
-
-    const[ErrorAlertText, setAlertErrorText] = useState({'message': 'Banned username, pick a new username', 'style': 'danger'})
     const[usernameErrorAlertText, setUsernameAlertText] = useState({'message': '', 'style': 'danger'})
     const [input, setInput] = useState('');
-    const[bannedWords,setBannedWords] = useState([])
     const[AlertToggle, setAlertToggle] = useState(false)
     const[UsernameAlertToggle, setUsernameAlertToggle] = useState(false)    
     // to disable join button
@@ -43,13 +40,25 @@ const EnterUsernameModal = ({...Props}) => {
     // to check for terms of service checkbox
     const[tosCheck, setTosCheck] = useState(false)
     const[nameCheck, setNameCheck] = useState(false)
+    
+    function handleSubmit(e){
+        e.preventDefault();
 
-    const [ReadyToUnmount, setReadyToUnmount] = useState({status: false, message: ''});
-
-    const [submissionStatus, setSubmissionStatus] = useState(false)
-    useEffect(() => {
-        fetch('http://127.0.0.1:5000/api/users/banned-usernames', {
-            method: 'GET',
+        if(tosCheck == false || ppCheck == false){
+            setUsernameAlertText({'message': 'You must accept the privacy policy and the terms of service', 'style': 'danger'})
+            setUsernameAlertToggle(true)
+            return
+        }
+        if(!input.match(usernameRegex)){
+            setUsernameAlertText({'message': 'Username must be greater than 5 characters and be less than 20 characters, username should also not contain any spaces and be alphanumeric', 'style': 'danger'})
+            setUsernameAlertToggle(true)
+            return
+        }
+        setUsernameAlertToggle(false)
+        
+        var username = {username: input}
+        fetch('http://127.0.0.1:5000/api/users', { 
+            method: 'PUT',
             mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
@@ -59,112 +68,29 @@ const EnterUsernameModal = ({...Props}) => {
                 'user_agent': navigator.userAgent,
                 'SID': cookies.get('SID')
             },
+            body: JSON.stringify(username)
         }).then(res => {
-                if (res.status === 200) {
-                    if(res.headers.get('X-JWT') != null) {
-                        cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
-                        console.log(res.headers.get('X-JWT'))
-                    }
-                    return res.json()
-                } 
-                else {
-                    localStorage.setItem('logged_in', 'false');
-                    logged_in_state.setIsLoggedIn(false);
-                    history.push('/login');
+            if(res.status === 200){
+                if(res.headers.get('X-JWT') != null) {
+                    cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
                 }
-            })
-            .then(data => {
-                setBannedWords(data.banned_words)
-            })
-            .catch(err => {
-                console.log(err)
-            })
-    }, [Props.toggleModal])
+                logged_in_state.setIsLoggedIn(true);
+            }
+            else if (res.status === 400) {
+                if(res.headers.get('X-JWT') != null) {
+                    cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
+                }
+            }
+            return res.json()
+        }).then(data => {
+            throw new Error(data.error)
+        }).catch(err => {
+            setUsernameAlertText({'message': err.message, 'style': 'danger'})
+            setUsernameAlertToggle(true)
+        })
+    }
 
-    useEffect(() =>{
-  
-        if(bannedWords.includes(input)){
-            setAlertErrorText({'message': 'Banned username, pick a new username', 'style': 'danger'})
-            setAlertToggle(true)
-            setNameCheck(false)
-        }
-        else{
-            if(input.match(usernameRegex)){
-                setUsernameAlertToggle(false)
-                setNameCheck(true)
-            }
-            else{
-                setUsernameAlertText({'message': 'Username must be greater than 5 characters and be less than 20 characters, username should also not contain any spaces and be alphanumeric', 'style': 'danger'})
-                setUsernameAlertToggle(true)
-                setNameCheck(false)
-            }
-            setAlertToggle(false)
-        }
-        
-    }, [input])
 
-    useEffect(() => {
-        if(ReadyToUnmount.status === false){
-            if(tosCheck && ppCheck && nameCheck){
-                setDisableButton(false)
-            }
-            else{
-                setDisableButton(true)
-            }
-        }
-    })
-
-    useEffect(() => {
-        var username = {username: input}
-        if(submissionStatus){
-            fetch('http://127.0.0.1:5000/api/users', { 
-                method: 'PUT',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': cookies.get('token'),
-                    'user_id': cookies.get('user_id'),
-                    'ip': sessionStorage.getItem('ip'),
-                    'user_agent': navigator.userAgent,
-                    'SID': cookies.get('SID')
-                },
-                body: JSON.stringify(username)
-            }).then(res => {
-                if(res.status === 200){
-                    if(res.headers.get('X-JWT') != null) {
-                        cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
-                    }
-                    localStorage.setItem('logged_in', 'true');
-                    logged_in_state.setIsLoggedIn(true);
-                    setReadyToUnmount({status: true, message: `/user/${cookies.get('user_id')}`})
-                }
-                else if (res.status === 400) {
-                    if(res.headers.get('X-JWT') != null) {
-                        cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
-                    }
-                    setSubmissionStatus(false)
-                    return res.json()
-                }
-                else{
-                    setReadyToUnmount({status: true, message: '/login'})
-                    return res.json()
-                }
-            }).then(data => {
-                throw new Error(data.error)
-            }).catch(err => {
-                if(ReadyToUnmount.status === false){
-                    setUsernameAlertText({'message': err.message, 'style': 'danger'})
-                    setUsernameAlertToggle(true)
-                    setSubmissionStatus(false)
-                }
-            })
-        }
-        if(ReadyToUnmount.status == true){
-            history.push(ReadyToUnmount.message)
-        }  
-        
-    }, [submissionStatus])
-    
 
     return(
         <div>
@@ -173,7 +99,7 @@ const EnterUsernameModal = ({...Props}) => {
                 <Modal.Title>Welcome to Blogoo</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form>
+                    <Form onSubmit={(e) => handleSubmit(e)}>
                         <Form.Group>
                             <Form.Label><strong>Pick a username</strong></Form.Label>
                             <InputGroup className="mb-3">
@@ -208,22 +134,18 @@ const EnterUsernameModal = ({...Props}) => {
                         </div>
                         <div className='mt-4'>
                             <Alerts
-                                AlertToggle = {AlertToggle}
-                                AlertText = {ErrorAlertText}
-                            />
-                            <Alerts
                                 AlertToggle = {UsernameAlertToggle}
                                 AlertText = {usernameErrorAlertText}
                             />
                         </div>
-                       
+                        <Modal.Footer>
+                            <Button variant="primary" type="submit">
+                                Join
+                            </Button>
+                        </Modal.Footer>     
                     </Form>
                 </Modal.Body>   
-                <Modal.Footer>
-                    <Button disabled={disableButton} variant="primary" onClick={() => setSubmissionStatus(true)}>
-                        Join
-                    </Button>
-                </Modal.Footer>
+                
             </Modal>
         </div>
     )

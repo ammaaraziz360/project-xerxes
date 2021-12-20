@@ -9,17 +9,18 @@ def getBannedUsernames():
     """
     gets banned usernames
     """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
+    # resorDb = ResourceDB(Credentials('bloggit-db'))
+    resorDb = ResourceDB(Credentials('BlogooDB'))
     result = resorDb.bannedPhrases()
     resorDb.CloseConnection()
     return(result)
 
-def InsertUser(request_body: dict):
+def CreateUser(request_body: dict):
     """
     inserts a user into the database
     """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.InsertUser(request_body)
+    resorDb = ResourceDB(Credentials('BlogooDB'))
+    result = resorDb.CreateUser(request_body)
     resorDb.CloseConnection()
     return(result)
     

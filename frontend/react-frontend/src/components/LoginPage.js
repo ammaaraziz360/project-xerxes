@@ -42,17 +42,17 @@ const LoginPage = ({...Props}) => {
 
     const responseGoogle = (response) => { 
         var google_user = response.profileObj
-        console.log(google_user.imageUrl)
+
         var user_data = {
-            'google_id': '',
+            'user_id': "",
             'email': google_user.email,
             'last_name': google_user.familyName,
             'first_name': google_user.givenName,
-            'pfp_url': google_user.imageUrl,
-            'login_type': 'gog'
+            'pfp_url': google_user.imageUrl
         }
 
         sessionStorage.setItem("google_auth_token", response.getAuthResponse().id_token)
+
         fetch('http://127.0.0.1:5000/api/users/login', {
             method: 'POST',
             mode: 'cors',
@@ -74,35 +74,26 @@ const LoginPage = ({...Props}) => {
                 }
              }) 
             .then(data => {
-                console.log(data)
-                if ("user_exists" in data){
-                    cookies.set('user_id', data.user_id, { path: '/' })
-                    cookies.set('SID', data.session_id, { path: '/' })
-                    if(data['user_exists'] == "True"){
-                        localStorage.setItem('logged_in', 'true')
-                        logged_in_state.setIsLoggedIn(true);
-                        history.push(`/user/${cookies.get('user_id')}`)
-                    }
-                    else {
-                        localStorage.setItem('logged_in', 'false')
-                        logged_in_state.setIsLoggedIn(false);
-                        setToggleUsernameModal(!toggleUsernameModal)
-                    }
+                cookies.set('user_id', data.user_id, { path: '/' })
+                cookies.set('SID', data.session_id, { path: '/' })
+                if(data['user_exists'] == 1){
+                    logged_in_state.setIsLoggedIn(true);
+                    history.push(`/user/${cookies.get('user_id')}`)
                 }
-                else{
-                    localStorage.setItem('logged_in', 'false')
+                else {
                     logged_in_state.setIsLoggedIn(false);
-                    throw new Error("Internal server error, try again later")
+                    setToggleUsernameModal(!toggleUsernameModal)
                 }
             })
             .catch(error => {
+                logged_in_state.setIsLoggedIn(false);
                 setModalText({'title': 'Something went very wrong', 'body': error.message})
                 setToggleModal(!toggleModal)
             })
     }
 
     const NoResponseGoogle = () => {
-        localStorage.setItem('logged_in', 'false')
+        logged_in_state.setIsLoggedIn(false);
         setModalText({'title': 'Something went very wrong', 'body': 'Login failure, please try again'})
         setToggleModal(!toggleModal)
     }

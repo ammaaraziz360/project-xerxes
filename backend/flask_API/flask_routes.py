@@ -24,11 +24,10 @@ def createUser():
     result = auth_methods.AuthorizeUser(request)
     try:
         resp = None
-        if result['user_exists'] == None:
+        if result['user_exists'] == -1:
             return make_response(jsonify(result), 401)
         else:
             jwt_token = result['token']
-            session_id = result['session_id']
             resp = make_response(result, 200)
             resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
             resp.headers['X-JWT'] = jwt_token
@@ -38,7 +37,7 @@ def createUser():
         return make_response(jsonify({'Error': str(e)}), 401)
 
 @app.route('/api/users', methods=['PUT'])
-def updateUserData():
+def updateUser():
     """
     Update user data
     """
@@ -48,19 +47,24 @@ def updateUserData():
             return make_response(jsonify({"error": "Invalid Token"}), 401)
 
         user_dict = {
-            'User_id': None,
-            'username': None,
-            'first_name': None, 
-            'last_name': None, 
-            'pfp_url': None,  
-            'bio': None, 
-            'location': None,
-        }
-        user_dict['User_id'] = request.headers['user_id']        
+                        'User_id': None,                        
+                        'username': None,
+                        'first_name': None,
+                        'last_name': None,
+                        'email_address': None,
+                        'pfp_url': None,
+                        'location': None,
+                        'bio': None,
+                        'facebook_url': None,
+                        'youtube_url': None,
+                        'instagram_url': None,
+                        'website_url': None,        
+                    }
+
+        user_dict['user_id'] = request.headers['user_id']        
         request_body = request.json
 
-        for key, value in request_body.items():
-            user_dict[key] = value
+        user_dict = {key: value for key, value in request_body.items()}
 
         result = resource_methods.UpdateUser(user_dict)
         if result != True:

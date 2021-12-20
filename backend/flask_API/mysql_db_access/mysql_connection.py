@@ -45,50 +45,42 @@ class ResourceDB():
                 return banned_list
 
     # to insert users
-    def InsertUser(self, user_info: dict):
+    def CreateUser(self, user_info: dict):
         connex = self.connection
 
         if connex != None:
             try:
                 cursor = connex.cursor()
 
-                cursor.callproc('user_exists', [user_info['google_id']])
-                print(user_info['google_id'])
-                user_exists = False
-                for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        if i[0] == 1:
-                            user_exists = True
-                            break
-                     
-                if user_exists:
-                    cursor.callproc('update_lastlogin', [user_info['google_id'], datetime.now().strftime('%Y-%m-%d')])
-                    connex.commit()
-                    cursor.callproc('username_null_check', [user_info['google_id']])
-                    for result in cursor.stored_results():
-                        for i in result.fetchall():
-                            if i[0] == 1:
-                                return 'False'
-                                break
-                    return 'True'
-                else:
-                    cursor.callproc('create_user', 
-                                    [user_info['google_id'],
-                                    None, 
+                JSONcheck = [user_info['user_id'],
                                     user_info['first_name'], 
                                     user_info['last_name'], 
                                     user_info['email'], 
-                                    user_info['pfp_url'], 
-                                    user_info['register_date'], 
-                                    user_info['last_login'], 
-                                    None, 
-                                    None, 
-                                    user_info['login_type']])
+                                    user_info['pfp_url']]
+
+                try:
+                    cursor.callproc('CreateUser', 
+                                    [user_info['user_id'],
+                                    user_info['first_name'], 
+                                    user_info['last_name'], 
+                                    user_info['email'], 
+                                    user_info['pfp_url']])
                     connex.commit()
-                    return 'False'
+                    return 0
+                except Exception as e:
+                    cursor.callproc('UpdateUserLastLogin', [user_info['user_id']])
+
+                    cursor.callproc('UsernameNullCheck', [user_info['user_id']])
+
+                    for result in cursor.stored_results():
+                        for i in result.fetchall():
+                            if i[0] == 1:
+                                return 0
+                    return 1
+
             except Exception as e:
                 print(e)
-                return str(e)
+                return -1
     def UpdateUser(self, updated_items):
         """
         updates a user in the database
@@ -98,26 +90,20 @@ class ResourceDB():
         if connex != None:
             try:
                 cursor = connex.cursor()
-
-                if updated_items['username'] != None:
-                    cursor.callproc('username_validator', [updated_items['username']])
-                    for result in cursor.stored_results():
-                        for i in result.fetchall():
-                            if i[0] > 0:
-                                return 'Username contains a banned string, pick a new username'
-
-                    cursor.callproc('unique_usernames', [updated_items['username']])
-                    for result in cursor.stored_results():
-                        for i in result.fetchall():
-                            if i[0] > 0:
-                                return "Username is taken, pick a new username"
-                cursor.callproc('update_user', [updated_items['User_id'],
+                
+                cursor.callproc('UpdateUser', [updated_items['User_id'],
                                                 updated_items['username'],
                                                 updated_items['first_name'],
                                                 updated_items['last_name'],
+                                                updated_items['email_address'],
                                                 updated_items['pfp_url'],
+                                                updated_items['location'],
                                                 updated_items['bio'],
-                                                updated_items['location']])
+                                                updated_items['facebook_url'],
+                                                updated_items['youtube_url'],
+                                                updated_items['instagram_url'],
+                                                updated_items['website_url']]
+                                               )
                 connex.commit()
                 return True
             except Exception as e:

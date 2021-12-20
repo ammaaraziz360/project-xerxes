@@ -86,14 +86,11 @@ def AuthorizeUser(request):
         user_agent = request.headers['user_agent']
         request_body = request.json
 
-        request_body['register_date'] = datetime.now().strftime('%Y-%m-%d')
-        request_body['last_login'] = datetime.now().strftime('%Y-%m-%d')
-
         if google_auth_verify.AuthenticateUser(auth_token):
             google_id = google_auth_verify.GetUserID(auth_token)
-            request_body['google_id'] = google_id
+            request_body['user_id'] = google_id
 
-            result = resource_methods.InsertUser(request_body)
+            result = resource_methods.CreateUser(request_body)
 
             google_id = google_auth_verify.GetUserID(auth_token)
             
@@ -112,10 +109,10 @@ def AuthorizeUser(request):
 
             return {"user_exists": result, "token": jwt_token, "user_id": google_id, "session_id": session_id}  
         
-        return {"user_exists": None, "token": jwt_token}
+        return {"user_exists": -1}
     except Exception as e:
         print(e)
-        return {"error": str(e)}
+        return {"user_exists": -1}
         
 def LogoutUser(headers):
     try:
