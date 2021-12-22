@@ -12,72 +12,74 @@ def AuthenticateUser(headers):
     This method is used to authenticate the user.
     and refreshes the token.
     """
-    authDB = AuthDB(Credentials('blogoo-auth'))
+    
+    response = {"Valid": False, "JWT": None}
 
-    jwt_token = headers['Authorization']
-    user_id = headers['user_id']
-    ip_address = headers['ip']
-    user_agent = headers['user_agent']
-    session_id = headers['SID']
+    try:    
+        authDB = AuthDB(Credentials('blogoo-auth'))
+        jwt_token = headers['Authorization']
+        user_id = headers['user_id']
+        ip_address = headers['ip']
+        user_agent = headers['user_agent']
+        session_id = headers['SID']
 
 
-    if jwt_auth.decode_auth_token(jwt_token) == user_id:
-        print("Authenticated")
-        record = authDB.getSessionRecord(session_id)
-        # check if request ip address ans user agent is same as the one in the database
-        # if true, blacklist the old token and return new token
-        if record == ():
-            return False
-        if record[4] == 1:
-            if ip_address == record[2] and user_agent == record[3]:
-                authDB.updateSessionRecordDate(session_id)
-                authDB.CloseConnection()
-                print("Authenticated")
-                return True
-            else:
-                authDB.updateSessionRecordDate(session_id)
-                authDB.setSessionInvalid(user_id)
-                print("Info not matching not Authenticated")
-                return False
-        else:
-            authDB.CloseConnection()
-            print("session not valid not Authenticated")
-            return False        
-    else:
-        # if token is expired
-        print('Not Authenticated')
-        record = authDB.getSessionRecord(session_id)
-        if record == ():
-            return False
-        if record[4] == 1:
-            if ip_address == record[2] and user_agent == record[3]:
-                # TODO: find difference in time from the updated record and current time
-                # if difference is greater than 5 minutes, make user login again
-                date_diff = (datetime.now() - record[5]).total_seconds()
-                date_diff = divmod(date_diff, 60)[0]
+        if jwt_auth.decode_auth_token(jwt_token) == user_id:
+            print("Authenticated")
+            record = authDB.getSessionRecord(session_id)
+            # check if request ip address ans user agent is same as the one in the database
+            # if true, blacklist the old token and return new token
+            if record == ():
+                if record[4] == 1:
+                    if ip_address == record[2] and user_agent == record[3]:
+                        authDB.updateSessionRecordDate(session_id)
+                        authDB.CloseConnection()
+                        print("Authenticated")
 
-                if date_diff < 30:
-                    authDB.updateSessionRecordDate(session_id)
-                    authDB.CloseConnection()
-                    print("TIME WITHIN LIMIT, TOKEN AUTHENTICATED")
-                    return jwt_auth.encode_auth_token(user_id)
+                        response["Valid"] = True
+                    else:
+                        authDB.updateSessionRecordDate(session_id)
+                        authDB.setSessionInvalid(user_id)
+                        print("Info not matching not Authenticated")
                 else:
-                    authDB.updateSessionRecordDate(session_id)
-                    authDB.setSessionInvalid(session_id)
                     authDB.CloseConnection()
-                    print("TIME NOT WITHIN LIMIT, NOT AUTHENTICATED")
-                    return False
-            else:
-                authDB.updateSessionRecordDate(session_id)
-                authDB.setSessionInvalid(session_id)
-                authDB.CloseConnection()
-                print("IP ADDRESS OR USER AGENT NOT MATCHING, NOT AUTHENTICATED")
-                return False
+                    print("session not valid not Authenticated")
         else:
-            authDB.CloseConnection()
-            print("SESSION NOT VALID")
-            return False
+            # if token is expired
+            print('Not Authenticated')
+            record = authDB.getSessionRecord(session_id)
+            if record != ():
+                if record[4] == 1:
+                    if ip_address == record[2] and user_agent == record[3]:
+                        # TODO: find difference in time from the updated record and current time
+                        # if difference is greater than 5 minutes, make user login again
+                        date_diff = (datetime.now() - record[5]).total_seconds()
+                        date_diff = divmod(date_diff, 60)[0]
 
+                        if date_diff < 30:
+                            authDB.updateSessionRecordDate(session_id)
+                            authDB.CloseConnection()
+                            print("TIME WITHIN LIMIT, TOKEN AUTHENTICATED")
+
+                            response["Valid"] = True
+                            response["JWT"] = jwt_auth.encode_auth_token(user_id)
+                        else:
+                            authDB.updateSessionRecordDate(session_id)
+                            authDB.setSessionInvalid(session_id)
+                            authDB.CloseConnection()
+                            print("TIME NOT WITHIN LIMIT, NOT AUTHENTICATED")
+                    else:
+                        authDB.updateSessionRecordDate(session_id)
+                        authDB.setSessionInvalid(session_id)
+                        authDB.CloseConnection()
+                        print("IP ADDRESS OR USER AGENT NOT MATCHING, NOT AUTHENTICATED")
+                else:
+                    authDB.CloseConnection()
+                    print("SESSION NOT VALID")
+
+        return response
+    except:
+        return response
 
 def AuthorizeUser(request):
     try:

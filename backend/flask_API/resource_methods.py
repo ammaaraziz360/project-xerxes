@@ -28,7 +28,7 @@ def UpdateUser(updated_items: dict):
     """
     updates a user in the database
     """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
+    resorDb = ResourceDB(Credentials('BlogooDB'))
     result = resorDb.UpdateUser(updated_items)
     resorDb.CloseConnection()
     return(result)

@@ -1,3 +1,5 @@
+from backend.flask_API.http_response import HTTPResponse
+from backend.flask_API.http_type_enum import HTTPTypes
 from flask import Flask, json, request, jsonify, make_response, abort
 from flask_cors import CORS
 from datetime import datetime
@@ -42,12 +44,15 @@ def updateUser():
     Update user data
     """
     try:
-        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
-        if new_jwt_token == False:
-            return make_response(jsonify({"error": "Invalid Token"}), 401)
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
+
+        resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.PUT)
+
+        if resp.AuthResult["Valid"] == False:
+            return resp.CreateResponse()
 
         user_dict = {
-                        'User_id': None,                        
+                        'user_id': None,                        
                         'username': None,
                         'first_name': None,
                         'last_name': None,
@@ -64,25 +69,31 @@ def updateUser():
         user_dict['user_id'] = request.headers['user_id']        
         request_body = request.json
 
-        user_dict = {key: value for key, value in request_body.items()}
-
+        for key, val in request_body.items():
+            user_dict[key] = val
+            
         result = resource_methods.UpdateUser(user_dict)
-        if result != True:
-            if new_jwt_token != True:
-                resp = make_response(jsonify({"error": result}), 400)
-                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
-                resp.headers['X-JWT'] = new_jwt_token
-            else:
-                resp = make_response(jsonify({"error": result}), 400)
-            return resp
-        else:
-            if new_jwt_token != True:
-                resp = make_response(jsonify({"message": "User updated successfully"}), 200)
-                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
-                resp.headers['X-JWT'] = new_jwt_token
-            else:
-                resp = make_response(jsonify({"message": "User updated successfully"}), 200)
-            return resp
+
+        resp.ResponseResult = result
+
+        return result
+
+        # if result != True:
+        #     if new_jwt_token != True:
+        #         resp = make_response(jsonify({"error": result}), 400)
+        #         resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+        #         resp.headers['X-JWT'] = new_jwt_token
+        #     else:
+        #         resp = make_response(jsonify({"error": result}), 400)
+        #     return resp
+        # else:
+        #     if new_jwt_token != True:
+        #         resp = make_response(jsonify({"message": "User updated successfully"}), 200)
+        #         resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+        #         resp.headers['X-JWT'] = new_jwt_token
+        #     else:
+        #         resp = make_response(jsonify({"message": "User updated successfully"}), 200)
+        #     return resp
         
     except Exception as e:
         return jsonify({"error": str(e)}, 400)
@@ -107,23 +118,23 @@ def AuthenticateUser():
     except Exception as e:
         return jsonify({"error": str(e)}, 400)
 
-@app.route('/api/users/banned-usernames', methods=['GET'])
-def getBannedUsernames():
+# @app.route('/api/users/banned-usernames', methods=['GET'])
+# def getBannedUsernames():
 
-    try:
-        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+#     try:
+#         new_jwt_token = auth_methods.AuthenticateUser(request.headers)
 
-        if new_jwt_token == False:
-            return make_response(jsonify({"error": "Invalid Token"}), 401)
+#         if new_jwt_token == False:
+#             return make_response(jsonify({"error": "Invalid Token"}), 401)
         
-        banned_words = resource_methods.getBannedUsernames()
-        resp = make_response(jsonify({'banned_words': banned_words}), 200)
-        if new_jwt_token != True:
-            resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
-            resp.headers['X-JWT'] = new_jwt_token
-        return resp
-    except Exception as e:
-        return make_response(jsonify({'error': [str(e)]}), 401)
+#         banned_words = resource_methods.getBannedUsernames()
+#         resp = make_response(jsonify({'banned_words': banned_words}), 200)
+#         if new_jwt_token != True:
+#             resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+#             resp.headers['X-JWT'] = new_jwt_token
+#         return resp
+#     except Exception as e:
+#         return make_response(jsonify({'error': [str(e)]}), 401)
     
     
 @app.route('/api/users/logout', methods=['POST'])
@@ -294,23 +305,29 @@ def getPost(post_id):
     """
     try:
         requester_id = None
-        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
 
-        if new_jwt_token != False:
+        if JWTResult["Valid"] == True:
             requester_id = request.headers['user_id']
-        user_dict = resource_methods.getPost(post_id, requester_id)
-        if user_dict == None:
-            resp = make_response(jsonify({"error": "Post not found"}), 404)
-            if(new_jwt_token != True or new_jwt_token != False):
-                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
-                resp.headers['X-JWT'] = new_jwt_token
-        else:
-            resp = make_response(jsonify(user_dict), 200)
-            if(new_jwt_token != True or new_jwt_token != False):
-                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
-                resp.headers['X-JWT'] = new_jwt_token
 
-        return resp
+        user_dict = resource_methods.getPost(post_id, requester_id)
+
+        resp = HTTPResponse(user_dict, JWTResult, HTTPTypes.GET_Unprotected)
+
+        return resp.CreateResponse()
+
+        # if user_dict == None:
+        #     resp = make_response(jsonify({"error": "Post not found"}), 404)
+        #     if(new_jwt_token != True or new_jwt_token != False):
+        #         resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+        #         resp.headers['X-JWT'] = new_jwt_token
+        # else:
+        #     resp = make_response(jsonify(user_dict), 200)
+        #     if(new_jwt_token != True or new_jwt_token != False):
+        #         resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+        #         resp.headers['X-JWT'] = new_jwt_token
+
+        # return resp
     except Exception as e:
         print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)

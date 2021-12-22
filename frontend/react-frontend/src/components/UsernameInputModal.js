@@ -70,18 +70,18 @@ const EnterUsernameModal = ({...Props}) => {
             },
             body: JSON.stringify(username)
         }).then(res => {
+            if(res.headers.get('X-JWT') != null) {
+                cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
+            }
+            
             if(res.status === 200){
-                if(res.headers.get('X-JWT') != null) {
-                    cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
-                }
                 logged_in_state.setIsLoggedIn(true);
+                history.push(`/user/${cookies.get('user_id')}`)
             }
-            else if (res.status === 400) {
-                if(res.headers.get('X-JWT') != null) {
-                    cookies.set('token', res.headers.get('X-JWT'), {path: '/'})
-                }
+            else{
+                return res.json()
             }
-            return res.json()
+
         }).then(data => {
             throw new Error(data.error)
         }).catch(err => {

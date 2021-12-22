@@ -24,25 +24,25 @@ class ResourceDB():
     
         self.connection = connection
         
-    # to get all banned phrases
-    def bannedPhrases(self):
-        banned_list = []
+    # # to get all banned phrases
+    # def bannedPhrases(self):
+    #     banned_list = []
 
-        connex = self.connection
+    #     connex = self.connection
 
-        if connex != None:
-            try:
-                cursor = connex.cursor()
-                cursor.callproc('banned_phrases')
+    #     if connex != None:
+    #         try:
+    #             cursor = connex.cursor()
+    #             cursor.callproc('banned_phrases')
 
-                for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        banned_list.append(i[0])
+    #             for result in cursor.stored_results():
+    #                 for i in result.fetchall():
+    #                     banned_list.append(i[0])
 
-                return banned_list
-            except Exception as e:
-                banned_list.append(str(e))
-                return banned_list
+    #             return banned_list
+    #         except Exception as e:
+    #             banned_list.append(str(e))
+    #             return banned_list
 
     # to insert users
     def CreateUser(self, user_info: dict):
@@ -79,8 +79,8 @@ class ResourceDB():
                     return 1
 
             except Exception as e:
-                print(e)
-                return -1
+                pass
+        return -1
     def UpdateUser(self, updated_items):
         """
         updates a user in the database
@@ -91,7 +91,7 @@ class ResourceDB():
             try:
                 cursor = connex.cursor()
                 
-                cursor.callproc('UpdateUser', [updated_items['User_id'],
+                cursor.callproc('UpdateUser', [updated_items['user_id'],
                                                 updated_items['username'],
                                                 updated_items['first_name'],
                                                 updated_items['last_name'],
@@ -107,8 +107,8 @@ class ResourceDB():
                 connex.commit()
                 return True
             except Exception as e:
-                return str(e)
-        return 'Server failed to connect'
+                print(traceback.print_exc())
+        return False
     
     def getUserProfile(self, username, requester_id, get_posts=True):
         """
@@ -160,28 +160,27 @@ class ResourceDB():
                 return results
             except Exception as e:
                 print(traceback.print_exc())
-                return None
-        return 'Server failed to connect'
+        return {}
 
-    def editUserSocials(self, user_id, social_info):
-        """
-        edit user socials
-        :param user_id:
-        :param social_info:
-        :return:
-        """
-        connex = self.connection
-        if connex != None:
-            try:
-                print(social_info)
-                cursor = connex.cursor()
-                cursor.callproc('update_user_socials', [user_id, social_info['twitter'], social_info['facebook'], social_info['youtube'],  social_info['instagram'], social_info['website']])
-                connex.commit()
-                return True
-            except Exception as e:
-                print(e)
-                return str(e)
-        return 'Server failed to connect'
+    # def editUserSocials(self, user_id, social_info):
+    #     """
+    #     edit user socials
+    #     :param user_id:
+    #     :param social_info:
+    #     :return:
+    #     """
+    #     connex = self.connection
+    #     if connex != None:
+    #         try:
+    #             print(social_info)
+    #             cursor = connex.cursor()
+    #             cursor.callproc('update_user_socials', [user_id, social_info['twitter'], social_info['facebook'], social_info['youtube'],  social_info['instagram'], social_info['website']])
+    #             connex.commit()
+    #             return True
+    #         except Exception as e:
+    #             print(e)
+    #             return str(e)
+    #     return 'Server failed to connect'
     
     def insertPost(self, user_id, post_info: dict):
         """
@@ -198,8 +197,8 @@ class ResourceDB():
                 connex.commit()
                 return True
             except Exception as e:
-                return str(e)
-        return 'Server failed to connect'
+                return False
+        return False
     
     def likePost(self, user_id, post_id, like_info):
         """
@@ -227,10 +226,10 @@ class ResourceDB():
                     connex.commit()
                 return True
             except Exception as e:
-                return str(e)
-        return 'Server failed to connect'
+                pass
+        return False
 
-    def followUser(self, user_id, follow_id, follow_info):
+    def followUser(self, user_id, follow_id, follow_info) -> bool:
         """
         follow or unfollow a user
         :param user_id:
@@ -249,8 +248,8 @@ class ResourceDB():
                     connex.commit()
                 return True
             except Exception as e:
-                return None
-        return 'Server failed to connect'
+                pass
+        return False
     
     def getPost(self, post_id, requester_id):
         """
@@ -301,8 +300,7 @@ class ResourceDB():
                 return posts[-1]
             except Exception as e:
                 print(traceback.print_exc())
-                return None
-        return 'Server failed to connect'
+        return {}
 
     def getPostComments(self, post_id, requester_id):
         """
@@ -330,7 +328,7 @@ class ResourceDB():
                 return comments
             except Exception as e:
                 print(traceback.print_exc())
-                return e
+        return {}
     
     def getUserFollowers(self, username, requester_id):
         """
@@ -364,8 +362,7 @@ class ResourceDB():
                 return followers
             except Exception as e:
                 print(traceback.print_exc())
-                return e
-        return 'Server failed to connect'
+        return {}
     
     def getUserFollowing(self, username, requester_id):
         """
@@ -399,8 +396,7 @@ class ResourceDB():
                 return followers
             except Exception as e:
                 print(traceback.print_exc())
-                return e
-        return 'Server failed to connect'
+        return {}
 
     def CalculateCommentsDepth(self, post_id):
         """
