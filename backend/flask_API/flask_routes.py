@@ -1,5 +1,6 @@
 from backend.flask_API.http_response import HTTPResponse
 from backend.flask_API.http_type_enum import HTTPTypes
+from backend.flask_API.resource_methods import ResourceDB_API
 from flask import Flask, json, request, jsonify, make_response, abort
 from flask_cors import CORS
 from datetime import datetime
@@ -8,6 +9,8 @@ from mysql_db_access import mysql_connection, jwt_authdb
 import resource_methods
 import auth_methods
 import traceback
+
+ResourceDatabase = ResourceDB_API()
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -72,7 +75,7 @@ def updateUser():
         for key, val in request_body.items():
             user_dict[key] = val
             
-        result = resource_methods.UpdateUser(user_dict)
+        result = ResourceDatabase.UpdateUser(user_dict)
 
         resp.ResponseResult = result
 
@@ -127,7 +130,7 @@ def AuthenticateUser():
 #         if new_jwt_token == False:
 #             return make_response(jsonify({"error": "Invalid Token"}), 401)
         
-#         banned_words = resource_methods.getBannedUsernames()
+#         banned_words = ResourceDatabase.getBannedUsernames()
 #         resp = make_response(jsonify({'banned_words': banned_words}), 200)
 #         if new_jwt_token != True:
 #             resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
@@ -163,26 +166,21 @@ def getUserProfile(username):
     """
     try:
         requester_id = None
-        new_jwt_token = auth_methods.AuthenticateUser(request.headers)
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
 
-        if new_jwt_token != False:
+        resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.GET_Unprotected)
+
+        if JWTResult["Valid"] != False:
             requester_id = request.headers['user_id']
         
-        user_dict = resource_methods.getUserProfile(username, requester_id)
-        if user_dict == None:
-            resp = make_response(jsonify({"error": "User not found"}), 404)
-            if(new_jwt_token != True or new_jwt_token != False):
-                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
-                resp.headers['X-JWT'] = new_jwt_token
-        else:
-            resp = make_response(jsonify(user_dict), 200)
-            if(new_jwt_token != True or new_jwt_token != False):
-                resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
-                resp.headers['X-JWT'] = new_jwt_token
+        result = ResourceDatabase.getUserProfile(username, requester_id)
 
-        return resp
+        resp.ResponseResult = result
+
+        return resp.CreateResponse()
+
     except Exception as e:
-        return make_response(jsonify({'error': str(e)}), 401)
+        return make_response(jsonify({'error': str(e)}), 400)
 
 @app.route('/api/users/profile', methods=['GET'])
 def getLoggedInUserProfile():
@@ -196,7 +194,7 @@ def getLoggedInUserProfile():
             return make_response(jsonify({"error": "Invalid Token"}), 401)
             
         requester_id = request.headers['user_id']
-        user_dict = resource_methods.getUserProfile(requester_id, requester_id)
+        user_dict = ResourceDatabase.getUserProfile(requester_id, requester_id)
         if user_dict == None:
             return make_response(jsonify({"error": "User not found"}), 404)
         resp = make_response(jsonify(user_dict), 200)
@@ -216,7 +214,7 @@ def updateUserSocials():
         if new_jwt_token == False:
             return make_response(jsonify({"error": "Invalid Token"}), 401)
         
-        result = resource_methods.editUserSocials(request.headers['user_id'], request.json)
+        result = ResourceDatabase.editUserSocials(request.headers['user_id'], request.json)
 
         if result != True:
             return make_response(jsonify({"error": result}), 400)
@@ -240,7 +238,7 @@ def insertPost():
         if new_jwt_token == False:
             return make_response(jsonify({"error": "Invalid Token"}), 401)
         
-        result = resource_methods.insertPost(request.headers['user_id'], request.json)
+        result = ResourceDatabase.insertPost(request.headers['user_id'], request.json)
         if result != True:
             return make_response(jsonify({"error": "Post not added"}), 400)
         resp = make_response(jsonify({"message": "Post added successfully"}), 200)
@@ -263,7 +261,7 @@ def likePost(post_id):
         if new_jwt_token == False:
             return make_response(jsonify({"error": "Invalid Token"}), 401)
         
-        result = resource_methods.likePost(post_id, request.headers['user_id'], request.json)
+        result = ResourceDatabase.likePost(post_id, request.headers['user_id'], request.json)
         if result == True:
             resp = make_response(jsonify({"message": "Post liked successfully"}), 200)
         else:
@@ -285,7 +283,7 @@ def followUser(follow_id):
         if new_jwt_token == False:
             return make_response(jsonify({"error": "Invalid Token"}), 401)
         
-        result = resource_methods.followUser(request.headers['user_id'], follow_id, request.json)
+        result = ResourceDatabase.followUser(request.headers['user_id'], follow_id, request.json)
         if result == True:
             resp = make_response(jsonify({"message": "User followed successfully"}), 200)
         else:
@@ -310,7 +308,7 @@ def getPost(post_id):
         if JWTResult["Valid"] == True:
             requester_id = request.headers['user_id']
 
-        user_dict = resource_methods.getPost(post_id, requester_id)
+        user_dict = ResourceDatabase.getPost(post_id, requester_id)
 
         resp = HTTPResponse(user_dict, JWTResult, HTTPTypes.GET_Unprotected)
 
@@ -343,7 +341,7 @@ def getPostComments(post_id):
 
         if new_jwt_token != False:
             requester_id = request.headers['user_id']
-        comments = resource_methods.getPostComments(post_id, requester_id)
+        comments = ResourceDatabase.getPostComments(post_id, requester_id)
         if comments == None:
             resp = make_response(jsonify({"error": "Post not found"}), 404)
             if(new_jwt_token != True or new_jwt_token != False):
@@ -371,7 +369,7 @@ def getUserFollowers(username):
 
         if new_jwt_token != False:
             requester_id = request.headers['user_id']
-        followers = resource_methods.getUserFollowers(username, requester_id)
+        followers = ResourceDatabase.getUserFollowers(username, requester_id)
         if followers == None:
             resp = make_response(jsonify({"error": "User not found"}), 404)
             if(new_jwt_token != True or new_jwt_token != False):
@@ -399,7 +397,7 @@ def getUserFollowing(username):
 
         if new_jwt_token != False:
             requester_id = request.headers['user_id']
-        following = resource_methods.getUserFollowing(username, requester_id)
+        following = ResourceDatabase.getUserFollowing(username, requester_id)
         if following == None:
             resp = make_response(jsonify({"error": "User not found"}), 404)
             if(new_jwt_token != True or new_jwt_token != False):

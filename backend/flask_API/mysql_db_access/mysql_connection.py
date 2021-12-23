@@ -1,4 +1,5 @@
 import mysql.connector as mysqlconnex
+import mysql.connector.pooling as DBPooler
 from mysql_db_access.mysql_creds import Credentials
 from datetime import datetime
 import traceback
@@ -6,13 +7,15 @@ import traceback
 
 class ResourceDB():
     def __init__(self, credentials: Credentials):
-        self.connection = None
+        self.cnx_pool = None
         self.CreateConnection(credentials)
 
     def CreateConnection(self, creds: Credentials):
-        connection = None
+        pool = None
         try:
-            connection = mysqlconnex.connect(
+            pool = DBPooler.MySQLConnectionPool(
+                pool_name = "resource_db_pool",
+                pool_size = 5,
                 host = creds.HOST_NAME,
                 user = creds.USER_NAME,
                 passwd = creds.USER_PASSWORD,
@@ -22,7 +25,7 @@ class ResourceDB():
         except mysqlconnex.Error as e:
             print(f'Connection to the {creds.database} database was unsuccessful. Error: {e}')
     
-        self.connection = connection
+        self.cnx_pool = pool
         
     # # to get all banned phrases
     # def bannedPhrases(self):
@@ -46,7 +49,7 @@ class ResourceDB():
 
     # to insert users
     def CreateUser(self, user_info: dict):
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
 
         if connex != None:
             try:
@@ -66,6 +69,7 @@ class ResourceDB():
                                     user_info['email'], 
                                     user_info['pfp_url']])
                     connex.commit()
+                    connex.close()
                     return 0
                 except Exception as e:
                     cursor.callproc('UpdateUserLastLogin', [user_info['user_id']])
@@ -75,7 +79,9 @@ class ResourceDB():
                     for result in cursor.stored_results():
                         for i in result.fetchall():
                             if i[0] == 1:
+                                connex.close()
                                 return 0
+                    connex.close()
                     return 1
 
             except Exception as e:
@@ -85,7 +91,7 @@ class ResourceDB():
         """
         updates a user in the database
         """
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
 
         if connex != None:
             try:
@@ -105,9 +111,11 @@ class ResourceDB():
                                                 updated_items['website_url']]
                                                )
                 connex.commit()
+                connex.close()
                 return True
             except Exception as e:
                 print(traceback.print_exc())
+                connex.close()
         return False
     
     def getUserProfile(self, username, requester_id, get_posts=True):
@@ -117,7 +125,7 @@ class ResourceDB():
         :return:
         """
         # username may come in as a user_id so we need to convert it to a username
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         keys = ['user_id','username', 'first_name', 'last_name', 'pfp', 'creation_date', 'last_login', 'bio', 'location','followers','following', 'facebook_url', 'youtube_url', 'twitter_url', 'instagram_url', 'website_url']
         post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked']
         if connex != None:
@@ -157,9 +165,11 @@ class ResourceDB():
                                 results['follows'] = True
                             else:
                                 results['follows'] = False
+                connex.close()
                 return results
             except Exception as e:
                 print(traceback.print_exc())
+                connex.close()
         return {}
 
     # def editUserSocials(self, user_id, social_info):
@@ -189,15 +199,17 @@ class ResourceDB():
         :param post_info:
         :return:
         """
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
                 cursor.callproc('insert_post', [user_id, datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"), post_info['title'], post_info['body_raw'], post_info['body_html'],post_info['reply_post_id']])
                 connex.commit()
+                connex.close()
                 return True
             except Exception as e:
-                return False
+                print(traceback.print_exc())
+                connex.close()
         return False
     
     def likePost(self, user_id, post_id, like_info):
@@ -208,7 +220,7 @@ class ResourceDB():
         :param like_info:
         :return:
         """
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
@@ -224,9 +236,11 @@ class ResourceDB():
                     print('unliked')
                     cursor.callproc('unlike_undislike', [user_id, post_id])
                     connex.commit()
+                connex.close()
                 return True
             except Exception as e:
-                pass
+                print(traceback.print_exc())
+                connex.close()
         return False
 
     def followUser(self, user_id, follow_id, follow_info) -> bool:
@@ -236,7 +250,7 @@ class ResourceDB():
         :param follow_id:
         :return:
         """
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
@@ -246,9 +260,11 @@ class ResourceDB():
                 else:
                     cursor.callproc('unfollow_user', [user_id, follow_id])
                     connex.commit()
+                connex.close()
                 return True
             except Exception as e:
-                pass
+                print(traceback.print_exc())
+                connex.close()
         return False
     
     def getPost(self, post_id, requester_id):
@@ -259,7 +275,7 @@ class ResourceDB():
         """
         post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments', 'number_of_comments']
         user_keys = ['first_name', 'last_name','pfp',  'username']
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
@@ -287,7 +303,8 @@ class ResourceDB():
                     else:
                         break
                 if posts == []:
-                    return None
+                    connex.close()
+                    return {}
                 elif len(posts) == 1:
                     posts[0]['comments'] = self.getPostComments(posts[0]['post_id'], requester_id)
                     
@@ -296,10 +313,11 @@ class ResourceDB():
                         post['comments'] = []
                     for i in range(len(posts)-1):
                         posts[i+1]['comments'].append(posts[i])
-                
+                connex.close()
                 return posts[-1]
             except Exception as e:
                 print(traceback.print_exc())
+                connex.close()
         return {}
 
     def getPostComments(self, post_id, requester_id):
@@ -310,7 +328,7 @@ class ResourceDB():
         """
         post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments', 'number_of_comments']
         user_keys = ['first_name', 'last_name','pfp',  'username']
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
@@ -325,9 +343,11 @@ class ResourceDB():
                         comments[-1]['poster_info'] = {}
                         comments[-1]['comments'] = []
                         comments[-1]['poster_info'] = dict(zip(user_keys, i[12:]))
+                connex.close()
                 return comments
             except Exception as e:
                 print(traceback.print_exc())
+                connex.close()
         return {}
     
     def getUserFollowers(self, username, requester_id):
@@ -337,7 +357,7 @@ class ResourceDB():
         :return:
         """
         user_keys =  ['user_id','username', 'first_name', 'last_name', 'pfp', 'bio', 'follows']
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
@@ -359,9 +379,11 @@ class ResourceDB():
                     else:
                         follower['OwnAccount'] = False
 
+                connex.close()
                 return followers
             except Exception as e:
                 print(traceback.print_exc())
+                connex.close()
         return {}
     
     def getUserFollowing(self, username, requester_id):
@@ -371,7 +393,7 @@ class ResourceDB():
         :return:
         """
         user_keys =  ['user_id','username', 'first_name', 'last_name', 'pfp', 'bio', 'follows']
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
@@ -392,10 +414,11 @@ class ResourceDB():
                         follower['OwnAccount'] = True
                     else:
                         follower['OwnAccount'] = False
-
+                connex.close()
                 return followers
             except Exception as e:
                 print(traceback.print_exc())
+                connex.close()
         return {}
 
     def CalculateCommentsDepth(self, post_id):
@@ -404,7 +427,7 @@ class ResourceDB():
         :param post_id:
         :return:
         """
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
@@ -416,11 +439,3 @@ class ResourceDB():
             except Exception as e:
                 return None
         return 'Server failed to connect'
-
-    def CloseConnection(self):
-        """
-        Close the connection
-        :return:
-        """
-        self.connection.close()
-        self.connection = None
