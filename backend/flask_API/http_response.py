@@ -1,7 +1,6 @@
 
-from _typeshed import Self
 from flask import jsonify, make_response
-from backend.flask_API.http_type_enum import HTTPTypes
+from http_type_enum import HTTPTypes
 
 
 class HTTPResponse():

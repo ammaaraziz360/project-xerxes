@@ -150,7 +150,7 @@ class ResourceDB():
                     for resulter in cursor.stored_results():
                         for x in resulter.fetchall():
                             results['Posts'].append(dict(zip(post_keys, x)))
-                            results['Posts'][-1]['number_of_comments'] = self.CalculateCommentsDepth(results['Posts'][-1]['post_id'])
+                            # results['Posts'][-1]['number_of_comments'] = self.CalculateCommentsDepth(results['Posts'][-1]['post_id'])
 
                 if results['user_id'] == str(requester_id):
                     results['OwnAccount'] = True
@@ -287,7 +287,7 @@ class ResourceDB():
                         for i in result.fetchall():
                             posts.append(dict(zip(post_keys, i[0:12])))
                             posts[-1]['poster_info'] = dict(zip(user_keys, i[12:]))
-                    posts[-1]['number_of_comments'] = self.CalculateCommentsDepth(post_id)
+                    # posts[-1]['number_of_comments'] = self.CalculateCommentsDepth(post_id)
                     if posts[-1]['liked'] != None:
                         posts[-1]['liked'] = 'true'
                     else:
