@@ -8,7 +8,8 @@ from datetime import datetime
 class ResourceDB_API():
 
     def __init__(self) -> None:
-        self.resorDB  = ResourceDB(Credentials("bloggit-db"))
+        # self.resorDB  = ResourceDB(Credentials("bloggit-db"))
+        self.resorDB  = ResourceDB(Credentials("BlogooDB"))
 
     # def getBannedUsernames(self):
     #     """

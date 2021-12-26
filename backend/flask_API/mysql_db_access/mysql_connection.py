@@ -118,7 +118,7 @@ class ResourceDB():
                 connex.close()
         return False
     
-    def getUserProfile(self, username, requester_id, get_posts=True):
+    def getUserProfile(self, user_id, requester_id, get_posts=True):
         """
         get user profile
         :param user_id:
@@ -126,45 +126,35 @@ class ResourceDB():
         """
         # username may come in as a user_id so we need to convert it to a username
         connex = self.cnx_pool.get_connection()
-        keys = ['user_id','username', 'first_name', 'last_name', 'pfp', 'creation_date', 'last_login', 'bio', 'location','followers','following', 'facebook_url', 'youtube_url', 'twitter_url', 'instagram_url', 'website_url']
-        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked']
+        # keys = ['user_id','username', 'first_name', 'last_name', 'pfp', 'creation_date', 'last_login', 'bio', 'location','followers','following', 'facebook_url', 'youtube_url', 'twitter_url', 'instagram_url', 'website_url']
+        # post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked']
         if connex != None:
             try:
                 results = {}
                 cursor = connex.cursor()
-                # username may come in as a user_id so we need to convert it to a username
-                cursor.callproc('get_username', [username])
+
+                # user_id may come in as a username so we need to convert it to a user_id
+                cursor.callproc('getUserID', [user_id])
                 for result in cursor.stored_results():
                     for i in result.fetchall():
                         if i[0] != None:
-                            username = i[0]
+                            user_id = i[0]
 
-                cursor.callproc('get_user_profile', [username])
+                cursor.callproc('getUserProfile', [user_id , requester_id])
                 for result in cursor.stored_results():
+                    keys = result.column_names
                     for i in result.fetchall():
                         results = dict(zip(keys, i))
 
                 if get_posts:
                     results['Posts'] = []
-                    cursor.callproc('get_user_posts', [results['user_id'], requester_id])
+                    cursor.callproc('getUserPosts', [user_id, requester_id])
                     for resulter in cursor.stored_results():
-                        for x in resulter.fetchall():
-                            results['Posts'].append(dict(zip(post_keys, x)))
-                            results['Posts'][-1]['number_of_comments'] = self.CalculateCommentsDepth(results['Posts'][-1]['post_id'])
+                        keys = resulter.column_names
+                        [results['Posts'].append(dict(zip(keys, x))) for x in resulter.fetchall()]
+                        # for x in resulter.fetchall():
+                        #     results['Posts'].append(dict(zip(keys, x)))
 
-                if results['user_id'] == str(requester_id):
-                    results['OwnAccount'] = True
-                    results['follows'] = False
-                else:
-                    results['OwnAccount'] = False
-                    print([requester_id, results['user_id']])
-                    cursor.callproc('check_user_follows', [requester_id, results['user_id']])
-                    for result in cursor.stored_results():
-                        for i in result.fetchall():
-                            if i[0] == 1:
-                                results['follows'] = True
-                            else:
-                                results['follows'] = False
                 connex.close()
                 return results
             except Exception as e:
