@@ -143,8 +143,7 @@ class ResourceDB():
                 cursor.callproc('getUserProfile', [user_id , requester_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
-                    for i in result.fetchall():
-                        results = dict(zip(keys, i))
+                    [results := dict(zip(keys, x)) for x in result.fetchall()]
 
                 if get_posts:
                     results['Posts'] = []
@@ -152,8 +151,6 @@ class ResourceDB():
                     for resulter in cursor.stored_results():
                         keys = resulter.column_names
                         [results['Posts'].append(dict(zip(keys, x))) for x in resulter.fetchall()]
-                        # for x in resulter.fetchall():
-                        #     results['Posts'].append(dict(zip(keys, x)))
 
                 connex.close()
                 return results
@@ -263,47 +260,27 @@ class ResourceDB():
         :param post_id:
         :return:
         """
-        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments', 'number_of_comments']
-        user_keys = ['first_name', 'last_name','pfp',  'username']
         connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
                 posts = []
                 
-                while True:
-                    cursor.callproc('get_post', [post_id, requester_id])
-                    for result in cursor.stored_results():
-                        for i in result.fetchall():
-                            posts.append(dict(zip(post_keys, i[0:12])))
-                            posts[-1]['poster_info'] = dict(zip(user_keys, i[12:]))
-                    posts[-1]['number_of_comments'] = self.CalculateCommentsDepth(post_id)
-                    if posts[-1]['liked'] != None:
-                        posts[-1]['liked'] = 'true'
-                    else:
-                        posts[-1]['liked'] = 'false'
+                cursor.callproc('getPostThread', [post_id, requester_id])
+                for result in cursor.stored_results():
+                    keys = result.column_names
+                    [posts.append(dict(zip(keys, x))) for x in result.fetchall()]
 
-                    if posts[-1]['disliked'] != None:
-                        posts[-1]['disliked'] = 'true'
-                    else:
-                        posts[-1]['disliked'] = 'false'
-                    
-                    if posts[-1]['reply_post_id'] != None:
-                        post_id = posts[-1]['reply_post_id']
-                    else:
-                        break
-                if posts == []:
-                    connex.close()
+                for post in posts:
+                    post["comments"] = []
+
+                posts.reverse()
+                for i in range(len(posts)-1):
+                    posts[i+1]['comments'].append(posts[i])
+
+                if len(posts) == 0:
                     return {}
-                elif len(posts) == 1:
-                    posts[0]['comments'] = self.getPostComments(posts[0]['post_id'], requester_id)
-                    
-                else:
-                    for post in posts:
-                        post['comments'] = []
-                    for i in range(len(posts)-1):
-                        posts[i+1]['comments'].append(posts[i])
-                connex.close()
+                
                 return posts[-1]
             except Exception as e:
                 print(traceback.print_exc())
