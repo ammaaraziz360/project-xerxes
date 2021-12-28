@@ -74,13 +74,10 @@ class ResourceDB():
                 except Exception as e:
                     cursor.callproc('UpdateUserLastLogin', [user_info['user_id']])
 
-                    cursor.callproc('UsernameNullCheck', [user_info['user_id']])
+                    result_args = cursor.callproc('UsernameNullCheck', [user_info['user_id'], '0'])
+                    if result_args[1] != None:
+                        return 0
 
-                    for result in cursor.stored_results():
-                        for i in result.fetchall():
-                            if i[0] == 1:
-                                connex.close()
-                                return 0
                     connex.close()
                     return 1
 
@@ -126,26 +123,23 @@ class ResourceDB():
         """
         # username may come in as a user_id so we need to convert it to a username
         connex = self.cnx_pool.get_connection()
-        # keys = ['user_id','username', 'first_name', 'last_name', 'pfp', 'creation_date', 'last_login', 'bio', 'location','followers','following', 'facebook_url', 'youtube_url', 'twitter_url', 'instagram_url', 'website_url']
-        # post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked']
         if connex != None:
             try:
                 results = {}
                 cursor = connex.cursor()
 
                 # user_id may come in as a username so we need to convert it to a user_id
-                cursor.callproc('getUserID', [user_id])
-                for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        if i[0] != None:
-                            user_id = i[0]
+                result_args = cursor.callproc('getUserID', [user_id, '0'])
+
+                if result_args[1] is not None:
+                    user_id = result_args[1]
 
                 cursor.callproc('getUserProfile', [user_id , requester_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
                     [results := dict(zip(keys, x)) for x in result.fetchall()]
 
-                if get_posts:
+                if get_posts and results != {}:
                     results['Posts'] = []
                     cursor.callproc('getUserPosts', [user_id, requester_id])
                     for resulter in cursor.stored_results():
@@ -190,7 +184,11 @@ class ResourceDB():
         if connex != None:
             try:
                 cursor = connex.cursor()
-                cursor.callproc('insert_post', [user_id, datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"), post_info['title'], post_info['body_raw'], post_info['body_html'],post_info['reply_post_id']])
+                cursor.callproc('CreatePost', [user_id, 
+                                                post_info['title'], 
+                                                post_info['body'], 
+                                                post_info['reply_post_id'],
+                                                post_info['category_id']])
                 connex.commit()
                 connex.close()
                 return True
@@ -199,7 +197,7 @@ class ResourceDB():
                 connex.close()
         return False
     
-    def likePost(self, user_id, post_id, like_info):
+    def likePost(self, user_id, post_id, interaction_type):
         """
         like a post
         :param user_id:
@@ -211,18 +209,12 @@ class ResourceDB():
         if connex != None:
             try:
                 cursor = connex.cursor()
-                if like_info['liked'] == 'true':
-                    print('liked')
-                    cursor.callproc('like_post', [user_id, post_id])
-                    connex.commit()
-                elif like_info['disliked'] == 'true':
-                    print('disliked')
-                    cursor.callproc('dislike_post', [user_id, post_id])
-                    connex.commit()
-                elif like_info['liked'] == 'false' and like_info['disliked'] == 'false':
-                    print('unliked')
-                    cursor.callproc('unlike_undislike', [user_id, post_id])
-                    connex.commit()
+                
+                # interaction_type explanation:
+                # 1 for like, 0 for dislike, -1 for removing any post interaction
+                cursor.callproc('AddPostInteraction', [user_id, post_id, interaction_type])
+                connex.commit()
+
                 connex.close()
                 return True
             except Exception as e:
@@ -240,6 +232,7 @@ class ResourceDB():
         connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
+                # TODO
                 cursor = connex.cursor()
                 if follow_info['following'] == True:
                     cursor.callproc('follow_user', [user_id, follow_id])
@@ -293,23 +286,18 @@ class ResourceDB():
         :param post_id:
         :return:
         """
-        post_keys = ['post_id', 'author_id', 'date_posted', 'title', 'body_html', 'body_raw', 'likes', 'dislikes', 'views', 'reply_post_id','liked', 'disliked', 'comments', 'number_of_comments']
-        user_keys = ['first_name', 'last_name','pfp',  'username']
         connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
                 comments = []
 
-                cursor.callproc('get_comments', [post_id, requester_id])
+                cursor.callproc('getPostComments', [post_id, requester_id])
 
                 for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        comments.append(dict(zip(post_keys, i[:12])))
-                        comments[-1]['number_of_comments'] = self.CalculateCommentsDepth(comments[-1]['post_id'])
-                        comments[-1]['poster_info'] = {}
-                        comments[-1]['comments'] = []
-                        comments[-1]['poster_info'] = dict(zip(user_keys, i[12:]))
+                    keys = result.column_names
+                    [comments.append(dict(zip(keys, val))) for val in result.fetchall()]
+
                 connex.close()
                 return comments
             except Exception as e:
@@ -328,7 +316,7 @@ class ResourceDB():
         if connex != None:
             try:
                 cursor = connex.cursor()
-
+                # TODO: update 
                 cursor.callproc('get_username', [username])
                 for result in cursor.stored_results():
                     for i in result.fetchall():
@@ -364,7 +352,7 @@ class ResourceDB():
         if connex != None:
             try:
                 cursor = connex.cursor()
-
+                # TODO: update
                 cursor.callproc('get_username', [username])
                 for result in cursor.stored_results():
                     for i in result.fetchall():
@@ -387,23 +375,3 @@ class ResourceDB():
                 print(traceback.print_exc())
                 connex.close()
         return {}
-
-    def CalculateCommentsDepth(self, post_id):
-        """
-        calculate how many comments under a post
-        :param post_id:
-        :return:
-        """
-        connex = self.cnx_pool.get_connection()
-        if connex != None:
-            try:
-                cursor = connex.cursor()
-                cursor.callproc('get_comment_children', [post_id])
-                for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        connex.close()
-                        return i[0]
-                connex.close()                 
-            except Exception as e:
-                print(traceback.print_exc())
-        return 0
