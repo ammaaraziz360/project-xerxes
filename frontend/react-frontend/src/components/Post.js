@@ -41,7 +41,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                     </div>
                     <div className="d-flex col-6 justify-content-end align-items-center">
                         <Link to={`/user/${user_info.username}`}>
-                            <img src={user_info.pfp} className="img-fluid d-inline pfp-small" alt="user image"/>
+                            <img src={user_info.pfp_url} className="img-fluid d-inline pfp-small" alt="user image"/>
                         </Link>
                         <span className="d-flex flex-column bd-highlight p-2">
                             <div className="bd-highlight"><strong>{user_info.first_name} {user_info.last_name}</strong></div>
@@ -55,8 +55,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
             </div>
             <div className="p-3 profile-header ">
                 <div className="muted-regular">{new Date(post_info.date_posted).toLocaleString()}</div>
-                <div className="hr pb-3 muted-regular">{post_info.views} Views</div>
-                <div className="mt-3" dangerouslySetInnerHTML={{__html: post_info.body_html}} ></div>
+                <div className="mt-3">{post_info.body}</div>
             </div>
             <div className="stats-div-2 sub">
                 <div className="row p-2 align-items-center">
@@ -69,7 +68,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                     <div className="d-flex col-3 justify-content-end d-lg-flex d-none">
                         <Button variant="primary" onClick={() => view_post()}>
                             <GoCommentDiscussion/>
-                            <span className="p-1">{post_info.number_of_comments}</span>
+                            <span className="p-1">{post_info.num_of_comments}</span>
                         </Button>
                         <Button variant="primary">
                             <FiShare2/>

@@ -75,10 +75,13 @@ const EnterUsernameModal = ({...Props}) => {
             }
             
             if(res.status === 200){
+                localStorage.setItem('logged_in', 'true')
                 logged_in_state.setIsLoggedIn(true);
                 history.push(`/user/${cookies.get('user_id')}`)
             }
             else{
+                localStorage.setItem('logged_in', 'false')
+                logged_in_state.setIsLoggedIn(false)
                 return res.json()
             }
 

@@ -36,6 +36,8 @@ const NavBar = () => {
                     if(res.headers.get('X-JWT') != null) {
                         cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
                     }
+                    localStorage.setItem('logged_in', 'true');
+                    logged_in_state.setIsLoggedIn(true);
                     return res.json()
                 } 
                 else if (res.status === 401) {
@@ -107,7 +109,7 @@ const NavBar = () => {
                         <div className="dropdown sub">
                             
                             <a className="" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                                {userProfile != null ? <img src={userProfile.pfp} className="image-fluid pfp"></img>
+                                {userProfile != null ? <img src={userProfile.pfp_url} className="image-fluid pfp"></img>
                                             : <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" className="image-fluid pfp"></img>
                                 }
                             </a>

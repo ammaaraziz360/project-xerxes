@@ -75,7 +75,7 @@ class ResourceDB():
                     cursor.callproc('UpdateUserLastLogin', [user_info['user_id']])
 
                     result_args = cursor.callproc('UsernameNullCheck', [user_info['user_id'], '0'])
-                    if result_args[1] != None:
+                    if result_args[1] == None:
                         return 0
 
                     connex.close()
@@ -129,19 +129,19 @@ class ResourceDB():
                 cursor = connex.cursor()
 
                 # user_id may come in as a username so we need to convert it to a user_id
-                result_args = cursor.callproc('getUserID', [user_id, '0'])
+                result_args = cursor.callproc('GetUserID', [user_id, '0'])
 
                 if result_args[1] is not None:
                     user_id = result_args[1]
 
-                cursor.callproc('getUserProfile', [user_id , requester_id])
+                cursor.callproc('GetUserProfile', [user_id , requester_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
                     [results := dict(zip(keys, x)) for x in result.fetchall()]
 
                 if get_posts and results != {}:
                     results['Posts'] = []
-                    cursor.callproc('getUserPosts', [user_id, requester_id])
+                    cursor.callproc('GetUserPosts', [user_id, requester_id])
                     for resulter in cursor.stored_results():
                         keys = resulter.column_names
                         [results['Posts'].append(dict(zip(keys, x))) for x in resulter.fetchall()]
@@ -211,7 +211,8 @@ class ResourceDB():
                 cursor = connex.cursor()
                 
                 # interaction_type explanation:
-                # 1 for like, 0 for dislike, -1 for removing any post interaction
+                # 1 for like, 2 for dislike, -1 for removing any post interaction
+                print(interaction_type)
                 cursor.callproc('AddPostInteraction', [user_id, post_id, interaction_type])
                 connex.commit()
 
@@ -222,7 +223,7 @@ class ResourceDB():
                 connex.close()
         return False
 
-    def followUser(self, user_id, follow_id, follow_info) -> bool:
+    def followUser(self, user_id, follow_user_id, follow_info) -> bool:
         """
         follow or unfollow a user
         :param user_id:
@@ -234,12 +235,8 @@ class ResourceDB():
             try:
                 # TODO
                 cursor = connex.cursor()
-                if follow_info['following'] == True:
-                    cursor.callproc('follow_user', [user_id, follow_id])
-                    connex.commit()
-                else:
-                    cursor.callproc('unfollow_user', [user_id, follow_id])
-                    connex.commit()
+                cursor.callproc('FollowUnfollowUser', [user_id, follow_user_id, follow_info["following"]])
+
                 connex.close()
                 return True
             except Exception as e:
@@ -247,6 +244,7 @@ class ResourceDB():
                 connex.close()
         return False
     
+    # FIX
     def getPost(self, post_id, requester_id):
         """
         get a post
@@ -257,9 +255,10 @@ class ResourceDB():
         if connex != None:
             try:
                 cursor = connex.cursor()
+                user_profile = {}
                 posts = []
                 
-                cursor.callproc('getPostThread', [post_id, requester_id])
+                cursor.callproc('GetPostThread', [post_id, requester_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
                     [posts.append(dict(zip(keys, x))) for x in result.fetchall()]
@@ -273,8 +272,14 @@ class ResourceDB():
 
                 if len(posts) == 0:
                     return {}
-                
-                return posts[-1]
+
+
+                cursor.callproc('GetUserProfile', [requester_id, requester_id])
+                for result in cursor.stored_results():
+                    keys = result.column_names
+                    [user_profile := dict(zip(keys, x)) for x in result.fetchall()]
+
+                return {"user_profile": user_profile, "post": posts[-1]}
             except Exception as e:
                 print(traceback.print_exc())
                 connex.close()
@@ -292,7 +297,7 @@ class ResourceDB():
                 cursor = connex.cursor()
                 comments = []
 
-                cursor.callproc('getPostComments', [post_id, requester_id])
+                cursor.callproc('GetPostComments', [post_id, requester_id])
 
                 for result in cursor.stored_results():
                     keys = result.column_names
@@ -305,35 +310,27 @@ class ResourceDB():
                 connex.close()
         return {}
     
-    def getUserFollowers(self, username, requester_id):
+    def getUserFollowers(self, user_id, requester_id):
         """
         get following of a user
         :param user_id:
         :return:
         """
-        user_keys =  ['user_id','username', 'first_name', 'last_name', 'pfp', 'bio', 'follows']
         connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
                 # TODO: update 
-                cursor.callproc('get_username', [username])
-                for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        if i[0] != None:
-                            username = i[0]
-                followers = []
-                cursor.callproc('get_followers', [username, requester_id])
-                for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        followers.append(dict(zip(user_keys, i)))
-                
-                for follower in followers:
-                    if follower['user_id'] == requester_id:
-                        follower['OwnAccount'] = True
-                    else:
-                        follower['OwnAccount'] = False
+                request_args = cursor.callproc('GetUserID', [user_id, '0'])
+                if request_args[1] != None:
+                    user_id = request_args[1]
 
+                followers = []
+                cursor.callproc('GetUserFollowers', [user_id, requester_id])
+                for result in cursor.stored_results():
+                    keys = result.column_names
+                    [followers.append(dict(zip(keys, val))) for val in result.fetchall()]
+                
                 connex.close()
                 return followers
             except Exception as e:
@@ -341,37 +338,31 @@ class ResourceDB():
                 connex.close()
         return {}
     
-    def getUserFollowing(self, username, requester_id):
+    def getUserFollowing(self, user_id, requester_id):
         """
         get followers of a user
         :param user_id:
         :return:
         """
-        user_keys =  ['user_id','username', 'first_name', 'last_name', 'pfp', 'bio', 'follows']
         connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
                 # TODO: update
-                cursor.callproc('get_username', [username])
-                for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        if i[0] != None:
-                            username = i[0]
+                request_args = cursor.callproc('GetUserID', [user_id, '0'])
+                if request_args[1] != None:
+                    user_id = request_args[1]
+
                 followers = []
-                cursor.callproc('get_following', [username, requester_id])
+                cursor.callproc('GetUserFollowing', [user_id, requester_id])
                 for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        followers.append(dict(zip(user_keys, i)))
+                    keys = result.column_names
+                    [followers.append(dict(zip(keys, val))) for val in result.fetchall()]
                 
-                for follower in followers:
-                    if follower['user_id'] == requester_id:
-                        follower['OwnAccount'] = True
-                    else:
-                        follower['OwnAccount'] = False
                 connex.close()
                 return followers
             except Exception as e:
                 print(traceback.print_exc())
                 connex.close()
         return {}
+    

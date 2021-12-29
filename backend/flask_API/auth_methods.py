@@ -25,11 +25,11 @@ def AuthenticateUser(headers):
 
 
         if jwt_auth.decode_auth_token(jwt_token) == user_id:
-            print("Authenticated")
             record = authDB.getSessionRecord(session_id)
+            print("valid")
             # check if request ip address ans user agent is same as the one in the database
             # if true, blacklist the old token and return new token
-            if record == ():
+            if record != ():
                 if record[4] == 1:
                     if ip_address == record[2] and user_agent == record[3]:
                         authDB.updateSessionRecordDate(session_id)
@@ -45,8 +45,8 @@ def AuthenticateUser(headers):
                     authDB.CloseConnection()
                     print("session not valid not Authenticated")
         else:
+            print("invalid")
             # if token is expired
-            print('Not Authenticated')
             record = authDB.getSessionRecord(session_id)
             if record != ():
                 if record[4] == 1:
@@ -81,7 +81,7 @@ def AuthenticateUser(headers):
     except:
         return response
 
-def AuthorizeUser(request):
+def AuthorizeUser(request, ResourceDBObj):
     try:
         auth_token = request.headers['google_auth_token']
         ip_address = request.headers['ip']
@@ -91,8 +91,9 @@ def AuthorizeUser(request):
         if google_auth_verify.AuthenticateUser(auth_token):
             google_id = google_auth_verify.GetUserID(auth_token)
             request_body['user_id'] = google_id
+            
 
-            result = resource_methods.CreateUser(request_body)
+            result = ResourceDBObj.CreateUser(request_body)
 
             google_id = google_auth_verify.GetUserID(auth_token)
             

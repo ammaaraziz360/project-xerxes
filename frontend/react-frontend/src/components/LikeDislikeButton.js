@@ -23,33 +23,42 @@ const LikeDislikeButton = ({post_info, loggedin_user_info}) => {
             return;
         }
 
-        if (liker === 'dislike' && Disliked === 'true' && Liked === 'false') {
-            setDisliked('false');
+        if (liker === 'dislike' && Disliked === 1 && Liked === 0) {
+            setDisliked(0);
             setDislikes(dislikes - 1);
-        } else if (liker ==='dislike' && Disliked === 'false' && Liked === 'false') {
-            setDisliked('true');
+        } else if (liker ==='dislike' && Disliked === 0 && Liked === 0) {
+            setDisliked(1);
             setDislikes(dislikes + 1);
-        } else if (liker ==='dislike' && Disliked === 'false' && Liked === 'true') {
-            setDisliked('true');
-            setLiked('false');
+        } else if (liker ==='dislike' && Disliked === 0 && Liked === 1) {
+            setDisliked(1);
+            setLiked(0);
             setDislikes(dislikes + 1);
             setLikes(likes - 1);
-        } else if (liker ==='like' && Liked === 'true' && Disliked === 'false') {
-            setLiked('false');
+        } else if (liker ==='like' && Liked === 1 && Disliked === 0) {
+            setLiked(0);
             setLikes(likes - 1);
-        } else if (liker ==='like' && Liked === 'false' && Disliked === 'false') {
-            setLiked('true');
+        } else if (liker ==='like' && Liked === 0 && Disliked === 0) {
+            setLiked(1);
             setLikes(likes + 1);
-        } else if (liker ==='like' && Liked === 'false' && Disliked === 'true') {
-            setLiked('true');
-            setDisliked('false');
+        } else if (liker ==='like' && Liked === 0 && Disliked === 1) {
+            setLiked(1);
+            setDisliked(0);
             setLikes(likes + 1);
             setDislikes(dislikes - 1);
         }
     }
 
     useEffect(() => {
-        var like_dislike_payload = {liked: Liked, disliked: Disliked};
+
+        var like_dislike_payload
+
+        if(Liked == 0 && Disliked == 0){
+            like_dislike_payload = {"interaction_type": -1}
+        } else if(Liked == 1 && Disliked == 0){
+            like_dislike_payload = {"interaction_type": 1}
+        } else if(Liked == 0 && Disliked == 1){
+            like_dislike_payload = {"interaction_type": 2}
+        }
 
         fetch(`http://127.0.0.1:5000/api/posts/${post_info.post_id}/like`, {
             method: 'POST',
@@ -82,7 +91,7 @@ const LikeDislikeButton = ({post_info, loggedin_user_info}) => {
 
     return (
         <div className="d-inline-flex">
-            { Liked === 'true' ?
+            { Liked === 1 ?
                 <Button variant="primary" className="bg-light text-dark " onClick={() => like_dislike_controller('like')}>
                     <FiThumbsUp/>
                     <span className="p-1">{likes}</span>
@@ -92,7 +101,7 @@ const LikeDislikeButton = ({post_info, loggedin_user_info}) => {
                     <span className="p-1">{likes}</span>
                 </Button>
             }
-            { Disliked === 'true' ?
+            { Disliked === 1 ?
                 <Button variant="primary" className="bg-light text-dark" onClick={() => like_dislike_controller('dislike')}>
                     <FiThumbsDown/>
                     <span className="p-1">{dislikes}</span>

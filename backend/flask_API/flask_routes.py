@@ -26,7 +26,7 @@ def createUser():
     returns a json object true or false about user existence
     returns jwt token for user
     """
-    result = auth_methods.AuthorizeUser(request)
+    result = auth_methods.AuthorizeUser(request, ResourceDatabase)
     try:
         resp = None
         if result['user_exists'] == -1:
@@ -193,7 +193,7 @@ def getLoggedInUserProfile():
     try:
         JWTResult = auth_methods.AuthenticateUser(request.headers)
         resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.GET_Protected)
-
+        
         if JWTResult["Valid"] == False:
             return resp.CreateResponse()
             
@@ -264,7 +264,7 @@ def likePost(post_id):
         if JWTResult["Valid"] == False:
             return resp.CreateResponse()
         
-        result = ResourceDatabase.likePost(post_id, request.headers['user_id'], request.json)
+        result = ResourceDatabase.likePost(post_id, request.headers['user_id'], request.json["interaction_type"])
         
         resp.ResponseResult = result
 
@@ -336,7 +336,7 @@ def getPostComments(post_id):
         print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)
 
-@app.route('/api/user/<username>/followers', methods=['GET'])
+@app.route('/api/users/<username>/followers', methods=['GET'])
 def getUserFollowers(username):
     """
     Get user followers
@@ -357,7 +357,7 @@ def getUserFollowers(username):
         print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)
 
-@app.route('/api/user/<username>/following', methods=['GET'])
+@app.route('/api/users/<username>/following', methods=['GET'])
 def getUserFollowing(username):
     """
     Get user following

@@ -68,7 +68,7 @@ const ReplyBox = ({loggedin_user_info, post_id}) => {
     return (
         <div className="input-group">
             <div className="input-group-prepend pe-1">
-                {loggedin_user_info !== null ? <img src={loggedin_user_info.pfp} className="pfp-small-2" alt="user image"/> 
+                {loggedin_user_info !== null ? <img src={loggedin_user_info.pfp_url} className="pfp-small-2" alt="user image"/> 
                 : <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" className="pfp-small-2" alt="user image"/>
                 }
             </div>

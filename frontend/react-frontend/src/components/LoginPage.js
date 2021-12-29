@@ -77,15 +77,18 @@ const LoginPage = ({...Props}) => {
                 cookies.set('user_id', data.user_id, { path: '/' })
                 cookies.set('SID', data.session_id, { path: '/' })
                 if(data['user_exists'] == 1){
+                    localStorage.setItem('logged_in', 'true')
                     logged_in_state.setIsLoggedIn(true);
                     history.push(`/user/${cookies.get('user_id')}`)
                 }
                 else {
+                    localStorage.setItem('logged_in', 'false')
                     logged_in_state.setIsLoggedIn(false);
                     setToggleUsernameModal(!toggleUsernameModal)
                 }
             })
             .catch(error => {
+                localStorage.setItem('logged_in', 'false')
                 logged_in_state.setIsLoggedIn(false);
                 setModalText({'title': 'Something went very wrong', 'body': error.message})
                 setToggleModal(!toggleModal)
@@ -93,6 +96,7 @@ const LoginPage = ({...Props}) => {
     }
 
     const NoResponseGoogle = () => {
+        localStorage.setItem('logged_in', 'false')
         logged_in_state.setIsLoggedIn(false);
         setModalText({'title': 'Something went very wrong', 'body': 'Login failure, please try again'})
         setToggleModal(!toggleModal)
