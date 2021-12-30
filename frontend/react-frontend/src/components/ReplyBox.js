@@ -7,7 +7,7 @@ import Cookies from 'universal-cookie';
 
 const cookie = new Cookies()
 
-const ReplyBox = ({loggedin_user_info, post_id}) => {
+const ReplyBox = ({loggedin_user_info, post_info}) => {
     const [postText, setPostText] = useState('');
     const [AlertToggle, setAlertToggle] = useState(false);
     const [AlertMessage,setAlertMessage] = useState({message: '', style: ''});
@@ -16,9 +16,9 @@ const ReplyBox = ({loggedin_user_info, post_id}) => {
 
     const SubmitPost = () => {
         var post_data = {title: null, 
-                        body_raw: postText, 
-                        body_html: null, 
-                        reply_post_id: post_id}
+                        body: postText,
+                        reply_post_id: post_info.post_id,
+                        category_id: post_info.category_id}
         setPostText('');
         fetch('http://127.0.0.1:5000/api/posts', {
             method: 'POST',
@@ -68,7 +68,7 @@ const ReplyBox = ({loggedin_user_info, post_id}) => {
     return (
         <div className="input-group">
             <div className="input-group-prepend pe-1">
-                {loggedin_user_info !== null ? <img src={loggedin_user_info.pfp} className="pfp-small-2" alt="user image"/> 
+                {loggedin_user_info !== null ? <img src={loggedin_user_info.pfp_url} className="pfp-small-2" alt="user image"/> 
                 : <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" className="pfp-small-2" alt="user image"/>
                 }
             </div>

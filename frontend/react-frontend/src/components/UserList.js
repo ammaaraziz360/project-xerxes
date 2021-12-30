@@ -12,7 +12,7 @@ const UserList = ({ user_info }) => {
         <div className="full-border mt-2">
             <div className="row p-3">
                 <div className="col-2">
-                    <img src={user_info.pfp} className="img-fluid d-inline pfp-small" alt="user image"/>
+                    <img src={user_info.pfp_url} className="img-fluid d-inline pfp-small" alt="user image"/>
                 </div>
                 <div className="col-6">
                     <h5>{user_info.first_name} {user_info.last_name}</h5>
@@ -20,7 +20,7 @@ const UserList = ({ user_info }) => {
                         @{user_info.username}
                     </div>
                 </div>
-                { !user_info.OwnAccount ?
+                { user_info.OwnAccount == 0 ?
                     <div className="d-flex col-4 justify-content-end align-items-center">
                         <FollowButton userProfile={user_info}/>
                     </div>

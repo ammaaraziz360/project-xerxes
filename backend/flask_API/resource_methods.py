@@ -5,116 +5,80 @@ from mysql_db_access.mysql_connection import ResourceDB
 from mysql_db_access.mysql_creds import Credentials
 from datetime import datetime
 
-def getBannedUsernames():
-    """
-    gets banned usernames
-    """
-    # resorDb = ResourceDB(Credentials('bloggit-db'))
-    resorDb = ResourceDB(Credentials('BlogooDB'))
-    result = resorDb.bannedPhrases()
-    resorDb.CloseConnection()
-    return(result)
+class ResourceDB_API():
 
-def CreateUser(request_body: dict):
-    """
-    inserts a user into the database
-    """
-    resorDb = ResourceDB(Credentials('BlogooDB'))
-    result = resorDb.CreateUser(request_body)
-    resorDb.CloseConnection()
-    return(result)
-    
-def UpdateUser(updated_items: dict):
-    """
-    updates a user in the database
-    """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.UpdateUser(updated_items)
-    resorDb.CloseConnection()
-    return(result)
+    def __init__(self) -> None:
+        # self.resorDB  = ResourceDB(Credentials("bloggit-db"))
+        self.resorDB  = ResourceDB(Credentials("BlogooDB"))
 
-def getUserProfile(username, requester_id):
-    """
-    gets a user profile
-    """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.getUserProfile(username, requester_id)
-    resorDb.CloseConnection()
-    return(result)
+    # def getBannedUsernames(self):
+    #     """
+    #     gets banned usernames
+    #     """
+    #     # resorDb = ResourceDB(Credentials('bloggit-db'))
+    #     return(self.resorDB.bannedPhrases())
 
-def editUserSocials(user_id, socials):
-    """
-    updates a user's socials
-    """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.editUserSocials(user_id, socials)
-    resorDb.CloseConnection()
-    return(result)
+    def CreateUser(self, request_body: dict):
+        """
+        inserts a user into the database
+        """
+        return(self.resorDB.CreateUser(request_body))
+        
+    def UpdateUser(self, updated_items: dict):
+        """
+        updates a user in the database
+        """
+        return(self.resorDB.UpdateUser(updated_items))
 
-def insertPost(user_id, post_details):
-    """
-    adds a post to the database
-    """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.insertPost(user_id, post_details)
-    resorDb.CloseConnection()
-    return(result)
+    def getUserProfile(self, username, requester_id):
+        """
+        gets a user profile
+        """
+        return(self.resorDB.getUserProfile(username, requester_id))
 
-def likePost(post_id, user_id, like_info):
-    """
-    adds a like or dislike or unlikes or undislikes to the database
-    """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.likePost(user_id, post_id, like_info)
-    resorDb.CloseConnection()
-    return(result)
+    def editUserSocials(self, user_id, socials):
+        """
+        updates a user's socials
+        """
+        return(self.resorDB.editUserSocials(user_id, socials))
 
-def followUser(user_id, follower_id, follow_info):
-    """
-    adds a follow or unfollow to the database
-    """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.followUser(user_id, follower_id, follow_info)
-    resorDb.CloseConnection()
-    return(result)
-def getPost(post_id, requester_id):
-    """
-    gets a post
-    """
-    # post_json = {'Authors': [],'Posts': []}
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    post_json = resorDb.getPost(post_id, requester_id)
-    # for i in post_json['Posts']:
-    #     post_json['Authors'].append(resorDb.getUserProfile(i['author_id'], requester_id, False))
+    def insertPost(self, user_id, post_details):
+        """
+        adds a post to the database
+        """
+        return(self.resorDB.insertPost(user_id, post_details))
 
-    # post_json['Authors'] = post_json['Authors'][::-1]
-    # post_json['Posts'] = post_json['Posts'][::-1]
-    resorDb.CloseConnection()
-    return(post_json)
+    def likePost(self, post_id, user_id, like_info):
+        """
+        adds a like or dislike or unlikes or undislikes to the database
+        """
+        return(self.resorDB.likePost(user_id, post_id, like_info))
 
-def getPostComments(post_id, requester_id):
-    """
-    gets a post's comments
-    """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.getPostComments(post_id, requester_id)
-    resorDb.CloseConnection()
-    return(result)
+    def followUser(self, user_id, follower_id, follow_info):
+        """
+        adds a follow or unfollow to the database
+        """
+        return(self.resorDB.followUser(user_id, follower_id, follow_info))
+    def getPost(self, post_id, requester_id):
+        """
+        gets a post
+        """
+        return(self.resorDB.getPost(post_id, requester_id))
 
-def getUserFollowers(username, requester_id):
-    """
-    gets a user's followers
-    """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.getUserFollowers(username, requester_id)
-    resorDb.CloseConnection()
-    return(result)
+    def getPostComments(self, post_id, requester_id):
+        """
+        gets a post's comments
+        """
+        return(self.resorDB.getPostComments(post_id, requester_id))
 
-def getUserFollowing(username, requester_id):
-    """
-    gets a user's followers
-    """
-    resorDb = ResourceDB(Credentials('bloggit-db'))
-    result = resorDb.getUserFollowing(username, requester_id)
-    resorDb.CloseConnection()
-    return(result)
+    def getUserFollowers(self, username, requester_id):
+        """
+        gets a user's followers
+        """
+        return(self.resorDB.getUserFollowers(username, requester_id))
+
+    def getUserFollowing(self, username, requester_id):
+        """
+        gets a user's followers
+        """
+        return(self.resorDB.getUserFollowing(username, requester_id))
