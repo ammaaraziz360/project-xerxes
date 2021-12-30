@@ -219,7 +219,6 @@ class ResourceDB():
                 
                 # interaction_type explanation:
                 # 1 for like, 2 for dislike, -1 for removing any post interaction
-                print(interaction_type)
                 cursor.callproc('AddPostInteraction', [user_id, post_id, interaction_type])
                 connex.commit()
 
@@ -241,9 +240,6 @@ class ResourceDB():
         if connex != None:
             try:
                 # TODO
-                print(user_id)
-                print(follow_user_id)
-                print(follow_info)
                 cursor = connex.cursor()
                 cursor.callproc('FollowUnfollowUser', [user_id, follow_user_id, follow_info["following"]])
                 connex.commit()
