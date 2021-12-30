@@ -43,8 +43,7 @@ const PostPage = () => {
                 }
             })
             .then(data => {
-                setPostInfo(data.post)
-                setloggedinUser(date.user_profile)
+                setPostInfo(data)
             })
             .catch(err => {
                 console.log(err)
@@ -55,13 +54,13 @@ const PostPage = () => {
     return(
         <div className="container">
             {PostInfo !== null 
-                ?<Redirect to={`/post/${id}/${(PostInfo.title).replace(/\s+/g, '-')}`}/>
+                ?<Redirect to={`/post/${id}/${(PostInfo.post.title).replace(/\s+/g, '-')}`}/>
                 : null
             }
 
             <div className="profile-header p-4">
                 { PostInfo != null 
-                        ? <Post post_info={PostInfo} user_info={PostInfo.poster_info} loggedin_user_info={loggedinUser}/>
+                        ? <Post post_info={PostInfo.post} loggedin_user_info={PostInfo.own_user_profile}/>
                 : <LoadingSpinner/>}
             </div>
         </div>

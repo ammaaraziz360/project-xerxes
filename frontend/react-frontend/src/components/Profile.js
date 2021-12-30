@@ -12,7 +12,7 @@ import {BsLink45Deg} from 'react-icons/bs';
 import PostEditor from './PostEditor';
 import Post from './Post';
 
-const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}) => {
+const Profile = ({ userProfile, loggedinUser}) => {
 
     return(
         <div>
@@ -97,10 +97,10 @@ const Profile = ({ userProfile, loggedinUser, refreshProfile, setRefreshProfile}
             </div>
             <div>
                 <div className="profile-header p-4">
-                    {userProfile.Posts.length > 0 ?
-                        userProfile.Posts.map(post => {
+                    {userProfile.posts.length > 0 ?
+                        userProfile.posts.map(post => {
                             if (post.reply_post_id == null) {
-                                return <Post post_info={post} user_info={userProfile} loggedin_user_info={loggedinUser} key={post.post_id}/>
+                                return <Post post_info={post} loggedin_user_info={loggedinUser} key={post.post_id}/>
                             }
                             return null;
                         })

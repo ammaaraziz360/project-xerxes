@@ -17,12 +17,8 @@ const ProfilePage = ({...Props}) => {
 
     const [userProfile, setUserProfile] = useState(null);
 
-    const [loggedinUser, setLoggedinUser] =  useState(null);
-
     const history = useHistory();
     
-    const [refreshProfile, setRefreshProfile] = useState(false);
-
     const { username } = useParams();
 
     useEffect(() => {
@@ -55,51 +51,13 @@ const ProfilePage = ({...Props}) => {
         .catch(err => {
             console.log(err)
         })
-
-        // get own profile
-        if(logged_in_state.isLoggedIn){
-            fetch(`http://127.0.0.1:5000/api/users/profile`, {
-                method: 'GET',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': cookie.get('token'),
-                    'user_id': cookie.get('user_id'),
-                    'ip': sessionStorage.getItem('ip'),
-                    'user_agent': navigator.userAgent,
-                    'SID': cookie.get('SID')
-                },
-            })
-            .then(res => {
-                if (res.status === 200) {
-                    if(res.headers.get('X-JWT') != null) {
-                        cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
-                    }
-                    return res.json()
-                }
-                else if (res.status === 401) {
-                    logged_in_state.setIsLoggedIn(false);
-                    return null
-                }
-            })
-            .then(data => {
-                setLoggedinUser(data)
-            })
-            .catch(err => {
-                console.log(err)
-            })
-        } else {
-            setLoggedinUser(null)
-        }
         
-    }, [refreshProfile]);
+    }, []);
 
     return (
         userProfile != null ?
-            <Profile userProfile={userProfile}
-                    loggedinUser={loggedinUser}
-                    refreshProfile = {refreshProfile}
-                    setRefreshProfile = {setRefreshProfile} />
+            <Profile userProfile={userProfile.profile}
+                    loggedinUser={userProfile.own_user_profile} />
         :   <LoadingSpinner />
     );
 }

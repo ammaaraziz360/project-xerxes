@@ -128,6 +128,7 @@ class ResourceDB():
                 results = {}
                 cursor = connex.cursor()
 
+                own_profile = {}
                 # user_id may come in as a username so we need to convert it to a user_id
                 result_args = cursor.callproc('GetUserID', [user_id, '0'])
 
@@ -140,14 +141,20 @@ class ResourceDB():
                     [results := dict(zip(keys, x)) for x in result.fetchall()]
 
                 if get_posts and results != {}:
-                    results['Posts'] = []
+                    results['posts'] = []
                     cursor.callproc('GetUserPosts', [user_id, requester_id])
                     for resulter in cursor.stored_results():
                         keys = resulter.column_names
-                        [results['Posts'].append(dict(zip(keys, x))) for x in resulter.fetchall()]
+                        [results['posts'].append(dict(zip(keys, x))) for x in resulter.fetchall()]
+                
+                cursor.callproc('GetUserProfile', [requester_id, user_id])
+                for result in cursor.stored_results():
+                    keys = result.column_names
+                    [own_profile := dict(zip(keys, x)) for x in result.fetchall()]
 
                 connex.close()
-                return results
+
+                return {"profile": results, "own_user_profile": own_profile}
             except Exception as e:
                 print(traceback.print_exc())
                 connex.close()
@@ -234,8 +241,12 @@ class ResourceDB():
         if connex != None:
             try:
                 # TODO
+                print(user_id)
+                print(follow_user_id)
+                print(follow_info)
                 cursor = connex.cursor()
                 cursor.callproc('FollowUnfollowUser', [user_id, follow_user_id, follow_info["following"]])
+                connex.commit()
 
                 connex.close()
                 return True
@@ -269,17 +280,28 @@ class ResourceDB():
                 posts.reverse()
                 for i in range(len(posts)-1):
                     posts[i+1]['comments'].append(posts[i])
+                
+                if(posts[-1]["comments"] == []):
+                    cursor.callproc('GetPostComments', [post_id, requester_id])
 
-                if len(posts) == 0:
-                    return {}
-
-
+                    for result in cursor.stored_results():
+                        keys = result.column_names
+                        [posts[-1]['comments'].append(dict(zip(keys, val))) for val in result.fetchall()]
+                    
+                    for comment in posts[-1]['comments']:
+                        comment["comments"] = []
+                
                 cursor.callproc('GetUserProfile', [requester_id, requester_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
                     [user_profile := dict(zip(keys, x)) for x in result.fetchall()]
 
-                return {"user_profile": user_profile, "post": posts[-1]}
+                connex.close()
+
+                if(len(posts) == 0):
+                    return {"own_user_profile": user_profile, "post": []}
+
+                return {"own_user_profile": user_profile, "post": posts[-1]}
             except Exception as e:
                 print(traceback.print_exc())
                 connex.close()
@@ -304,6 +326,10 @@ class ResourceDB():
                     [comments.append(dict(zip(keys, val))) for val in result.fetchall()]
 
                 connex.close()
+                
+                for comment in comments:
+                    comment["comments"] = []
+
                 return comments
             except Exception as e:
                 print(traceback.print_exc())

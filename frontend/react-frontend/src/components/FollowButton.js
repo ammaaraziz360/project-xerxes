@@ -8,7 +8,7 @@ const FollowButton = ({userProfile}) => {
     const history = useHistory();
     const logged_in_state = useContext(LoggedInContext);
     const cookie = new Cookies();
-    const [following, setFollowing] = useState(null);
+    const [following, setFollowing] = useState(userProfile.requester_follows);
 
     const [isHover, setIsHover] = useState(false);
 
@@ -48,12 +48,12 @@ const FollowButton = ({userProfile}) => {
 
     return (
         <div>
-            {following ?
-                <Button id="following" className="bg-light text-dark" onClick={() => FollowUser(false)} onMouseOver={()=> setIsHover(true)} onMouseOut={() => setIsHover(false)}>
+            {following == 1?
+                <Button id="following" className="bg-light text-dark" onClick={() => FollowUser(0)} onMouseOver={()=> setIsHover(true)} onMouseOut={() => setIsHover(false)}>
                     { isHover ?  "Unfollow" : "Following" }
                 </Button>
                 : 
-                <Button onClick={() => FollowUser(true)}>
+                <Button onClick={() => FollowUser(1)}>
                     Follow
                 </Button>
             }

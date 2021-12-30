@@ -380,4 +380,4 @@ def getUserFollowing(username):
         return make_response(jsonify({'error': str(e)}), 401)
 
 
-app.run(threaded=True)
+app.run()

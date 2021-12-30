@@ -21,7 +21,7 @@ const cookie = new Cookies();
 // regular expression for youtube channel validation
 
 
-const Post = ({post_info, user_info, loggedin_user_info}) => {
+const Post = ({post_info, loggedin_user_info}) => {
 
     const logged_in_state = useContext(LoggedInContext)
     
@@ -40,12 +40,12 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
                         <h4>{post_info.title}</h4>
                     </div>
                     <div className="d-flex col-6 justify-content-end align-items-center">
-                        <Link to={`/user/${user_info.username}`}>
-                            <img src={user_info.pfp_url} className="img-fluid d-inline pfp-small" alt="user image"/>
+                        <Link to={`/user/${post_info.username}`}>
+                            <img src={post_info.pfp_url} className="img-fluid d-inline pfp-small" alt="user image"/>
                         </Link>
                         <span className="d-flex flex-column bd-highlight p-2">
-                            <div className="bd-highlight"><strong>{user_info.first_name} {user_info.last_name}</strong></div>
-                            <div className="bd-highlight">@{user_info.username}</div>
+                            <div className="bd-highlight"><strong>{post_info.first_name} {post_info.last_name}</strong></div>
+                            <div className="bd-highlight">@{post_info.username}</div>
                         </span>
                         
                     </div>
@@ -60,10 +60,10 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
             <div className="stats-div-2 sub">
                 <div className="row p-2 align-items-center">
                     <div className="col-lg-6 col-xs-12">
-                        <ReplyBox loggedin_user_info={loggedin_user_info} post_id={post_info.post_id}/>
+                        <ReplyBox loggedin_user_info={loggedin_user_info} post_info={post_info}/>
                     </div>
                     <div className="col-3 col-xs-0 d-lg-flex d-none">
-                        <LikeDislikeButton post_info={post_info}/>
+                        <LikeDislikeButton post_info={post_info} loggedin_user_info={loggedin_user_info}/>
                     </div>
                     <div className="d-flex col-3 justify-content-end d-lg-flex d-none">
                         <Button variant="primary" onClick={() => view_post()}>
@@ -101,7 +101,7 @@ const Post = ({post_info, user_info, loggedin_user_info}) => {
             {
                 'comments' in post_info ? 
                     post_info.comments.map((post) => {
-                        return <Comment post_info={post} user_info={post.poster_info} loggedin_user_info={loggedin_user_info} key={post.post_id}/>
+                        return <Comment post_info={post} loggedin_user_info={loggedin_user_info} key={post.post_id}/>
                     })  
                 : null
                 

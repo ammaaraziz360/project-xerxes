@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import LikeDislikeButton from './LikeDislikeButton';
 import LoadingSpinner from './LoadingSpinner';
 
-const Comment = ({post_info, user_info, loggedin_user_info}) => {
+const Comment = ({post_info, loggedin_user_info}) => {
     const cookie = new Cookies();
     const [comments, setComments] = useState(post_info.comments);
 
@@ -76,11 +76,11 @@ const Comment = ({post_info, user_info, loggedin_user_info}) => {
         <div className="comment mt-4 p-2">
             <div className="row">
                 <div className="col-12">
-                    <Link to={`/user/${user_info.username}`}>
-                    <img src={user_info.pfp} className="pfp-small-2" alt="user image"/>
+                    <Link to={`/user/${post_info.username}`}>
+                    <img src={post_info.pfp_url} className="pfp-small-2" alt="user image"/>
                     </Link>
                     <span className="ps-1 name muted">
-                        {user_info.username}
+                        {post_info.username}
                     </span>
                     <span className="ps-1 name muted">
                         · {timeDifference()}
@@ -91,7 +91,7 @@ const Comment = ({post_info, user_info, loggedin_user_info}) => {
             <div className="border-left ms-3">
                 <div className="row ms-1">
                     <div className="col-12">
-                        {post_info.body_raw}
+                        {post_info.body}
                     </div>
                     <div className="name muted mt-2">
                         {new Date(post_info.date_posted).toLocaleString()}
@@ -102,7 +102,7 @@ const Comment = ({post_info, user_info, loggedin_user_info}) => {
                         <LikeDislikeButton post_info={post_info} loggedin_user_info={loggedin_user_info}/>
                         <Button variant="primary" onClick={() => FetchComments()}>
                             <GoCommentDiscussion/>
-                            <span className="p-1">{post_info.number_of_comments}</span>
+                            <span className="p-1">{post_info.num_of_comments}</span>
                         </Button>
                         <Button variant="primary" onClick={() => setIsReplying(!IsReplying) }>
                             <GoReply/>
@@ -111,11 +111,11 @@ const Comment = ({post_info, user_info, loggedin_user_info}) => {
                     </div>
                 </div>
                 
-                { IsReplying ? <div className="p-3"><ReplyBox loggedin_user_info={loggedin_user_info} post_id={post_info.post_id}/></div> : null }
+                { IsReplying ? <div className="p-3"><ReplyBox loggedin_user_info={loggedin_user_info} post_info={post_info}/></div> : null }
                 
                 {fetching ? <LoadingSpinner/> :
                     comments.map((comment) => {
-                    return <Comment post_info={comment} user_info={comment.poster_info} loggedin_user_info={loggedin_user_info} key={comment.post_id}/>
+                    return <Comment post_info={comment} loggedin_user_info={loggedin_user_info} key={comment.post_id}/>
                 })}
             </div>
         </div>

@@ -16,7 +16,7 @@ const FollowersFollowingPage = ({type}) => {
     const history = useHistory();
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5000/api/user/${username}/${type}`, {
+        fetch(`http://127.0.0.1:5000/api/users/${username}/${type}`, {
             method: 'GET',
             mode: 'cors',
             headers: {
