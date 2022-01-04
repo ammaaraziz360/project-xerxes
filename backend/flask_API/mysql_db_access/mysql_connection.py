@@ -1,3 +1,4 @@
+from typing import List
 import mysql.connector as mysqlconnex
 import mysql.connector.pooling as DBPooler
 from mysql_db_access.mysql_creds import Credentials
@@ -388,3 +389,46 @@ class ResourceDB():
                 connex.close()
         return {}
     
+    def getCategoryHome(self, requester_id):
+        connex = self.cnx_pool.get_connection()
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+
+                results: List[List] = [] 
+
+                cursor.callproc('CategoriesMainPage', [requester_id])
+                for result in cursor.stored_results():
+                    keys = result.column_names
+                    results.append([])
+                    [results[-1].append(dict(zip(keys, val))) for val in result.fetchall()]
+                
+                result_dict = {
+                    "subscriptions" : results[0],
+                    "moderates" : results[1],
+                    "categories": results[2],
+                    "ccr_requests": results[3]
+                }
+                
+                connex.close()
+                return result_dict
+            except Exception as e:
+                print(traceback.print_exc())
+                connex.close()
+        return {}
+    def getCategory(self, category_id, requester_id):
+        connex = self.cnx_pool.get_connection()
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                posts = []
+                cursor.callproc('GetCategory', [category_id, requester_id])
+                for result in cursor.stored_results():
+                    keys = result.column_names
+                    [posts.append(dict(zip(keys, x))) for x in result.fetchall()]
+                
+                connex.close()
+                return posts
+            except Exception as e:
+                print(traceback.print_exc())
+                connex.close()

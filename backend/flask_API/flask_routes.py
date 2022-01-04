@@ -379,5 +379,41 @@ def getUserFollowing(username):
         print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)
 
+@app.route('/api/categories', methods=["GET"])
+def getCategoryHome():
+    try:
+        requester_id = None
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
+
+        if JWTResult["Valid"] == True:
+            requester_id = request.headers['user_id']
+
+
+        result = ResourceDatabase.getCategoryHome(requester_id)
+
+        resp = HTTPResponse(result, JWTResult, HTTPTypes.GET_Unprotected)
+
+        return resp.CreateResponse()
+    except Exception as e:
+        print(traceback.print_exc())
+        return make_response(jsonify({'error': str(e)}), 401)
+
+@app.route('/api/categories/<category_id>', methods=["GET"])
+def getCategory(category_id):
+    try:
+        requester_id = None
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
+
+        if JWTResult["Valid"] == True:
+            requester_id = request.headers['user_id']
+
+        result = ResourceDatabase.getCategory(category_id, requester_id)
+
+        resp = HTTPResponse(result, JWTResult, HTTPTypes.GET_Unprotected)
+
+        return resp.CreateResponse()
+    except Exception as e:
+        print(traceback.print_exc())
+        return make_response(jsonify({'error': str(e)}), 401)
 
 app.run()

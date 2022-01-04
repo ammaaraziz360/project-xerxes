@@ -82,3 +82,6 @@ class ResourceDB_API():
         gets a user's followers
         """
         return(self.resorDB.getUserFollowing(username, requester_id))
+
+    def getCategoryHome(self, requester_id):
+        return(self.resorDB.getCategoryHome(requester_id))
