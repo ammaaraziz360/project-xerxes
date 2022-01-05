@@ -85,3 +85,6 @@ class ResourceDB_API():
 
     def getCategoryHome(self, requester_id):
         return(self.resorDB.getCategoryHome(requester_id))
+
+    def getCategory(self, category_id, requester_id):
+        return(self.resorDB.getCategory(category_id, requester_id))

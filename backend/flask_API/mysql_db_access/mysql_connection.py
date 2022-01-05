@@ -148,14 +148,17 @@ class ResourceDB():
                         keys = resulter.column_names
                         [results['posts'].append(dict(zip(keys, x))) for x in resulter.fetchall()]
                 
-                cursor.callproc('GetUserProfile', [requester_id, user_id])
+                cursor.callproc('GetMinifiedUserProfile', [requester_id, user_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
-                    [own_profile := dict(zip(keys, x)) for x in result.fetchall()]
+                    if result.row_count > 0:
+                        own_profile = dict(zip(keys, result.fetchone()))
+                    else:
+                        own_profile = None
 
                 connex.close()
 
-                return {"profile": results, "own_user_profile": own_profile}
+                return {"profile": results, "requester_profile": own_profile}
             except Exception as e:
                 print(traceback.print_exc())
                 connex.close()
@@ -288,17 +291,20 @@ class ResourceDB():
                     for comment in posts[-1]['comments']:
                         comment["comments"] = []
                 
-                cursor.callproc('GetUserProfile', [requester_id, requester_id])
+                cursor.callproc('GetMinifiedUserProfile', [requester_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
-                    [user_profile := dict(zip(keys, x)) for x in result.fetchall()]
+                    if result.row_count > 0:
+                        user_profile = dict(zip(keys, result.fetchone()))
+                    else:
+                        user_profile = None
 
                 connex.close()
 
                 if(len(posts) == 0):
-                    return {"own_user_profile": user_profile, "post": []}
+                    return {"requester_profile": user_profile, "post": []}
 
-                return {"own_user_profile": user_profile, "post": posts[-1]}
+                return {"requester_profile": user_profile, "post": posts[-1]}
             except Exception as e:
                 print(traceback.print_exc())
                 connex.close()
@@ -416,19 +422,58 @@ class ResourceDB():
                 print(traceback.print_exc())
                 connex.close()
         return {}
+        
     def getCategory(self, category_id, requester_id):
         connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
-                posts = []
+
+                category_result = cursor.callproc('GetCategoryID', [category_id, None])
+                if category_result[1] != None:
+                    category_id = category_result[1]
+
+                results = {}
+
+                cntr = 0
+
                 cursor.callproc('GetCategory', [category_id, requester_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
-                    [posts.append(dict(zip(keys, x))) for x in result.fetchall()]
+                    if cntr == 0:
+                        results["category_info"] = dict(zip(keys, result.fetchone()))
+                        if results["category_info"]["category_id"] == None:
+                            connex.close()
+                            return {}
+                    elif cntr == 1:
+                        results["moderators"] = []
+                        [results["moderators"].append(dict(zip(keys, val))) for val in result.fetchall()]
+                    elif cntr == 2:
+                        results["rules"] = []
+                        [results["rules"].append(dict(zip(keys, val))) for val in result.fetchall()]
+                    elif cntr == 3:
+                        results["posts"] = []
+                        [results["posts"].append(dict(zip(keys, val))) for val in result.fetchall()]
+                    elif cntr == 4:
+                        results["child_categories"] = []
+                        [results["child_categories"].append(dict(zip(keys, val))) for val in result.fetchall()]
+
+                    cntr += 1        
                 
+                cursor.callproc('GetMinifiedUserProfile', [requester_id])
+                for result in cursor.stored_results():
+                    keys = result.column_names
+                    row = result.fetchone()
+                    if row is not None:
+                        results["requester_profile"] = dict(zip(keys, row))
+                    else:
+                        results["requester_profile"] = None
+
                 connex.close()
-                return posts
+                return results
             except Exception as e:
                 print(traceback.print_exc())
                 connex.close()
+        return {}
+    
+

@@ -101,47 +101,6 @@ class AuthDB():
                 print(e)
                 return(str(e))
 
-    # deprecated; will be removed in future update
-    def BlacklistToken(self, jwt_token):
-        """
-        Blacklist a token
-        :return:
-        """
-        connex = self.connection
-
-        if connex != None:
-            try:
-                cursor = connex.cursor()
-                cursor.callproc('insert_blacklist_token', [jwt_token])
-
-                connex.commit()
-                return True
-            except Exception as e:
-                print(e)
-                return(str(e))
-    
-    # deprecated; will be removed in future update
-    def CheckIfTokenIsBlacklisted(self, token):
-        """
-        Check if a token is blacklisted
-        :return:
-        """
-        connex = self.connection
-
-        if connex != None:
-            try:
-                cursor = connex.cursor()
-                cursor.callproc('check_blacklist_token', [token])
-
-                for result in cursor.stored_results():
-                    for i in result.fetchall():
-                        if i[0] > 0:
-                            return True
-                return False
-            except Exception as e:
-                print(e)
-                return(str(e))
-
     def CloseConnection(self):
         """
         Close the connection

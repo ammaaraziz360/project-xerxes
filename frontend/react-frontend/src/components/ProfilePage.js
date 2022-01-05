@@ -57,7 +57,7 @@ const ProfilePage = ({...Props}) => {
     return (
         userProfile != null ?
             <Profile userProfile={userProfile.profile}
-                    loggedinUser={userProfile.own_user_profile} />
+                    loggedinUser={userProfile.requester_profile} />
         :   <LoadingSpinner />
     );
 }

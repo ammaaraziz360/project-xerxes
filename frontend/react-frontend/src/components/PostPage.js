@@ -60,7 +60,7 @@ const PostPage = () => {
 
             <div className="profile-header p-4">
                 { PostInfo != null 
-                        ? <Post post_info={PostInfo.post} loggedin_user_info={PostInfo.own_user_profile}/>
+                        ? <Post post_info={PostInfo.post} loggedin_user_info={PostInfo.requester_profile}/>
                 : <LoadingSpinner/>}
             </div>
         </div>
