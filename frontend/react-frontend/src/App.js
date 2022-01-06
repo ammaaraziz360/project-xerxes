@@ -8,6 +8,7 @@ import NavBar from "./components/NavBar";
 import PostPage from "./components/PostPage";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import FollowersFollowingPage from "./components/FollowersFollowingPage";
+import CategoryHomePage from "./components/CategoryComponents/CategoryHomePage";
 import {
   BrowserRouter as Router,
   Switch,
@@ -51,6 +52,9 @@ function App() {
                   </Route>
                   <Route exact path='/user/:username/followers'>
                     <FollowersFollowingPage type="followers"/>
+                  </Route>
+                  <Route exact path='/category/home'>
+                    <CategoryHomePage/>
                   </Route>
                   <Route path='/404'>
                     <NotFoundPage />

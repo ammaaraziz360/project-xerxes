@@ -148,10 +148,10 @@ class ResourceDB():
                         keys = resulter.column_names
                         [results['posts'].append(dict(zip(keys, x))) for x in resulter.fetchall()]
                 
-                cursor.callproc('GetMinifiedUserProfile', [requester_id, user_id])
+                cursor.callproc('GetMinifiedUserProfile', [requester_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
-                    if result.row_count > 0:
+                    if result.rowcount > 0:
                         own_profile = dict(zip(keys, result.fetchone()))
                     else:
                         own_profile = None

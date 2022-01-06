@@ -14,7 +14,6 @@ const PostEditor = ({category_id}) => {
     const [postTitle, setPostTitle] = useState('');
 
     const [post, setPost] = useState("")
-    var postHTML = ""
 
     const [AlertToggle, setAlertToggle] = useState(false)
     const [AlertMessage, setAlertMessage] = useState({message: "", style: "success"})
@@ -99,8 +98,6 @@ const PostEditor = ({category_id}) => {
     // }
 
     const SubmitPost = () => {
-        GeneratePreview()
-
         if (postTitle.trim() == ""){
             setAlertMessage({message: 'Blog post must have a title, try again', style: 'danger'})
             setAlertToggle(true)
