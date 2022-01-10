@@ -294,7 +294,7 @@ class ResourceDB():
                 cursor.callproc('GetMinifiedUserProfile', [requester_id])
                 for result in cursor.stored_results():
                     keys = result.column_names
-                    if result.row_count > 0:
+                    if result.rowcount > 0:
                         user_profile = dict(zip(keys, result.fetchone()))
                     else:
                         user_profile = None

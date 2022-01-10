@@ -85,9 +85,9 @@ const Post = ({post_info, loggedin_user_info}) => {
                     </div>
 
                     <div className="d-inline-flex col-6 justify-content-end">
-                        <Button variant="primary">
+                        <Button variant="primary" onClick={() => view_post()}>
                             <GoCommentDiscussion/>
-                            <span className="p-1">{post_info.number_of_comments}</span>
+                            <span className="p-1">{post_info.num_of_comments}</span>
                         </Button>
                         <Button variant="primary">
                             <FiShare2/>

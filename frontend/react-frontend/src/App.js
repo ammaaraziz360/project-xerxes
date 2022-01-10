@@ -9,6 +9,7 @@ import PostPage from "./components/PostPage";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import FollowersFollowingPage from "./components/FollowersFollowingPage";
 import CategoryHomePage from "./components/CategoryComponents/CategoryHomePage";
+import CategoryPage from "./components/CategoryComponents/CategoryPage";
 import {
   BrowserRouter as Router,
   Switch,
@@ -17,6 +18,7 @@ import {
 } from "react-router-dom";
 import './App.css';
 import { LoggedInContext } from "./components/LoggedInContext";
+import SideBar from "./components/SideBar";
 
 const cookie = new Cookies();
 
@@ -32,11 +34,12 @@ function App() {
       <LoggedInContext.Provider value={{isLoggedIn, setIsLoggedIn}}>
         <Router>
           <NavBar/>
-          <div className="container">
-            <div className="row">
-              <div className="col-2">
+          <div className="container-fluid">
+            <div className="row">     
+              <div className="d-flex col-2 justify-content-lg-center above">
+                <SideBar/>
               </div>
-              <div className="col-md-8 col-xs-12">
+              <div className="col-md-8 col-sm-12">
                 <Switch>
                   <Route exact path='/login' >
                     <LoginPage/>
@@ -55,6 +58,9 @@ function App() {
                   </Route>
                   <Route exact path='/category/home'>
                     <CategoryHomePage/>
+                  </Route>
+                  <Route exact path='/category/:category_name'>
+                    <CategoryPage/> 
                   </Route>
                   <Route path='/404'>
                     <NotFoundPage />

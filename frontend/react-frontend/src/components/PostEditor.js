@@ -117,7 +117,7 @@ const PostEditor = ({category_id}) => {
         var post_data = {title: postTitle, 
                         body: post, 
                         reply_post_id: null,
-                        category: category_id}
+                        category_id: category_id}
         fetch('http://127.0.0.1:5000/api/posts', {
             method: 'POST',
             mode: 'cors',
@@ -157,7 +157,7 @@ const PostEditor = ({category_id}) => {
 
     return (
         <div>
-            <div className="text-editor post-elements">
+            <div className="text-editor post-elements full-border p-3 mt-2">
                     <div >
                         <h5 className="hr pb-3">Create new blog post</h5>
                     </div>
@@ -188,11 +188,6 @@ const PostEditor = ({category_id}) => {
                     <div className="mt-3">
                         <Alerts AlertToggle={AlertToggle} AlertText={AlertMessage}/>
                     </div>
-                    
-                    <h5 className="hr pb-3">Preview</h5>
-            </div>
-            <div id="preview">
-
             </div>
         </div>
     );
