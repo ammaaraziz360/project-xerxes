@@ -11,8 +11,6 @@ const SmallCategoryList = ({ category_info }) => {
     const logged_in_state = useContext(LoggedInContext) 
     const history = useHistory();
 
-
-
     return (
         <div>
             {category_info.map((category) => {

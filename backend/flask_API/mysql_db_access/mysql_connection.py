@@ -74,7 +74,8 @@ class ResourceDB():
                     return 0
                 except Exception as e:
                     cursor.callproc('UpdateUserLastLogin', [user_info['user_id']])
-
+                    connex.commit()
+                    
                     result_args = cursor.callproc('UsernameNullCheck', [user_info['user_id'], '0'])
                     if result_args[1] == None:
                         return 0

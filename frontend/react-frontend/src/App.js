@@ -14,7 +14,8 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link
+  Link,
+  Redirect
 } from "react-router-dom";
 import './App.css';
 import { LoggedInContext } from "./components/LoggedInContext";
@@ -66,7 +67,7 @@ function App() {
                     <NotFoundPage />
                   </Route>
                   <Route path='*' >
-                    <NotFoundPage/>
+                    <Redirect to="/login"/>
                   </Route>
                 </Switch>
               </div>

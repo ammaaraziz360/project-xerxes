@@ -55,13 +55,13 @@ const ProfilePage = ({...Props}) => {
     }, []);
 
     return (
-        <div className='row justify-content-center'>
-            <div className='col-lg-8 col-md-12 col-xs-12'>
-            {userProfile != null ?
-                <Profile userProfile={userProfile.profile}
-                        loggedinUser={userProfile.requester_profile} />
-            :   <LoadingSpinner />
-            }
+        <div className="container">
+            <div className="profile-header p-4">
+                {userProfile != null ?
+                    <Profile userProfile={userProfile.profile}
+                            loggedinUser={userProfile.requester_profile} />
+                :   <LoadingSpinner />
+                }
             </div>
         </div>
     );

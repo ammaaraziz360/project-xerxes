@@ -243,3 +243,7 @@ body {
 .above{
 	z-index: 1000;
 }
+
+.clickable{
+	cursor: pointer;
+}
