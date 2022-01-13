@@ -13,7 +13,8 @@ const SmallCategoryList = ({ category_info }) => {
 
     return (
         <div>
-            {category_info.map((category) => {
+            {category_info.length > 0 ? 
+            category_info.map((category) => {
                 return (
                     <div className="full-border mt-2" key={category.category_id} onClick={()=>{history.push(`/category/${category.category_id}`); history.go(0)}}>
                         <div className="row p-3 align-content-center">
@@ -27,7 +28,7 @@ const SmallCategoryList = ({ category_info }) => {
                     </div>
                 )
             })
-            }
+            : <div className="ms-2 muted">No children categories, create a request to create one.</div>}
         </div>
     )
 }

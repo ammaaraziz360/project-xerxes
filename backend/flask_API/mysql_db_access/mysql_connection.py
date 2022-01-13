@@ -75,7 +75,7 @@ class ResourceDB():
                 except Exception as e:
                     cursor.callproc('UpdateUserLastLogin', [user_info['user_id']])
                     connex.commit()
-                    
+
                     result_args = cursor.callproc('UsernameNullCheck', [user_info['user_id'], '0'])
                     if result_args[1] == None:
                         return 0
@@ -476,5 +476,20 @@ class ResourceDB():
                 print(traceback.print_exc())
                 connex.close()
         return {}
+    
+    def subscribeCategory(self, category_id, requester_id, subscribe_info):
+        connex = self.cnx_pool.get_connection()
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                cursor.callproc('SubscribeUnsubscribeCategory', [requester_id, category_id, subscribe_info["subscribe_type"]])
+                connex.commit()
+                connex.close()
+
+                return True
+            except Exception as e:
+                print(traceback.print_exc())
+                connex.close()
+        return False
     
 

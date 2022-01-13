@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer, useContext } from 'react';
+import { useEffect, useState, useReducer, useContext, useRef } from 'react';
 import { useHistory } from 'react-router'
 import {Button} from 'react-bootstrap';
 import Cookies from 'universal-cookie'
@@ -12,48 +12,57 @@ const FollowButton = ({userProfile}) => {
 
     const [isHover, setIsHover] = useState(false);
 
+    const didMount = useRef(false);
+
     useEffect(() => {
-        if (following !== null && logged_in_state) {
-            fetch(`http://127.0.0.1:5000/api/users/${userProfile.user_id}/follow`, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': cookie.get('token'),
-                        'user_id': cookie.get('user_id'),
-                        'ip': sessionStorage.getItem('ip'),
-                        'user_agent': navigator.userAgent,
-                        'SID': cookie.get('SID')
-                    },
-                    body: JSON.stringify({following: following}),
-            }).then(res => {
-                if (res.status === 200) {
-                    if(res.headers.get('X-JWT') != null) {
-                        cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+        if(didMount.current) {
+            if (logged_in_state.isLoggedIn) {
+                fetch(`http://127.0.0.1:5000/api/users/${userProfile.user_id}/follow`, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': cookie.get('token'),
+                            'user_id': cookie.get('user_id'),
+                            'ip': sessionStorage.getItem('ip'),
+                            'user_agent': navigator.userAgent,
+                            'SID': cookie.get('SID')
+                        },
+                        body: JSON.stringify({following: following}),
+                }).then(res => {
+                    if (res.status === 200) {
+                        if(res.headers.get('X-JWT') != null) {
+                            cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                        }
+                        return res.json()
+                    } else if (res.status === 401) {
+                        logged_in_state.setIsLoggedIn(false);
+                        console.log('You are not logged in');
                     }
-                    return res.json()
-                } else if (res.status === 401) {
-                    console.log('You are not logged in');
-                }
-            }).catch(err => {
-                console.log(err);
-            })
+                }).catch(err => {
+                    console.log(err);
+                })
+            }
+        }
+        else {
+            didMount.current = true;
         }
 
     }, [following]);
 
-    const FollowUser = (follow) => {
+    const FollowUser = (e, follow) => {
+        e.stopPropagation();
         logged_in_state.isLoggedIn ? setFollowing(follow) : console.log('You are not logged in');;
     }
 
     return (
         <div>
             {following == 1?
-                <Button id="following" className="bg-light text-dark" onClick={() => FollowUser(0)} onMouseOver={()=> setIsHover(true)} onMouseOut={() => setIsHover(false)}>
+                <Button id="following" className="bg-light text-dark" onClick={(e) => FollowUser(e, 0)} onMouseOver={()=> setIsHover(true)} onMouseOut={() => setIsHover(false)}>
                     { isHover ?  "Unfollow" : "Following" }
                 </Button>
                 : 
-                <Button onClick={() => FollowUser(1)}>
+                <Button onClick={(e) => FollowUser(e, 1)}>
                     Follow
                 </Button>
             }

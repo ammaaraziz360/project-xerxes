@@ -416,6 +416,24 @@ def getCategory(category_id):
         print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)
 
+@app.route('/api/categories/<category_id>/subscribe', methods=["POST"])
+def SubscribeCategory(category_id):
+    try:
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
+        resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.POST)
+
+        if JWTResult["Valid"] == False:
+            return resp.CreateResponse()
+        
+        result = ResourceDatabase.subscribeCategory(category_id, request.headers['user_id'], request.json)
+        
+        resp.ResponseResult = result
+
+        return resp.CreateResponse()
+    except Exception as e:
+        print(traceback.print_exc())
+        return make_response(jsonify({'error': str(e)}), 401)
+
 
 # @app.route('/api/categories/category-request', methods=["POST"])
 # def createCategoryRequest():

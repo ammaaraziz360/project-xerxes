@@ -53,11 +53,14 @@ const FollowersFollowingPage = ({type}) => {
                         <h4>{type.charAt(0).toUpperCase() + type.slice(1)} for {username}</h4>
                     </div>
                     <div className='mt-3'>
-                        {followers.map(follower => {
-                            return(
-                                <UserList key={follower.user_id} user_info={follower}/>
-                            )
-                        })}
+                        {followers.length > 0 ? 
+                            followers.map(follower => {
+                                return(
+                                    <UserList key={follower.user_id} user_info={follower}/>
+                                )
+                            })
+                            : <h5>No {type}</h5>
+                        }
                     </div>
                 </div>
             :<LoadingSpinner/>}
