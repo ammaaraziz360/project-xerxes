@@ -9,6 +9,7 @@ class HTTPResponse():
         self.ResponseResult = Result
         self.AuthResult = JWTAuthResult
         self.Type = HTTPType
+        self.error_message = None
 
     def CreateResponse(self):
         if(self.Type == HTTPTypes.GET_Protected):
@@ -57,7 +58,7 @@ class HTTPResponse():
             resp = make_response(jsonify({}), 200)
             self.__JWTInjection(resp)
         else:
-            resp = make_response(jsonify({"error": "Something went wrong"}), 400)
+            resp = make_response(jsonify({"error": self.error_message}), 400)
             self.__JWTInjection(resp)
 
         return resp

@@ -491,5 +491,22 @@ class ResourceDB():
                 print(traceback.print_exc())
                 connex.close()
         return False
-    
+
+    def createCategoryRequest(self, requester_id, category_info):
+        connex = self.cnx_pool.get_connection()
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                result_args = cursor.callproc('CreateCategoryCreationRequest', [requester_id, category_info["parent_cat_id"], category_info["cat_name"], category_info["cat_desc"], category_info["request_details"], ''])
+                connex.commit()
+
+                if result_args[5] != None:
+                    return False, result_args[5]
+                connex.close()
+
+                return True, None
+            except Exception as e:
+                print(traceback.print_exc())
+                connex.close()
+        return False, "Internal Server Error"
 

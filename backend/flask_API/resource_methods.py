@@ -91,3 +91,6 @@ class ResourceDB_API():
     
     def subscribeCategory(self, category_id, requester_id, subscribe_info):
         return(self.resorDB.subscribeCategory(category_id, requester_id, subscribe_info))
+    
+    def createCategoryRequest(self, requester_id, category_info):
+        return(self.resorDB.createCategoryRequest(requester_id, category_info))
