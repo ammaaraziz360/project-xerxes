@@ -10,6 +10,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import FollowersFollowingPage from "./components/FollowersFollowingPage";
 import CategoryHomePage from "./components/CategoryComponents/CategoryHomePage";
 import CategoryPage from "./components/CategoryComponents/CategoryPage";
+import CCRPage from "./components/CategoryComponents/CategoryCreationRequest";
 import {
   BrowserRouter as Router,
   Switch,
@@ -62,6 +63,9 @@ function App() {
                   </Route>
                   <Route exact path='/category/:category_name'>
                     <CategoryPage/> 
+                  </Route>
+                  <Route exact path='/category/:category_id/ccr-request'>
+                    <CCRPage/>
                   </Route>
                   <Route path='/404'>
                     <NotFoundPage />

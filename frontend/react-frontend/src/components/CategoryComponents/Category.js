@@ -12,7 +12,7 @@ import Post from '../Post';
 const Category = ({category_data, requester_profile}) => {
     const history = useHistory();
     const logged_in_state = useContext(LoggedInContext) 
-        
+    
     return(
         <div>
             <div className='row flex-lg-row flex-column-reverse'>
@@ -23,7 +23,7 @@ const Category = ({category_data, requester_profile}) => {
                     })}
                 </div>
                 <div className='col-lg-4 col-md-12'>
-                    <CategoryInfoPanel category_data={category_data} />
+                    <CategoryInfoPanel category_data={category_data}/>
                 </div>
             </div>
         </div>

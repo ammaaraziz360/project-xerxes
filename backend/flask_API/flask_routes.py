@@ -454,4 +454,23 @@ def createCategoryRequest():
         print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)
 
+@app.route('/api/categories/<category_id>/moderator-page', methods=["POST"])
+def getModeratorPage(category_id):
+    try:
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
+        resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.GET_Protected)
+
+        if JWTResult["Valid"] == False:
+            return resp.CreateResponse()
+        
+        result = ResourceDatabase.getModeratorPage(request.headers['user_id'], category_id)
+        
+        resp.ResponseResult = result
+
+        return resp.CreateResponse()
+    except Exception as e:
+        print(traceback.print_exc())
+        return make_response(jsonify({'error': str(e)}), 401)
+
+
 app.run()

@@ -94,3 +94,6 @@ class ResourceDB_API():
     
     def createCategoryRequest(self, requester_id, category_info):
         return(self.resorDB.createCategoryRequest(requester_id, category_info))
+    
+    def getModeratorPage(self, reqester_id, category_id):
+        return(self.resorDB.getModeratorPage(reqester_id, category_id))

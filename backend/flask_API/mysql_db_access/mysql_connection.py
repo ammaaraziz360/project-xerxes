@@ -509,4 +509,35 @@ class ResourceDB():
                 print(traceback.print_exc())
                 connex.close()
         return False, "Internal Server Error"
+    
+    def getModeratorPage(self, requester_id , category_id):
+        connex = self.cnx_pool.get_connection()
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+                result_args = cursor.callproc('GetModeratorPage', [requester_id, category_id, None])
+                
+                if result_args[3] != None:
+                    return {}
 
+                cntr = 0
+                results = {"ccr_requests": [], "reports": [], "mod_requests": [], "user_suspensions": []}
+
+                for result in cursor.stored_results():
+                    keys = result.column_names
+                    if cntr == 0:
+                        [results["ccr_requests"].append(dict(zip(keys, val))) for val in result.fetchall()]
+                    elif cntr == 1:
+                        [results["reports"].append(dict(zip(keys, val))) for val in result.fetchall()]
+                    elif cntr == 2:
+                        [results["mod_requests"].append(dict(zip(keys, val))) for val in result.fetchall()]
+                    elif cntr == 3:
+                        [results["user_suspensions"].append(dict(zip(keys, val))) for val in result.fetchall()]
+                    cntr += 1
+
+
+                return results
+            except Exception as e:
+                print(traceback.print_exc())
+                connex.close()
+        return {}
