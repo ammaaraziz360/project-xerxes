@@ -1,13 +1,13 @@
-from http_response import HTTPResponse
-from http_type_enum import HTTPTypes
-from resource_methods import ResourceDB_API
-from flask import Flask, json, request, jsonify, make_response, abort
+from backend.flask_API.http_response import HTTPResponse
+from backend.flask_API.http_type_enum import HTTPTypes
+from backend.flask_API.resource_methods import ResourceDB_API
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
-from datetime import datetime
-from authentication import google_auth_verify, jwt_auth
-from mysql_db_access import mysql_connection, jwt_authdb
-import resource_methods
-import auth_methods
+# from datetime import datetime
+# from authentication import google_auth_verify, jwt_auth
+# from mysql_db_access import mysql_connection, jwt_authdb
+# import resource_methods
+import backend.flask_API.auth_methods as auth_methods
 import traceback
 
 ResourceDatabase = ResourceDB_API()
@@ -434,5 +434,3 @@ def getCategory(category_id):
 #     except Exception as e:
 #         print(traceback.print_exc())
 #         return make_response(jsonify({'error': str(e)}), 401)
-
-app.run()

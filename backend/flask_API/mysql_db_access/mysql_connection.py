@@ -1,7 +1,7 @@
 from typing import List
 import mysql.connector as mysqlconnex
 import mysql.connector.pooling as DBPooler
-from mysql_db_access.mysql_creds import Credentials
+from backend.flask_API.mysql_db_access.mysql_creds import Credentials
 from datetime import datetime
 import traceback
 
