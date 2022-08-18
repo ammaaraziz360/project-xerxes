@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer, useContext } from 'react';
+import { useEffect, useState, useReducer, useContext, useRef } from 'react';
 import Cookies from 'universal-cookie'
 import {FiThumbsUp, FiThumbsDown, FiShare2, FiMoreHorizontal} from 'react-icons/fi'
 import {Button} from 'react-bootstrap'
@@ -15,6 +15,8 @@ const LikeDislikeButton = ({post_info, loggedin_user_info}) => {
     const[dislikes, setDislikes] = useState(post_info.dislikes);
 
     const logged_in_state = useContext(LoggedInContext)
+
+    const didMount = useRef(false);
 
 
     const like_dislike_controller = (liker) => {
@@ -49,44 +51,54 @@ const LikeDislikeButton = ({post_info, loggedin_user_info}) => {
     }
 
     useEffect(() => {
+        if(didMount.current) {
+            if (logged_in_state.isLoggedIn) {
+                var like_dislike_payload
 
-        var like_dislike_payload
-
-        if(Liked == 0 && Disliked == 0){
-            like_dislike_payload = {"interaction_type": -1}
-        } else if(Liked == 1 && Disliked == 0){
-            like_dislike_payload = {"interaction_type": 1}
-        } else if(Liked == 0 && Disliked == 1){
-            like_dislike_payload = {"interaction_type": 2}
-        }
-
-        fetch(`http://127.0.0.1:5000/api/posts/${post_info.post_id}/like`, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': cookie.get('token'),
-                'user_id': cookie.get('user_id'),
-                'ip': sessionStorage.getItem('ip'),
-                'user_agent': navigator.userAgent,
-                'SID': cookie.get('SID')
-            },
-            body: JSON.stringify(like_dislike_payload)
-        })
-        .then(res => {
-            if (res.status === 200) {
-                if(res.headers.get('X-JWT') != null) {
-                    cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                if(Liked == 0 && Disliked == 0){
+                    like_dislike_payload = {"interaction_type": -1}
+                } else if(Liked == 1 && Disliked == 0){
+                    like_dislike_payload = {"interaction_type": 1}
+                } else if(Liked == 0 && Disliked == 1){
+                    like_dislike_payload = {"interaction_type": 2}
                 }
-            } 
-            else if (res.status === 401) {
-                // todo: modal to tell user to login
-                console.log("You are not loggedin");
+
+                fetch(`http://127.0.0.1:5000/api/posts/${post_info.post_id}/like`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': cookie.get('token'),
+                        'user_id': cookie.get('user_id'),
+                        'ip': sessionStorage.getItem('ip'),
+                        'user_agent': navigator.userAgent,
+                        'SID': cookie.get('SID')
+                    },
+                    body: JSON.stringify(like_dislike_payload)
+                })
+                .then(res => {
+                    if (res.status === 200) {
+                        if(res.headers.get('X-JWT') != null) {
+                            cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                        }
+                    } 
+                    else if (res.status === 401) {
+                        // todo: modal to tell user to login
+                        logged_in_state.setLoggedIn(false);
+                        console.log("You are not logged in");
+                    }
+                })
+                .catch(err => {
+                    console.log(err)
+                })
             }
-        })
-        .catch(err => {
-            console.log(err)
-        })
+            else {
+                console.log("You are not logged in")
+            }
+        }
+        else{
+            didMount.current = true;
+        }
     }, [Liked, Disliked])
 
     return (

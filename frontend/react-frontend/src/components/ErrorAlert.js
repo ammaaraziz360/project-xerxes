@@ -1,7 +1,7 @@
 import Alert from 'react-bootstrap/Alert'
 
 
-const Alerts = ({AlertToggle, setAlertToggle, AlertText}) => {
+const Alerts = ({AlertToggle, AlertText}) => {
 
     if(AlertToggle == false){
         return null

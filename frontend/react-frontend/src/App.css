@@ -223,9 +223,27 @@ body {
 	border-style: solid;
 	border-color: #34312dff!important;
 	border-width: 1px!important;
-	border-radius: 12px
+	border-radius: 12px;
+	background-color: rgb(31, 29, 27)!important;
 }
 .full-border:hover{
 	border-color: rgba(217, 197, 178, 0.486)!important;
 	background-color: rgba(52, 49, 45, 0.301)!important;
+}
+
+.sticky {
+	position: fixed;
+}
+
+.center{
+	position: absolute;
+	top: 20%;
+}
+
+.above{
+	z-index: 1000;
+}
+
+.clickable{
+	cursor: pointer;
 }

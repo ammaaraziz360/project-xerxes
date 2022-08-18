@@ -1,13 +1,13 @@
-from http_response import HTTPResponse
-from http_type_enum import HTTPTypes
-from resource_methods import ResourceDB_API
-from flask import Flask, json, request, jsonify, make_response, abort
+from backend.flask_API.http_response import HTTPResponse
+from backend.flask_API.http_type_enum import HTTPTypes
+from backend.flask_API.resource_methods import ResourceDB_API
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
-from datetime import datetime
-from authentication import google_auth_verify, jwt_auth
-from mysql_db_access import mysql_connection, jwt_authdb
-import resource_methods
-import auth_methods
+# from datetime import datetime
+# from authentication import google_auth_verify, jwt_auth
+# from mysql_db_access import mysql_connection, jwt_authdb
+# import resource_methods
+import backend.flask_API.auth_methods as auth_methods
 import traceback
 
 ResourceDatabase = ResourceDB_API()
@@ -379,5 +379,58 @@ def getUserFollowing(username):
         print(traceback.print_exc())
         return make_response(jsonify({'error': str(e)}), 401)
 
+@app.route('/api/categories', methods=["GET"])
+def getCategoryHome():
+    try:
+        requester_id = None
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
 
-app.run()
+        if JWTResult["Valid"] == True:
+            requester_id = request.headers['user_id']
+
+
+        result = ResourceDatabase.getCategoryHome(requester_id)
+
+        resp = HTTPResponse(result, JWTResult, HTTPTypes.GET_Unprotected)
+
+        return resp.CreateResponse()
+    except Exception as e:
+        print(traceback.print_exc())
+        return make_response(jsonify({'error': str(e)}), 401)
+
+@app.route('/api/categories/<category_id>', methods=["GET"])
+def getCategory(category_id):
+    try:
+        requester_id = None
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
+
+        if JWTResult["Valid"] == True:
+            requester_id = request.headers['user_id']
+
+        result = ResourceDatabase.getCategory(category_id, requester_id)
+
+        resp = HTTPResponse(result, JWTResult, HTTPTypes.GET_Unprotected)
+
+        return resp.CreateResponse()
+    except Exception as e:
+        print(traceback.print_exc())
+        return make_response(jsonify({'error': str(e)}), 401)
+
+
+# @app.route('/api/categories/category-request', methods=["POST"])
+# def createCategoryRequest():
+#     try:
+#         JWTResult = auth_methods.AuthenticateUser(request.headers)
+#         resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.POST)
+
+#         if JWTResult["Valid"] == False:
+#             return resp.CreateResponse()
+        
+#         result = ResourceDatabase.createCategoryRequest(request.headers['user_id'], request.json)
+        
+#         resp.ResponseResult = result
+
+#         return resp.CreateResponse()
+#     except Exception as e:
+#         print(traceback.print_exc())
+#         return make_response(jsonify({'error': str(e)}), 401)

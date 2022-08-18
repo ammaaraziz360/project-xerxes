@@ -1,8 +1,6 @@
-from authentication import google_auth_verify, jwt_auth
-from mysql_db_access import mysql_connection
-from mysql_db_access.jwt_authdb import AuthDB
-from mysql_db_access.mysql_creds import Credentials
-import resource_methods
+from backend.flask_API.authentication import google_auth_verify, jwt_auth
+from backend.flask_API.mysql_db_access.jwt_authdb import AuthDB
+from backend.flask_API.mysql_db_access.mysql_creds import Credentials
 from datetime import datetime
 import uuid
 

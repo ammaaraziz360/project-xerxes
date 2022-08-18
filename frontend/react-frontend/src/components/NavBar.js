@@ -47,7 +47,7 @@ const NavBar = () => {
                 }
             })
             .then(data => {
-                setUserProfile(data.own_user_profile)
+                setUserProfile(data.requester_profile)
             })
             .catch(err => {
                 console.log(err)

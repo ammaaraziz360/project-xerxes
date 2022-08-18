@@ -20,40 +20,46 @@ const ReplyBox = ({loggedin_user_info, post_info}) => {
                         reply_post_id: post_info.post_id,
                         category_id: post_info.category_id}
         setPostText('');
-        fetch('http://127.0.0.1:5000/api/posts', {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': cookie.get('token'),
-                'user_id': cookie.get('user_id'),
-                'ip': sessionStorage.getItem('ip'),
-                'user_agent': navigator.userAgent,
-                'SID': cookie.get('SID')
-            },
-            body: JSON.stringify(post_data)
-        })
-        .then(res => {
-            if (res.status === 200) {
-                if(res.headers.get('X-JWT') != null) {
-                    cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+
+        if(logged_in_state.isLoggedIn == true) {
+            fetch('http://127.0.0.1:5000/api/posts', {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': cookie.get('token'),
+                    'user_id': cookie.get('user_id'),
+                    'ip': sessionStorage.getItem('ip'),
+                    'user_agent': navigator.userAgent,
+                    'SID': cookie.get('SID')
+                },
+                body: JSON.stringify(post_data)
+            })
+            .then(res => {
+                if (res.status === 200) {
+                    if(res.headers.get('X-JWT') != null) {
+                        cookie.set('token', res.headers.get('X-JWT'), {path: '/'})
+                    }
+                    setAlertMessage({message: 'Comment successfully added', style: 'success'})
+                    setAlertToggle(true)
+                } 
+                else if (res.status === 401) {
+                    localStorage.setItem('logged_in', 'false');
+                    logged_in_state.setIsLoggedIn(false);
                 }
-                setAlertMessage({message: 'Comment successfully added', style: 'success'})
-                setAlertToggle(true)
-            } 
-            else if (res.status === 401) {
-                localStorage.setItem('logged_in', 'false');
-                logged_in_state.setIsLoggedIn(false);
-            }
-            else {
+                else {
+                    setAlertMessage({message: 'Error: Comment not posted, try again', style: 'danger'})
+                    setAlertToggle(true)
+                }
+            })
+            .catch(err => {
                 setAlertMessage({message: 'Error: Comment not posted, try again', style: 'danger'})
                 setAlertToggle(true)
-            }
-        })
-        .catch(err => {
-            setAlertMessage({message: 'Error: Comment not posted, try again', style: 'danger'})
-            setAlertToggle(true)
-        })
+            })
+        }
+        else{
+            alert("You must be logged in to comment")
+        }
     }
 
     useEffect(() => {

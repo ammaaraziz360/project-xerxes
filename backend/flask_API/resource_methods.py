@@ -1,9 +1,9 @@
-from authentication import google_auth_verify, jwt_auth
-from mysql_db_access import mysql_connection
-from mysql_db_access.jwt_authdb import AuthDB
-from mysql_db_access.mysql_connection import ResourceDB
-from mysql_db_access.mysql_creds import Credentials
-from datetime import datetime
+# from authentication import google_auth_verify, jwt_auth
+# from mysql_db_access import mysql_connection
+# from mysql_db_access.jwt_authdb import AuthDB
+from backend.flask_API.mysql_db_access.mysql_connection import ResourceDB
+from backend.flask_API.mysql_db_access.mysql_creds import Credentials
+# from datetime import datetime
 
 class ResourceDB_API():
 
@@ -82,3 +82,18 @@ class ResourceDB_API():
         gets a user's followers
         """
         return(self.resorDB.getUserFollowing(username, requester_id))
+
+    def getCategoryHome(self, requester_id):
+        return(self.resorDB.getCategoryHome(requester_id))
+
+    def getCategory(self, category_id, requester_id):
+        return(self.resorDB.getCategory(category_id, requester_id))
+    
+    def subscribeCategory(self, category_id, requester_id, subscribe_info):
+        return(self.resorDB.subscribeCategory(category_id, requester_id, subscribe_info))
+    
+    def createCategoryRequest(self, requester_id, category_info):
+        return(self.resorDB.createCategoryRequest(requester_id, category_info))
+    
+    def getModeratorPage(self, reqester_id, category_id):
+        return(self.resorDB.getModeratorPage(reqester_id, category_id))

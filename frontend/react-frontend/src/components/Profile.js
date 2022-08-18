@@ -11,12 +11,26 @@ import {BsLink45Deg} from 'react-icons/bs';
 
 import PostEditor from './PostEditor';
 import Post from './Post';
+import UserInfoPanel from './UserInfoPanel';
 
 const Profile = ({ userProfile, loggedinUser}) => {
 
+    const posts = userProfile.posts.filter(post => post.reply_post_id === null);
+
     return(
         <div>
-            <div className="profile-header p-4">
+            <div className='row flex-xl-row flex-column-reverse'>
+                <div className='col-xl-8 col-lg-12'>
+                    {posts.map((post, index) => {
+                        
+                        return <Post post_info={post} loggedin_user_info={loggedinUser} key={index}/>
+                    })}
+                </div>
+                <div className='col-xl-4 col-lg-12'>
+                    <UserInfoPanel user_info={userProfile}/>
+                </div>
+            </div>
+            {/* <div className="p-4">
                 <div className="row">
                     <div className="d-flex col-3 align-items-center p-4 pfp-div justify-content-center"> 
                         <img src={userProfile.pfp_url} alt="avatar" className="img-fluid pfp-large" />
@@ -96,7 +110,7 @@ const Profile = ({ userProfile, loggedinUser}) => {
                 </div>
             </div>
             <div>
-                <div className="profile-header p-4">
+                <div className="p-4">
                     {userProfile.posts.length > 0 ?
                         userProfile.posts.map(post => {
                             if (post.reply_post_id == null) {
@@ -107,7 +121,7 @@ const Profile = ({ userProfile, loggedinUser}) => {
                         : <h5 className="text-center">No posts yet</h5>
                     }
                 </div>
-            </div>
+            </div> */}
         </div>
 
     )

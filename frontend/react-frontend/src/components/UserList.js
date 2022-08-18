@@ -8,8 +8,10 @@ import FollowButton from './FollowButton';
 var cookie = new Cookies();
 
 const UserList = ({ user_info }) => {
+    const history = useHistory();
+
     return (
-        <div className="full-border mt-2">
+        <div className="full-border mt-2" onClick={()=>history.push(`/user/${user_info.user_id}`)}>
             <div className="row p-3">
                 <div className="col-2">
                     <img src={user_info.pfp_url} className="img-fluid d-inline pfp-small" alt="user image"/>
@@ -19,6 +21,7 @@ const UserList = ({ user_info }) => {
                     <div className="muted">
                         @{user_info.username}
                     </div>
+                    {user_info.bio}
                 </div>
                 { user_info.OwnAccount == 0 ?
                     <div className="d-flex col-4 justify-content-end align-items-center">
@@ -26,15 +29,6 @@ const UserList = ({ user_info }) => {
                     </div>
                     : null
                 }
-            </div>
-            <div className="row mb-3">
-                <div className="col-2"></div>
-                <div className="col-8 mt-2">
-                    {user_info.bio}
-                </div>
-                <div className="col-2">
-
-                </div>
             </div>
         </div>
     )

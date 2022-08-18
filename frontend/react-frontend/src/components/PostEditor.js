@@ -6,7 +6,7 @@ import Alerts from './ErrorAlert';
 import {LoggedInContext} from './LoggedInContext';
 
 import { InputGroup, FormControl, Button, Alert } from 'react-bootstrap';
-const PostEditor = () => {
+const PostEditor = ({category_id}) => {
     const logged_in_state = useContext(LoggedInContext) 
 
     const cookie = new Cookies();
@@ -14,93 +14,90 @@ const PostEditor = () => {
     const [postTitle, setPostTitle] = useState('');
 
     const [post, setPost] = useState("")
-    var postHTML = ""
 
     const [AlertToggle, setAlertToggle] = useState(false)
     const [AlertMessage, setAlertMessage] = useState({message: "", style: "success"})
 
 
-    const GeneratePreview = () => {
-        var generatedHTML = "<div>"
-        for(var i = 0; i < post.length; i++){
-            switch(post[i]){
-                case "(":
-                    generatedHTML += "<strong>"
-                    i++;
-                    while(post[i] != ")" && i <= post.length){
-                        generatedHTML += post[i]
-                        i++;
-                    }
-                    generatedHTML += "</strong>"
-                    break;
-                case "|":
-                    generatedHTML += "<br>"
-                    break;
-                case "[":
-                    generatedHTML += "<em>"
-                    i++;
-                    while(post[i] != "]" && i <= post.length){
-                        generatedHTML += post[i]
-                        i++;
-                    }
-                    generatedHTML += "</em>"
-                    break;
-                case "]":
-                    generatedHTML += "</em>"
-                    break;
-                case "/":
-                    if (i+1 <= post.length){
-                        generatedHTML += post[i+1]
-                        i++;
-                    }
-                    break;
-                case "<":
-                    if (i+1 <= post.length){
-                        i++;
-                        if (post[i] == "1" || post[i] == "2" || post[i] == "3" || post[i] == "4" || post[i] == "5" ){
-                            var header_num = post[i]
-                            generatedHTML += `<h${header_num}>`
-                            console.log(post[i])
-                            i++;
-                            while(post[i] != ">" && i <= post.length){
-                                generatedHTML += post[i]
-                                i++;
-                            }
-                            generatedHTML += `</h${header_num}>`
-                        }else if(post[i] == "s"){
-                            generatedHTML += "<s>"
-                            i++;
-                            while(post[i] != ">" && i <= post.length){
-                                generatedHTML += post[i]
-                                i++;
-                            }
-                            generatedHTML += "</s>"
-                        }else if (post[i] == "c"){
-                            generatedHTML += "<code>"
-                            i++;
-                            while(post[i] != ">" && i <= post.length){
-                                generatedHTML += post[i]
-                                i++;
-                            }
-                            generatedHTML += "</code>"
-                        }
-                    }
-                    break;
-                default:
-                    generatedHTML += post[i];
-            }      
-        }
+    // const GeneratePreview = () => {
+    //     var generatedHTML = "<div>"
+    //     for(var i = 0; i < post.length; i++){
+    //         switch(post[i]){
+    //             case "(":
+    //                 generatedHTML += "<strong>"
+    //                 i++;
+    //                 while(post[i] != ")" && i <= post.length){
+    //                     generatedHTML += post[i]
+    //                     i++;
+    //                 }
+    //                 generatedHTML += "</strong>"
+    //                 break;
+    //             case "|":
+    //                 generatedHTML += "<br>"
+    //                 break;
+    //             case "[":
+    //                 generatedHTML += "<em>"
+    //                 i++;
+    //                 while(post[i] != "]" && i <= post.length){
+    //                     generatedHTML += post[i]
+    //                     i++;
+    //                 }
+    //                 generatedHTML += "</em>"
+    //                 break;
+    //             case "]":
+    //                 generatedHTML += "</em>"
+    //                 break;
+    //             case "/":
+    //                 if (i+1 <= post.length){
+    //                     generatedHTML += post[i+1]
+    //                     i++;
+    //                 }
+    //                 break;
+    //             case "<":
+    //                 if (i+1 <= post.length){
+    //                     i++;
+    //                     if (post[i] == "1" || post[i] == "2" || post[i] == "3" || post[i] == "4" || post[i] == "5" ){
+    //                         var header_num = post[i]
+    //                         generatedHTML += `<h${header_num}>`
+    //                         console.log(post[i])
+    //                         i++;
+    //                         while(post[i] != ">" && i <= post.length){
+    //                             generatedHTML += post[i]
+    //                             i++;
+    //                         }
+    //                         generatedHTML += `</h${header_num}>`
+    //                     }else if(post[i] == "s"){
+    //                         generatedHTML += "<s>"
+    //                         i++;
+    //                         while(post[i] != ">" && i <= post.length){
+    //                             generatedHTML += post[i]
+    //                             i++;
+    //                         }
+    //                         generatedHTML += "</s>"
+    //                     }else if (post[i] == "c"){
+    //                         generatedHTML += "<code>"
+    //                         i++;
+    //                         while(post[i] != ">" && i <= post.length){
+    //                             generatedHTML += post[i]
+    //                             i++;
+    //                         }
+    //                         generatedHTML += "</code>"
+    //                     }
+    //                 }
+    //                 break;
+    //             default:
+    //                 generatedHTML += post[i];
+    //         }      
+    //     }
             
         
-        generatedHTML += "</div>"
+    //     generatedHTML += "</div>"
 
-        document.getElementById("preview").innerHTML = generatedHTML
-        postHTML = generatedHTML
-    }
+    //     document.getElementById("preview").innerHTML = generatedHTML
+    //     postHTML = generatedHTML
+    // }
 
     const SubmitPost = () => {
-        GeneratePreview()
-
         if (postTitle.trim() == ""){
             setAlertMessage({message: 'Blog post must have a title, try again', style: 'danger'})
             setAlertToggle(true)
@@ -118,9 +115,9 @@ const PostEditor = () => {
         }
 
         var post_data = {title: postTitle, 
-                        body_raw: post, 
-                        body_html: postHTML, 
-                        reply_post_id: null}
+                        body: post, 
+                        reply_post_id: null,
+                        category_id: category_id}
         fetch('http://127.0.0.1:5000/api/posts', {
             method: 'POST',
             mode: 'cors',
@@ -160,7 +157,7 @@ const PostEditor = () => {
 
     return (
         <div>
-            <div className="text-editor post-elements">
+            <div className="text-editor post-elements full-border p-3 mt-2">
                     <div >
                         <h5 className="hr pb-3">Create new blog post</h5>
                     </div>
@@ -179,9 +176,11 @@ const PostEditor = () => {
                                 />
                     </div>
                     <div className="d-flex mt-3 justify-content-end">
+                        {/*
                         <Button onClick={GeneratePreview}>
                             Preview
                         </Button>
+                        */}
                         <Button onClick={SubmitPost}>
                             Post
                         </Button>
@@ -189,11 +188,6 @@ const PostEditor = () => {
                     <div className="mt-3">
                         <Alerts AlertToggle={AlertToggle} AlertText={AlertMessage}/>
                     </div>
-                    
-                    <h5 className="hr pb-3">Preview</h5>
-            </div>
-            <div id="preview">
-
             </div>
         </div>
     );

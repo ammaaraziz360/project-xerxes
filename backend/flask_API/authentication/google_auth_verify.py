@@ -1,6 +1,6 @@
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from authentication import jwt_config
+from backend.flask_API.authentication import jwt_config
 
 creds = jwt_config.JWTConfig()
 
