@@ -9,6 +9,24 @@ from flask_cors import CORS
 # import resource_methods
 import backend.flask_API.auth_methods as auth_methods
 import traceback
+from logging.config import dictConfig
+
+
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
 
 ResourceDatabase = ResourceDB_API()
 
