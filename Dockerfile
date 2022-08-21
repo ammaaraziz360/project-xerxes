@@ -25,4 +25,4 @@ COPY . .
 
 RUN source backend/venv/bin/activate 
 
-CMD [ "backend/venv/bin/uwsgi", "--socket" , "0.0.0.0:5000", "--protocol=http", "--wsgi-file", "backend/flask_API/wsgi.py", "--callable", "app"]
+CMD [ "backend/venv/bin/uwsgi", "--ini" , "backend/flask_API/blogoo-backend.ini"]
