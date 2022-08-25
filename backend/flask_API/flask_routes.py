@@ -1,3 +1,5 @@
+from ast import Return
+from crypt import methods
 from backend.flask_API.http_response import HTTPResponse
 from backend.flask_API.http_type_enum import HTTPTypes
 from backend.flask_API.resource_methods import ResourceDB_API
@@ -33,6 +35,13 @@ ResourceDatabase = ResourceDB_API()
 app = Flask(__name__)
 app.config["DEBUG"] = True
 CORS(app)
+
+app.logger.info(f'Blogoo Web Service is now Online')
+
+
+@app.route('/', methods=['GET'])
+def homeRoute():
+    return request.headers
 
 # default route
 @app.route('/api/users/login', methods=['POST'])

@@ -3,6 +3,8 @@ from backend.flask_API.mysql_db_access.jwt_authdb import AuthDB
 from backend.flask_API.mysql_db_access.mysql_creds import Credentials
 from datetime import datetime
 import uuid
+import logging
+import traceback
 
 def AuthenticateUser(headers):
     """
@@ -14,7 +16,7 @@ def AuthenticateUser(headers):
     response = {"Valid": False, "JWT": None}
 
     try:    
-        authDB = AuthDB(Credentials('blogoo-auth'))
+        authDB = AuthDB()
         jwt_token = headers['Authorization']
         user_id = headers['user_id']
         ip_address = headers['ip']
@@ -112,21 +114,21 @@ def AuthorizeUser(request, ResourceDBObj):
         
         return {"user_exists": -1}
     except Exception as e:
-        print(e)
+        logging.getLogger().error(f'{traceback.print_exc()}')
         return {"user_exists": -1}
         
 def LogoutUser(headers):
     try:
         session_id = headers['SID']
-        authDB = AuthDB(Credentials('blogoo-auth'))
+        authDB = AuthDB(Credentials())
         authDB.setSessionInvalid(session_id)
         authDB.CloseConnection()
         return True
     except Exception as e:
-        print(e)
+        logging.getLogger().error(f'{traceback.print_exc()}')
         return {"error": str(e)}
 
 def CreateTokenRecord(auth_table):
-    authDB = AuthDB(Credentials('blogoo-auth'))
+    authDB = AuthDB(Credentials())
     authDB.createSessionRecord(auth_table)
     authDB.CloseConnection()

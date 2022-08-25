@@ -1,30 +1,41 @@
+from asyncio.log import logger
+import os
 from typing import List
 import mysql.connector as mysqlconnex
 import mysql.connector.pooling as DBPooler
 from backend.flask_API.mysql_db_access.mysql_creds import Credentials
+from dotenv import load_dotenv
 from datetime import datetime
 import traceback
+import logging
+from pathlib import Path
+
+# dotenv_path = Path('../../.env')
+
+# load_dotenv(dotenv_path=dotenv_path)
+
 
 
 class ResourceDB():
-    def __init__(self, credentials: Credentials):
+    def __init__(self):
         self.cnx_pool = None
-        self.CreateConnection(credentials)
+        self.CreateConnection()
 
-    def CreateConnection(self, creds: Credentials):
+    def CreateConnection(self):
+        logging.getLogger().error(f'{os.getenv("DB_USER_PASSWORD")}')
         pool = None
         try:
             pool = DBPooler.MySQLConnectionPool(
                 pool_name = "resource_db_pool",
                 pool_size = 5,
-                host = creds.HOST_NAME,
-                user = creds.USER_NAME,
-                passwd = creds.USER_PASSWORD,
-                database = creds.database
+                host = os.getenv('DB_HOST_NAME'),
+                user = os.getenv('DB_USERNAME'),
+                passwd = os.getenv('DB_USER_PASSWORD'),
+                database = os.getenv('RESOURCE_DB_NAME')
             )
-            print(f'Connection to the {creds.database} database was successful')
+            logging.getLogger().info(f'Connection to the {os.getenv("RESOURCE_DB_NAME")} database was successful')
         except mysqlconnex.Error as e:
-            print(f'Connection to the {creds.database} database was unsuccessful. Error: {e}')
+            logging.getLogger().error(f'Connection to the {os.getenv("RESOURCE_DB_NAME")} database was unsuccessful. Error: {e}')
     
         self.cnx_pool = pool
         

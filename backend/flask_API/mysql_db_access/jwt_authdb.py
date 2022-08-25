@@ -1,24 +1,32 @@
-from mysql_db_access.mysql_creds import Credentials
+from json import load
 import mysql.connector as mysqlconnex
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+from pathlib import Path
+
+# dotenv_path = Path('../.env')
+
+# load_dotenv(dotenv_path=dotenv_path)
 
 class AuthDB():
-    def __init__(self, credentials: Credentials):
+    def __init__(self):
         self.connection = None
-        self.CreateConnection(credentials)
+        self.CreateConnection()
 
-    def CreateConnection(self, creds: Credentials):
+    def CreateConnection(self):
         connection = None
         try:
             connection = mysqlconnex.connect(
-                host = creds.HOST_NAME,
-                user = creds.USER_NAME,
-                passwd = creds.USER_PASSWORD,
-                database = creds.database
+                host = os.getenv('DB_HOST_NAME'),
+                user = os.getenv('DB_USERNAME'),
+                passwd = os.getenv('DB_USER_PASSWORD'),
+                database = os.getenv('AUTH_DB_NAME')
             )
-            print(f'Connection to the {creds.database} database was successful')
+            print(f'Connection to the {os.getenv("AUTH_DB_NAME")} database was successful')
         except mysqlconnex.Error as e:
-            print(f'Connection to the {creds.database} database was unsuccessful. Error: {e}')
+            print(f'Connection to the {os.getenv("AUTH_DB_NAME")} database was unsuccessful. Error: {e}')
     
         self.connection = connection
 

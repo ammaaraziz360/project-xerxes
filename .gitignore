@@ -8,3 +8,8 @@ backend/flask_API/mysql_db_access/mysqldb_credentials.py
 backend/flask_API/mysql_db_access/mysql_creds.py
 backend/flask_API/authentication/jwt_config.py
 .vscode
+.env
+
+__pycache__/
+*.py[cod]
+*$py.class
