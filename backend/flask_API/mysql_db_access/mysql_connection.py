@@ -1,20 +1,9 @@
-from asyncio.log import logger
 import os
 from typing import List
 import mysql.connector as mysqlconnex
 import mysql.connector.pooling as DBPooler
-from backend.flask_API.mysql_db_access.mysql_creds import Credentials
-from dotenv import load_dotenv
-from datetime import datetime
 import traceback
 import logging
-from pathlib import Path
-
-# dotenv_path = Path('../../.env')
-
-# load_dotenv(dotenv_path=dotenv_path)
-
-
 
 class ResourceDB():
     def __init__(self):
@@ -22,7 +11,6 @@ class ResourceDB():
         self.CreateConnection()
 
     def CreateConnection(self):
-        logging.getLogger().error(f'{os.getenv("DB_USER_PASSWORD")}')
         pool = None
         try:
             pool = DBPooler.MySQLConnectionPool(

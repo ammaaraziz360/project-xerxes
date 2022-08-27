@@ -1,4 +1,5 @@
 from ast import Return
+from asyncio.log import logger
 from crypt import methods
 from backend.flask_API.http_response import HTTPResponse
 from backend.flask_API.http_type_enum import HTTPTypes
@@ -41,7 +42,8 @@ app.logger.info(f'Blogoo Web Service is now Online')
 
 @app.route('/', methods=['GET'])
 def homeRoute():
-    return request.headers
+    app.logger.info(request.headers)
+    return "<h1>Welcome to Blogoo API</h1>"
 
 # default route
 @app.route('/api/users/login', methods=['POST'])
