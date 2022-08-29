@@ -6,4 +6,4 @@ services:
       - "8000:5000"
     env_file:
       - .env
-    image: ammaaraziz360/blogoo-backend:dev
+    image: ammaaraziz360/blogoo-backend:prod

@@ -34,7 +34,6 @@ dictConfig({
 ResourceDatabase = ResourceDB_API()
 
 app = Flask(__name__)
-app.config["DEBUG"] = True
 CORS(app)
 
 app.logger.info(f'Blogoo Web Service is now Online')
