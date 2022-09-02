@@ -2,7 +2,6 @@
 # from mysql_db_access import mysql_connection
 # from mysql_db_access.jwt_authdb import AuthDB
 from backend.flask_API.mysql_db_access.mysql_connection import ResourceDB
-from backend.flask_API.mysql_db_access.mysql_creds import Credentials
 # from datetime import datetime
 
 class ResourceDB_API():
