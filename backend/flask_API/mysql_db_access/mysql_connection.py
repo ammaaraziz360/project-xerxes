@@ -83,7 +83,7 @@ class ResourceDB():
                     return 1
 
             except Exception as e:
-                pass
+                logging.getLogger().error(f'{traceback.print_exc()}')
         return -1
     def UpdateUser(self, updated_items):
         """
@@ -140,6 +140,10 @@ class ResourceDB():
                 for result in cursor.stored_results():
                     keys = result.column_names
                     [results := dict(zip(keys, x)) for x in result.fetchall()]
+                
+                # if no user is found 
+                if results == {}:
+                    return {}
 
                 if get_posts and results != {}:
                     results['posts'] = []
@@ -157,7 +161,7 @@ class ResourceDB():
                         own_profile = None
 
                 connex.close()
-
+            
                 return {"profile": results, "requester_profile": own_profile}
             except Exception as e:
                 print(traceback.print_exc())

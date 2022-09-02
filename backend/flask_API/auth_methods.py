@@ -1,6 +1,5 @@
 from backend.flask_API.authentication import google_auth_verify, jwt_auth
 from backend.flask_API.mysql_db_access.jwt_authdb import AuthDB
-from backend.flask_API.mysql_db_access.mysql_creds import Credentials
 from datetime import datetime
 import uuid
 import logging
@@ -19,7 +18,7 @@ def AuthenticateUser(headers):
 
     try:    
         jwt_token = headers['Authorization'].split()[1]
-        user_id = headers['user_id']
+        user_id = headers['User-Id']
         ip_address = headers['X-Real-Ip']
         user_agent = headers['User_Agent']
         session_id = headers['SID']
@@ -76,7 +75,7 @@ def AuthenticateUser(headers):
 
 def AuthorizeUser(request, ResourceDBObj):
     try:
-        auth_token = request.headers['google_auth_token']
+        auth_token = request.headers['Google_Auth_Token']
         ip_address = request.headers['X-Real-Ip']
         user_agent = request.headers['User-Agent']
         request_body = request.json
@@ -100,7 +99,7 @@ def AuthorizeUser(request, ResourceDBObj):
                             'updatedAt': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         }
 
-            CreateTokenRecord(auth_table)
+            authDB.createSessionRecord(auth_table)
             jwt_token = jwt_auth.encode_auth_token(google_id)
 
             return {"user_exists": result, "token": jwt_token, "user_id": google_id, "session_id": session_id}  
@@ -120,5 +119,5 @@ def LogoutUser(headers):
         logging.getLogger().error(f'{traceback.print_exc()}')
         return {"error": str(e)}
 
-def CreateTokenRecord(auth_table):
-    authDB.createSessionRecord(auth_table)
+
+    

@@ -1,16 +1,9 @@
-from ast import Return
-from asyncio.log import logger
-from crypt import methods
 from backend.flask_API.http_response import HTTPResponse
 from backend.flask_API.http_type_enum import HTTPTypes
 from backend.flask_API.resource_methods import ResourceDB_API
+import backend.flask_API.auth_methods as auth_methods
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
-# from datetime import datetime
-# from authentication import google_auth_verify, jwt_auth
-# from mysql_db_access import mysql_connection, jwt_authdb
-# import resource_methods
-import backend.flask_API.auth_methods as auth_methods
 import traceback
 from logging.config import dictConfig
 
@@ -34,6 +27,7 @@ dictConfig({
 ResourceDatabase = ResourceDB_API()
 
 app = Flask(__name__)
+app.debug = True
 CORS(app)
 
 app.logger.info(f'Blogoo Web Service is now Online')
@@ -97,7 +91,7 @@ def updateUser():
                         'website_url': None,        
                     }
 
-        user_dict['user_id'] = request.headers['user_id']        
+        user_dict['user_id'] = request.headers['User-Id']        
         request_body = request.json
 
         for key, val in request_body.items():
@@ -107,25 +101,7 @@ def updateUser():
 
         resp.ResponseResult = result
 
-        return result
-
-        # if result != True:
-        #     if new_jwt_token != True:
-        #         resp = make_response(jsonify({"error": result}), 400)
-        #         resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
-        #         resp.headers['X-JWT'] = new_jwt_token
-        #     else:
-        #         resp = make_response(jsonify({"error": result}), 400)
-        #     return resp
-        # else:
-        #     if new_jwt_token != True:
-        #         resp = make_response(jsonify({"message": "User updated successfully"}), 200)
-        #         resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
-        #         resp.headers['X-JWT'] = new_jwt_token
-        #     else:
-        #         resp = make_response(jsonify({"message": "User updated successfully"}), 200)
-        #     return resp
-        
+        return resp.CreateResponse()
     except Exception as e:
         return jsonify({"error": str(e)}, 400)
 
@@ -202,7 +178,7 @@ def getUserProfile(username):
         resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.GET_Unprotected)
 
         if JWTResult["Valid"] != False:
-            requester_id = request.headers['user_id']
+            requester_id = request.headers['User-Id']
         
         result = ResourceDatabase.getUserProfile(username, requester_id)
 
@@ -225,7 +201,7 @@ def getLoggedInUserProfile():
         if JWTResult["Valid"] == False:
             return resp.CreateResponse()
             
-        requester_id = request.headers['user_id']
+        requester_id = request.headers['User-Id']
         result = ResourceDatabase.getUserProfile(requester_id, requester_id)
 
         resp.ResponseResult = result
@@ -245,7 +221,7 @@ def getLoggedInUserProfile():
 #         if new_jwt_token == False:
 #             return make_response(jsonify({"error": "Invalid Token"}), 401)
         
-#         result = ResourceDatabase.editUserSocials(request.headers['user_id'], request.json)
+#         result = ResourceDatabase.editUserSocials(request.headers['User-Id'], request.json)
 
 #         if result != True:
 #             return make_response(jsonify({"error": result}), 400)
@@ -271,7 +247,7 @@ def insertPost():
         if JWTResult["Valid"] == False:
             return resp.CreateResponse()
         
-        result = ResourceDatabase.insertPost(request.headers['user_id'], request.json)
+        result = ResourceDatabase.insertPost(request.headers['User-Id'], request.json)
         
         resp.ResponseResult = result
 
@@ -292,7 +268,7 @@ def likePost(post_id):
         if JWTResult["Valid"] == False:
             return resp.CreateResponse()
         
-        result = ResourceDatabase.likePost(post_id, request.headers['user_id'], request.json["interaction_type"])
+        result = ResourceDatabase.likePost(post_id, request.headers['User-Id'], request.json["interaction_type"])
         
         resp.ResponseResult = result
 
@@ -312,7 +288,7 @@ def followUser(follow_id):
         if JWTResult["Valid"] == False:
             return resp.CreateResponse()
         
-        result = ResourceDatabase.followUser(request.headers['user_id'], follow_id, request.json)
+        result = ResourceDatabase.followUser(request.headers['User-Id'], follow_id, request.json)
         
         resp.ResponseResult = result
 
@@ -331,7 +307,7 @@ def getPost(post_id):
         JWTResult = auth_methods.AuthenticateUser(request.headers)
 
         if JWTResult["Valid"] == True:
-            requester_id = request.headers['user_id']
+            requester_id = request.headers['User-Id']
 
         result = ResourceDatabase.getPost(post_id, requester_id)
 
@@ -353,7 +329,7 @@ def getPostComments(post_id):
         JWTResult = auth_methods.AuthenticateUser(request.headers)
 
         if JWTResult["Valid"] == True:
-            requester_id = request.headers['user_id']
+            requester_id = request.headers['User-Id']
 
         result = ResourceDatabase.getPostComments(post_id, requester_id)
 
@@ -374,7 +350,7 @@ def getUserFollowers(username):
         JWTResult = auth_methods.AuthenticateUser(request.headers)
 
         if JWTResult["Valid"] == True:
-            requester_id = request.headers['user_id']
+            requester_id = request.headers['User-Id']
 
         result = ResourceDatabase.getUserFollowers(username, requester_id)
 
@@ -395,7 +371,7 @@ def getUserFollowing(username):
         JWTResult = auth_methods.AuthenticateUser(request.headers)
 
         if JWTResult["Valid"] == True:
-            requester_id = request.headers['user_id']
+            requester_id = request.headers['User-Id']
 
 
         result = ResourceDatabase.getUserFollowing(username, requester_id)
@@ -414,7 +390,7 @@ def getCategoryHome():
         JWTResult = auth_methods.AuthenticateUser(request.headers)
 
         if JWTResult["Valid"] == True:
-            requester_id = request.headers['user_id']
+            requester_id = request.headers['User-Id']
 
 
         result = ResourceDatabase.getCategoryHome(requester_id)
@@ -433,7 +409,7 @@ def getCategory(category_id):
         JWTResult = auth_methods.AuthenticateUser(request.headers)
 
         if JWTResult["Valid"] == True:
-            requester_id = request.headers['user_id']
+            requester_id = request.headers['User-Id']
 
         result = ResourceDatabase.getCategory(category_id, requester_id)
 
@@ -454,7 +430,7 @@ def getCategory(category_id):
 #         if JWTResult["Valid"] == False:
 #             return resp.CreateResponse()
         
-#         result = ResourceDatabase.createCategoryRequest(request.headers['user_id'], request.json)
+#         result = ResourceDatabase.createCategoryRequest(request.headers['User-Id'], request.json)
         
 #         resp.ResponseResult = result
 
@@ -462,3 +438,20 @@ def getCategory(category_id):
 #     except Exception as e:
 #         print(traceback.print_exc())
 #         return make_response(jsonify({'error': str(e)}), 401)
+
+@app.route('/api/categories/<category_id>/subscribe', methods=["POST"])
+def SubscribeCategory(category_id):
+    try:
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
+        resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.POST)
+
+        if JWTResult["Valid"] == False:
+            return resp.CreateResponse()
+        
+        result = ResourceDatabase.subscribeCategory(category_id, request.headers['User-Id'], request.json)
+        
+        resp.ResponseResult = result
+
+        return resp.CreateResponse()
+    except Exception as e:
+        print(traceback.print_exc())
