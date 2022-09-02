@@ -1,3 +1,5 @@
+[![Pylint](https://github.com/ammaaraziz360/project-xerxes/actions/workflows/pylint.yml/badge.svg)](https://github.com/ammaaraziz360/project-xerxes/actions/workflows/pylint.yml)
+
 ## Blogoo.app
 #### Codenamed Project Xerxes, Blogoo aims to bring the discoverability of traditional social media to the informative nature of blogs. Stay tuned for updates.
 
