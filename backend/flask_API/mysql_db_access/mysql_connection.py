@@ -1,30 +1,29 @@
+import os
 from typing import List
 import mysql.connector as mysqlconnex
 import mysql.connector.pooling as DBPooler
-from backend.flask_API.mysql_db_access.mysql_creds import Credentials
-from datetime import datetime
 import traceback
-
+import logging
 
 class ResourceDB():
-    def __init__(self, credentials: Credentials):
+    def __init__(self):
         self.cnx_pool = None
-        self.CreateConnection(credentials)
+        self.CreateConnection()
 
-    def CreateConnection(self, creds: Credentials):
+    def CreateConnection(self):
         pool = None
         try:
             pool = DBPooler.MySQLConnectionPool(
                 pool_name = "resource_db_pool",
                 pool_size = 5,
-                host = creds.HOST_NAME,
-                user = creds.USER_NAME,
-                passwd = creds.USER_PASSWORD,
-                database = creds.database
+                host = os.getenv('DB_HOST_NAME'),
+                user = os.getenv('DB_USERNAME'),
+                passwd = os.getenv('DB_USER_PASSWORD'),
+                database = os.getenv('RESOURCE_DB_NAME')
             )
-            print(f'Connection to the {creds.database} database was successful')
+            logging.getLogger().info(f'Connection to the {os.getenv("RESOURCE_DB_NAME")} database was successful')
         except mysqlconnex.Error as e:
-            print(f'Connection to the {creds.database} database was unsuccessful. Error: {e}')
+            logging.getLogger().error(f'Connection to the {os.getenv("RESOURCE_DB_NAME")} database was unsuccessful. Error: {e}')
     
         self.cnx_pool = pool
         
@@ -84,7 +83,7 @@ class ResourceDB():
                     return 1
 
             except Exception as e:
-                pass
+                logging.getLogger().error(f'{traceback.print_exc()}')
         return -1
     def UpdateUser(self, updated_items):
         """
@@ -141,6 +140,10 @@ class ResourceDB():
                 for result in cursor.stored_results():
                     keys = result.column_names
                     [results := dict(zip(keys, x)) for x in result.fetchall()]
+                
+                # if no user is found 
+                if results == {}:
+                    return {}
 
                 if get_posts and results != {}:
                     results['posts'] = []
@@ -158,7 +161,7 @@ class ResourceDB():
                         own_profile = None
 
                 connex.close()
-
+            
                 return {"profile": results, "requester_profile": own_profile}
             except Exception as e:
                 print(traceback.print_exc())

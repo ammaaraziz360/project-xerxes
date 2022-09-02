@@ -1,33 +1,38 @@
-from mysql_db_access.mysql_creds import Credentials
+import logging
+import traceback
 import mysql.connector as mysqlconnex
 from datetime import datetime
+import os
+import mysql.connector.pooling as DBPooler
 
 class AuthDB():
-    def __init__(self, credentials: Credentials):
-        self.connection = None
-        self.CreateConnection(credentials)
+    def __init__(self):
+        self.cnx_pool = None
+        self.CreateConnection()
 
-    def CreateConnection(self, creds: Credentials):
-        connection = None
+    def CreateConnection(self):
+        pool = None
         try:
-            connection = mysqlconnex.connect(
-                host = creds.HOST_NAME,
-                user = creds.USER_NAME,
-                passwd = creds.USER_PASSWORD,
-                database = creds.database
+            pool = DBPooler.MySQLConnectionPool(
+                pool_name = "auth_db_pool",
+                pool_size = 5,
+                host = os.getenv('DB_HOST_NAME'),
+                user = os.getenv('DB_USERNAME'),
+                passwd = os.getenv('DB_USER_PASSWORD'),
+                database = os.getenv('AUTH_DB_NAME')
             )
-            print(f'Connection to the {creds.database} database was successful')
+            logging.getLogger().info(f'Connection to the {os.getenv("AUTH_DB_NAME")} database was successful')
         except mysqlconnex.Error as e:
-            print(f'Connection to the {creds.database} database was unsuccessful. Error: {e}')
+            logging.getLogger().info(f'Connection to the {os.getenv("AUTH_DB_NAME")} database was unsuccessful. Error: {e}')
     
-        self.connection = connection
+        self.cnx_pool = pool
 
     def createSessionRecord(self, jwt_data: dict):
         """
         Create a token record
         :return:
         """
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
 
         if connex != None:
             try:
@@ -40,8 +45,10 @@ class AuthDB():
                                 jwt_data['createdAt'],
                                 jwt_data['updatedAt']])
                 connex.commit()
+                connex.close()
             except Exception as e:
-                print(e)
+                logging.getLogger().error(traceback.print_exc())
+                connex.close()
                 return(str(e))
 
     def getSessionRecord(self, session_id):
@@ -49,7 +56,7 @@ class AuthDB():
         Get a token record
         :return:
         """
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
 
         if connex != None:
             try:
@@ -61,9 +68,11 @@ class AuthDB():
                     for i in result.fetchall():
                         records = i
                 
+                connex.close()
                 return records
             except Exception as e:
-                print(e)
+                logging.getLogger().error(traceback.print_exc())
+                connex.close()
                 return(str(e))
 
     def updateSessionRecordDate(self, session_id):
@@ -71,7 +80,7 @@ class AuthDB():
         Update a token record date
         :return:
         """
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -79,9 +88,11 @@ class AuthDB():
                 cursor.callproc('update_jwt_session_date', [session_id, date])
 
                 connex.commit()
+                connex.close()
                 return True
             except Exception as e:
-                print(e)
+                logging.getLogger().error(traceback.print_exc())
+                connex.close()
                 return(str(e))
 
     def setSessionInvalid(self, session_id):
@@ -89,22 +100,16 @@ class AuthDB():
         set a token invalid
         :return:
         """
-        connex = self.connection
+        connex = self.cnx_pool.get_connection()
         if connex != None:
             try:
                 cursor = connex.cursor()
                 cursor.callproc('set_session_invalid', [session_id])
 
                 connex.commit()
+                connex.close()
                 return True
             except Exception as e:
-                print(e)
+                logging.getLogger().error(traceback.print_exc())
+                connex.close()
                 return(str(e))
-
-    def CloseConnection(self):
-        """
-        Close the connection
-        :return:
-        """
-        self.connection.close()
-        self.connection = None

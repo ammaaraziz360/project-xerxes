@@ -9,7 +9,7 @@ class ResourceDB_API():
 
     def __init__(self) -> None:
         # self.resorDB  = ResourceDB(Credentials("bloggit-db"))
-        self.resorDB  = ResourceDB(Credentials("BlogooDB"))
+        self.resorDB  = ResourceDB()
 
     # def getBannedUsernames(self):
     #     """

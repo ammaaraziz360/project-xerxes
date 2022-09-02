@@ -1,6 +1,5 @@
--- MySQL dump 10.13  Distrib 8.0.25, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.30, for macos12 (x86_64)
 --
--- Host: xerxes.cfhinzrtpqwd.us-east-2.rds.amazonaws.com    Database: BlogooDB
 -- ------------------------------------------------------
 -- Server version	8.0.23
 
@@ -22,6 +21,459 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 --
 
 SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '';
+
+--
+-- Current Database: `BlogooDB`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `BlogooDB` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+
+USE `BlogooDB`;
+
+--
+-- Table structure for table `AdminReports`
+--
+
+DROP TABLE IF EXISTS `AdminReports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `AdminReports` (
+  `report_id` int NOT NULL AUTO_INCREMENT,
+  `reporter_user_id` varchar(64) NOT NULL,
+  `post_id` int DEFAULT NULL,
+  `category_id` int DEFAULT NULL,
+  `reason_id` int NOT NULL,
+  `report_details` varchar(1024) DEFAULT NULL,
+  `report_date` date NOT NULL,
+  `action_date` date DEFAULT NULL,
+  PRIMARY KEY (`report_id`),
+  KEY `reporter_user_id` (`reporter_user_id`),
+  KEY `post_id` (`post_id`),
+  KEY `category_id` (`category_id`),
+  KEY `reason_id` (`reason_id`),
+  CONSTRAINT `AdminReports_ibfk_1` FOREIGN KEY (`reporter_user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `AdminReports_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `Posts` (`post_id`),
+  CONSTRAINT `AdminReports_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`),
+  CONSTRAINT `AdminReports_ibfk_4` FOREIGN KEY (`reason_id`) REFERENCES `Reasons` (`reason_id`),
+  CONSTRAINT `admin_chk_null` CHECK ((((`post_id` is not null) and (`category_id` is null)) or ((`post_id` is null) and (`category_id` is not null))))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Admins`
+--
+
+DROP TABLE IF EXISTS `Admins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Admins` (
+  `admin_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(64) NOT NULL,
+  PRIMARY KEY (`admin_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `Admins_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Categories`
+--
+
+DROP TABLE IF EXISTS `Categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Categories` (
+  `category_id` int NOT NULL AUTO_INCREMENT,
+  `parent_category_id` int DEFAULT NULL,
+  `category_name` varchar(255) NOT NULL,
+  `category_pfp_url` mediumtext NOT NULL,
+  `category_desc` varchar(1024) DEFAULT NULL,
+  `date_created` date NOT NULL,
+  PRIMARY KEY (`category_id`),
+  UNIQUE KEY `category_name` (`category_name`),
+  KEY `parent_category_id` (`parent_category_id`),
+  CONSTRAINT `Categories_ibfk_1` FOREIGN KEY (`parent_category_id`) REFERENCES `Categories` (`category_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CategoryCreationRequests`
+--
+
+DROP TABLE IF EXISTS `CategoryCreationRequests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `CategoryCreationRequests` (
+  `ccr_id` int NOT NULL AUTO_INCREMENT,
+  `requester_user_id` varchar(64) NOT NULL,
+  `parent_category_id` int NOT NULL,
+  `category_name` varchar(64) NOT NULL,
+  `category_desc` varchar(256) DEFAULT NULL,
+  `request_details` varchar(256) NOT NULL,
+  `approved` tinyint(1) DEFAULT NULL,
+  `approval_date` datetime DEFAULT NULL,
+  `approval_details` varchar(256) DEFAULT NULL,
+  `request_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`ccr_id`),
+  KEY `requester_user_id` (`requester_user_id`),
+  KEY `parent_category_id` (`parent_category_id`),
+  CONSTRAINT `CategoryCreationRequests_ibfk_1` FOREIGN KEY (`requester_user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `CategoryCreationRequests_ibfk_2` FOREIGN KEY (`parent_category_id`) REFERENCES `Categories` (`category_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `create_category` AFTER UPDATE ON `CategoryCreationRequests` FOR EACH ROW BEGIN
+	IF old.approved is null and new.approved = 1 THEN
+		INSERT INTO Categories(parent_category_id, category_name, category_pfp_url, category_desc, date_created)
+        VALUES(old.parent_category_id, 
+				old.category_name, 
+                'https://lh3.googleusercontent.com/a-/AOh14GjQ75MzIig737ug-yQInIeKnEcbUhkbHjY4vMj4-w=s96-c', 
+                old.category_desc, 
+                current_timestamp());
+		INSERT INTO Moderators(user_id, category_id)
+        values(old.requester_user_id, last_insert_id());
+	END IF;
+    
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `CategoryReports`
+--
+
+DROP TABLE IF EXISTS `CategoryReports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `CategoryReports` (
+  `cat_report_id` int NOT NULL AUTO_INCREMENT,
+  `reporter_user_id` varchar(64) NOT NULL,
+  `rule_id` int NOT NULL,
+  `post_id` int NOT NULL,
+  `report_details` varchar(256) DEFAULT NULL,
+  `report_date` date NOT NULL,
+  `approved` tinyint DEFAULT NULL,
+  `approval_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`cat_report_id`),
+  KEY `reporter_user_id` (`reporter_user_id`),
+  KEY `post_id` (`post_id`),
+  KEY `rule_id` (`rule_id`),
+  CONSTRAINT `CategoryReports_ibfk_1` FOREIGN KEY (`reporter_user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `CategoryReports_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `Posts` (`post_id`),
+  CONSTRAINT `CategoryReports_ibfk_3` FOREIGN KEY (`rule_id`) REFERENCES `CategoryRules` (`rule_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CategoryRules`
+--
+
+DROP TABLE IF EXISTS `CategoryRules`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `CategoryRules` (
+  `rule_id` int NOT NULL AUTO_INCREMENT,
+  `category_id` int NOT NULL,
+  `rule_title` varchar(64) NOT NULL DEFAULT 'Rule',
+  `rule_details` varchar(256) NOT NULL,
+  PRIMARY KEY (`rule_id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `CategoryRules_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `CategoryUserSuspensions`
+--
+
+DROP TABLE IF EXISTS `CategoryUserSuspensions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `CategoryUserSuspensions` (
+  `category_user_suspension_id` int NOT NULL AUTO_INCREMENT,
+  `cat_report_id` int NOT NULL,
+  `user_id` varchar(64) NOT NULL,
+  `category_id` int NOT NULL,
+  `suspend_date` date NOT NULL,
+  `suspend_end_date` date NOT NULL,
+  `reason_details` varchar(256) DEFAULT NULL,
+  PRIMARY KEY (`category_user_suspension_id`),
+  KEY `cat_report_id` (`cat_report_id`),
+  KEY `user_id` (`user_id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `CategoryUserSuspensions_ibfk_1` FOREIGN KEY (`cat_report_id`) REFERENCES `CategoryReports` (`cat_report_id`),
+  CONSTRAINT `CategoryUserSuspensions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `CategoryUserSuspensions_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Followers`
+--
+
+DROP TABLE IF EXISTS `Followers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Followers` (
+  `user_id` varchar(64) NOT NULL,
+  `follow_user_id` varchar(64) NOT NULL,
+  PRIMARY KEY (`user_id`,`follow_user_id`),
+  KEY `follow_user_id` (`follow_user_id`),
+  CONSTRAINT `Followers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `Followers_ibfk_2` FOREIGN KEY (`follow_user_id`) REFERENCES `Users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ModeratorRequests`
+--
+
+DROP TABLE IF EXISTS `ModeratorRequests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ModeratorRequests` (
+  `mod_request_id` int NOT NULL AUTO_INCREMENT,
+  `requester_id` varchar(64) NOT NULL,
+  `category_id` int NOT NULL,
+  `request_details` varchar(256) NOT NULL,
+  `approved` tinyint(1) DEFAULT NULL,
+  `approval_date` date DEFAULT NULL,
+  `request_date` date NOT NULL,
+  PRIMARY KEY (`mod_request_id`),
+  KEY `requester_id` (`requester_id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `ModeratorRequests_ibfk_1` FOREIGN KEY (`requester_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `ModeratorRequests_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Moderators`
+--
+
+DROP TABLE IF EXISTS `Moderators`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Moderators` (
+  `user_id` varchar(64) NOT NULL,
+  `category_id` int NOT NULL,
+  PRIMARY KEY (`user_id`,`category_id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `Moderators_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `Moderators_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `NotificationEvents`
+--
+
+DROP TABLE IF EXISTS `NotificationEvents`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `NotificationEvents` (
+  `event_id` int NOT NULL AUTO_INCREMENT,
+  `event_type` varchar(255) NOT NULL,
+  `event_text` varchar(255) NOT NULL,
+  PRIMARY KEY (`event_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Notifications`
+--
+
+DROP TABLE IF EXISTS `Notifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Notifications` (
+  `notification_id` int NOT NULL AUTO_INCREMENT,
+  `trigger_user_id` varchar(64) NOT NULL,
+  `notify_user_id` varchar(64) NOT NULL,
+  `event_id` int NOT NULL,
+  `is_read` enum('true','false') NOT NULL DEFAULT 'false',
+  `notification_date` date NOT NULL,
+  PRIMARY KEY (`notification_id`),
+  KEY `trigger_user_id` (`trigger_user_id`),
+  KEY `notify_user_id` (`notify_user_id`),
+  KEY `event_id` (`event_id`),
+  CONSTRAINT `Notifications_ibfk_1` FOREIGN KEY (`trigger_user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `Notifications_ibfk_2` FOREIGN KEY (`notify_user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `Notifications_ibfk_3` FOREIGN KEY (`event_id`) REFERENCES `NotificationEvents` (`event_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PostInteraction`
+--
+
+DROP TABLE IF EXISTS `PostInteraction`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `PostInteraction` (
+  `user_id` varchar(64) NOT NULL,
+  `post_id` int NOT NULL,
+  `interaction_type_id` int NOT NULL,
+  PRIMARY KEY (`user_id`,`post_id`),
+  KEY `post_id` (`post_id`),
+  KEY `interaction_type_id` (`interaction_type_id`),
+  CONSTRAINT `PostInteraction_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `PostInteraction_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `Posts` (`post_id`),
+  CONSTRAINT `PostInteraction_ibfk_3` FOREIGN KEY (`interaction_type_id`) REFERENCES `PostInteractionTypes` (`interaction_type_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PostInteractionTypes`
+--
+
+DROP TABLE IF EXISTS `PostInteractionTypes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `PostInteractionTypes` (
+  `interaction_type_id` int NOT NULL AUTO_INCREMENT,
+  `interaction_type_desc` varchar(64) NOT NULL,
+  PRIMARY KEY (`interaction_type_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Posts`
+--
+
+DROP TABLE IF EXISTS `Posts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Posts` (
+  `post_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(64) NOT NULL,
+  `title` varchar(64) DEFAULT NULL,
+  `body` mediumtext NOT NULL,
+  `date_posted` datetime NOT NULL,
+  `is_deleted` enum('true','false') NOT NULL DEFAULT 'false',
+  `reply_post_id` int DEFAULT NULL,
+  `category_id` int NOT NULL,
+  PRIMARY KEY (`post_id`),
+  KEY `user_id` (`user_id`),
+  KEY `reply_post_id` (`reply_post_id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `Posts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `Posts_ibfk_2` FOREIGN KEY (`reply_post_id`) REFERENCES `Posts` (`post_id`),
+  CONSTRAINT `Posts_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Reasons`
+--
+
+DROP TABLE IF EXISTS `Reasons`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Reasons` (
+  `reason_id` int NOT NULL AUTO_INCREMENT,
+  `report_type_id` int NOT NULL,
+  `reason_text` varchar(255) NOT NULL,
+  PRIMARY KEY (`reason_id`),
+  KEY `report_type_id` (`report_type_id`),
+  CONSTRAINT `Reasons_ibfk_1` FOREIGN KEY (`report_type_id`) REFERENCES `ReportTypes` (`report_type_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ReportTypes`
+--
+
+DROP TABLE IF EXISTS `ReportTypes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ReportTypes` (
+  `report_type_id` int NOT NULL AUTO_INCREMENT,
+  `report_type` varchar(255) NOT NULL,
+  PRIMARY KEY (`report_type_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Subscribers`
+--
+
+DROP TABLE IF EXISTS `Subscribers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Subscribers` (
+  `user_id` varchar(64) NOT NULL,
+  `category_id` int NOT NULL,
+  PRIMARY KEY (`user_id`,`category_id`),
+  KEY `category_id` (`category_id`),
+  CONSTRAINT `Subscribers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `Subscribers_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Suspensions`
+--
+
+DROP TABLE IF EXISTS `Suspensions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Suspensions` (
+  `suspension_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(64) DEFAULT NULL,
+  `category_id` int DEFAULT NULL,
+  `suspend_date` date NOT NULL,
+  `suspension_end_date` date NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`suspension_id`),
+  KEY `category_id` (`category_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `Suspensions_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`),
+  CONSTRAINT `Suspensions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `Users` (`user_id`),
+  CONSTRAINT `chk_null` CHECK ((((`user_id` is not null) and (`category_id` is null)) or ((`user_id` is null) and (`category_id` is not null))))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Users`
+--
+
+DROP TABLE IF EXISTS `Users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `Users` (
+  `user_id` varchar(64) NOT NULL,
+  `username` varchar(255) DEFAULT NULL,
+  `first_name` varchar(255) DEFAULT NULL,
+  `last_name` varchar(255) DEFAULT NULL,
+  `email_address` varchar(255) NOT NULL,
+  `pfp_url` mediumtext NOT NULL,
+  `bio` varchar(255) DEFAULT NULL,
+  `location` varchar(45) DEFAULT NULL,
+  `date_created` datetime NOT NULL,
+  `date_last_login` datetime NOT NULL,
+  `instagram_url` varchar(1000) DEFAULT NULL,
+  `facebook_url` varchar(1000) DEFAULT NULL,
+  `youtube_url` varchar(1000) DEFAULT NULL,
+  `twitter_url` varchar(1000) DEFAULT NULL,
+  `website_url` varchar(45) DEFAULT NULL,
+  `is_deleted` enum('true','false') NOT NULL DEFAULT 'false',
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `email_address_UNIQUE` (`email_address`),
+  UNIQUE KEY `username_UNIQUE` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping events for database 'BlogooDB'
@@ -1192,6 +1644,238 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Current Database: `blogoo-auth`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `blogoo-auth` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+
+USE `blogoo-auth`;
+
+--
+-- Table structure for table `blacklisted_tokens`
+--
+
+DROP TABLE IF EXISTS `blacklisted_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `blacklisted_tokens` (
+  `token_id` int NOT NULL AUTO_INCREMENT,
+  `token` mediumtext,
+  PRIMARY KEY (`token_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=196 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `jwt_sessions`
+--
+
+DROP TABLE IF EXISTS `jwt_sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `jwt_sessions` (
+  `JWT_id` varchar(500) NOT NULL,
+  `user_id` varchar(45) DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` mediumtext,
+  `valid` tinyint(1) DEFAULT '1',
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`JWT_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping events for database 'blogoo-auth'
+--
+
+--
+-- Dumping routines for database 'blogoo-auth'
+--
+/*!50003 DROP PROCEDURE IF EXISTS `check_blacklist_token` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`admin`@`%` PROCEDURE `check_blacklist_token`(
+vtoken mediumtext
+)
+BEGIN
+	SELECT count(*) from blacklisted_tokens
+    where token = vtoken;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_jwt_session` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`admin`@`%` PROCEDURE `get_jwt_session`(
+in vuuid varchar(500)
+)
+BEGIN
+	SELECT * FROM jwt_sessions
+    WHERE JWT_id = vuuid;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_blacklist_token` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`admin`@`%` PROCEDURE `insert_blacklist_token`(
+vtoken mediumtext
+)
+BEGIN
+	insert into blacklisted_tokens (token)
+    values (vtoken);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `insert_jwt_session` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`admin`@`%` PROCEDURE `insert_jwt_session`(
+in vuuid varchar(500),
+in vuser_id varchar(64),
+in vip_address varchar(64),
+in vuser_agent mediumtext,
+in vcreatedAt datetime,
+in vupdatedAt datetime
+)
+BEGIN
+	INSERT INTO jwt_sessions (JWT_id, user_id, ip_address, user_agent, created_at, updated_at)
+    values (vuuid, vuser_id, vip_address, vuser_agent, vcreatedAt, vupdatedAt);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `set_session_invalid` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`admin`@`%` PROCEDURE `set_session_invalid`(
+in vuuid varchar(500)
+)
+BEGIN
+	UPDATE jwt_sessions SET valid = 0
+    WHERE JWT_id = vuuid;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `set_token_invalid` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`admin`@`%` PROCEDURE `set_token_invalid`(
+in vuser_id varchar(64)
+)
+BEGIN
+	UPDATE jwt_sessions SET valid = 0
+    WHERE user_id = vuser_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `token_is_blacklisted` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`admin`@`%` PROCEDURE `token_is_blacklisted`(
+vtoken mediumtext
+)
+BEGIN
+	SELECT count(*) from blacklisted_tokens
+    where token = vtoken;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_jwt_session_date` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`admin`@`%` PROCEDURE `update_jwt_session_date`(
+in vuuid varchar(500),
+in vupdateDate datetime
+)
+BEGIN
+	UPDATE jwt_sessions
+    SET updated_at = vupdateDate
+    WHERE JWT_id = vuuid;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -1203,4 +1887,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-05-09 20:12:05
+-- Dump completed on 2022-08-24 18:34:41

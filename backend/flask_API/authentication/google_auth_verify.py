@@ -1,13 +1,12 @@
+import os
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from backend.flask_API.authentication import jwt_config
 
-creds = jwt_config.JWTConfig()
 
 def AuthenticateUser(auth_token):
     try:
         # Specify the CLIENT_ID of the app that accesses the backend:
-        idinfo = id_token.verify_oauth2_token(auth_token, requests.Request(), creds.GOOGLE_CLIENT_ID)
+        idinfo = id_token.verify_oauth2_token(auth_token, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
 
         # Or, if multiple clients access the backend server:
         # idinfo = id_token.verify_oauth2_token(token, requests.Request())
@@ -28,7 +27,7 @@ def AuthenticateUser(auth_token):
 def GetUserID(auth_token):
     try:
         # Specify the CLIENT_ID of the app that accesses the backend:
-        idinfo = id_token.verify_oauth2_token(auth_token, requests.Request(), creds.GOOGLE_CLIENT_ID)
+        idinfo = id_token.verify_oauth2_token(auth_token, requests.Request(), os.getenv('GOOGLE_CLIENT_ID'))
 
         # Or, if multiple clients access the backend server:
         # idinfo = id_token.verify_oauth2_token(token, requests.Request())
