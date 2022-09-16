@@ -1,8 +1,4 @@
-# from authentication import google_auth_verify, jwt_auth
-# from mysql_db_access import mysql_connection
-# from mysql_db_access.jwt_authdb import AuthDB
-from backend.flask_API.mysql_db_access.mysql_connection import ResourceDB
-# from datetime import datetime
+from mysql_db_access.mysql_connection import ResourceDB
 
 class ResourceDB_API():
 
@@ -94,5 +90,8 @@ class ResourceDB_API():
     def createCategoryRequest(self, requester_id, category_info):
         return(self.resorDB.createCategoryRequest(requester_id, category_info))
     
-    def getModeratorPage(self, reqester_id, category_id):
-        return(self.resorDB.getModeratorPage(reqester_id, category_id))
+    def getModeratorPage(self, requester_id, category_id):
+        return(self.resorDB.getModeratorPage(requester_id, category_id))
+
+    def passwordLogin(self, username, password):
+        return(self.resorDB.passwordLogin(username, password))

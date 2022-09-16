@@ -10,6 +10,6 @@ backend/flask_API/authentication/jwt_config.py
 .vscode
 .env
 
-__pycache__/
+__pycache__
 *.py[cod]
 *$py.class

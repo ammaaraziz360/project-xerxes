@@ -4,7 +4,7 @@ import mysql.connector as mysqlconnex
 from datetime import datetime
 import os
 import mysql.connector.pooling as DBPooler
-
+import uuid
 class AuthDB():
     def __init__(self):
         self.cnx_pool = None
@@ -27,29 +27,35 @@ class AuthDB():
     
         self.cnx_pool = pool
 
-    def createSessionRecord(self, jwt_data: dict):
+    def createSessionRecord(self, user_id, ip_address, user_agent):
         """
         Create a token record
         :return:
         """
+
         connex = self.cnx_pool.get_connection()
 
         if connex != None:
             try:
+                session_id = str(uuid.uuid4())
+
                 cursor = connex.cursor()
                 cursor.callproc('insert_jwt_session',
-                                [jwt_data['uuid'],
-                                jwt_data['user_id'],
-                                jwt_data['ip_address'],
-                                jwt_data['user_agent'], 
-                                jwt_data['createdAt'],
-                                jwt_data['updatedAt']])
+                                [session_id,
+                                user_id,
+                                ip_address,
+                                user_agent, 
+                                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                datetime.now().strftime('%Y-%m-%d %H:%M:%S')])
                 connex.commit()
                 connex.close()
+
+                return session_id
             except Exception as e:
                 logging.getLogger().error(traceback.print_exc())
                 connex.close()
-                return(str(e))
+        
+        return None
 
     def getSessionRecord(self, session_id):
         """

@@ -1,9 +1,11 @@
-from backend.flask_API.authentication import google_auth_verify, jwt_auth
-from backend.flask_API.mysql_db_access.jwt_authdb import AuthDB
+from authentication import google_auth_verify, jwt_auth
+from mysql_db_access.jwt_authdb import AuthDB
 from datetime import datetime
 import uuid
 import logging
 import traceback
+import bcrypt
+from enums import LoginType
 
 authDB = AuthDB()
 
@@ -73,42 +75,67 @@ def AuthenticateUser(headers):
     except:
         return response
 
-def AuthorizeUser(request, ResourceDBObj):
+def AuthorizeUser(request, ResourceDBObj, loginType: LoginType, username=None):
     try:
-        auth_token = request.headers['Google_Auth_Token']
         ip_address = request.headers['X-Real-Ip']
         user_agent = request.headers['User-Agent']
         request_body = request.json
 
-        if google_auth_verify.AuthenticateUser(auth_token):
-            google_id = google_auth_verify.GetUserID(auth_token)
-            request_body['user_id'] = google_id
-            
-
-            result = ResourceDBObj.CreateUser(request_body)
-
-            google_id = google_auth_verify.GetUserID(auth_token)
-            
-            session_id = str(uuid.uuid4())
-            auth_table = {
-                            'uuid': session_id,
-                            'user_id': google_id, 
-                            'ip_address': ip_address, 
-                            'user_agent': user_agent, 
-                            'createdAt': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                            'updatedAt': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                        }
-
-            authDB.createSessionRecord(auth_table)
-            jwt_token = jwt_auth.encode_auth_token(google_id)
-
-            return {"user_exists": result, "token": jwt_token, "user_id": google_id, "session_id": session_id}  
+        if loginType == loginType.GOOGLE_LOGIN:
+            return GoogleLogin(ip_address, user_agent, request, request_body, ResourceDBObj)
         
-        return {"user_exists": -1}
+        user_id = ResourceDBObj.GetUserID(username)
+
+        return PasswordLogin(ip_address, user_agent, user_id) 
+
     except Exception as e:
         logging.getLogger().error(f'{traceback.print_exc()}')
-        return {"user_exists": -1}
+        return None
+
+def GoogleLogin(ip_address, user_agent, request, request_body, ResourceDBObj):
+
+    try:
+        auth_token = request.headers['Google_Auth_Token']
+
+        if google_auth_verify.AuthenticateUser(auth_token):
+            user_id = google_auth_verify.GetUserID(auth_token)
+            request_body['user_id'] = user_id
+            
+            result = ResourceDBObj.CreateGoogleUser(request_body)
+
+            session_id = authDB.createSessionRecord(user_id, ip_address, user_agent)
+
+            if session_id is None:
+                return None
+
+            jwt_token = jwt_auth.encode_auth_token(user_id)
+
+            return {"user_exists": result, 
+                    "token": jwt_token, 
+                    "user_id": user_id, 
+                    "session_id": session_id}  
+    except:
+        logging.getLogger().error(f'{traceback.print_exc()}')
+        return None
+
+def PasswordLogin(ip_address, user_agent, user_id):
+    
+    try:
+        session_id = authDB.createSessionRecord(user_id, ip_address, user_agent)
+
+        if session_id is None:
+            return None
         
+        jwt_token = jwt_auth.encode_auth_token(user_id)
+
+        return {"token": jwt_token,
+                "user_id": user_id,
+                "session_id": session_id}
+
+    except:
+        logging.getLogger().error(f'{traceback.print_exc()}')
+        return None
+
 def LogoutUser(headers):
     try:
         session_id = headers['SID']
@@ -118,6 +145,8 @@ def LogoutUser(headers):
     except Exception as e:
         logging.getLogger().error(f'{traceback.print_exc()}')
         return {"error": str(e)}
+
+
 
 
     

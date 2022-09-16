@@ -1,9 +1,12 @@
 import os
+from sqlite3 import connect
 from typing import List
 import mysql.connector as mysqlconnex
 import mysql.connector.pooling as DBPooler
 import traceback
 import logging
+import bcrypt
+import uuid
 
 class ResourceDB():
     def __init__(self):
@@ -48,7 +51,7 @@ class ResourceDB():
     #             return banned_list
 
     # to insert users
-    def CreateUser(self, user_info: dict):
+    def CreateGoogleUser(self, user_info: dict):
         connex = self.cnx_pool.get_connection()
 
         if connex != None:
@@ -85,6 +88,77 @@ class ResourceDB():
             except Exception as e:
                 logging.getLogger().error(f'{traceback.print_exc()}')
         return -1
+    
+    def CreateUser(self, user_info: dict):
+        connex = self.cnx_pool.get_connection()
+
+        if connex != None:
+            cursor = connex.cursor()
+
+            user_id = str(uuid.uuid4())
+            try:
+                cursor.callproc('CreateUser', 
+                                [user_id,
+                                user_info['first_name'], 
+                                user_info['last_name'], 
+                                user_info['email'], 
+                                'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'],
+                                user_info['username'])
+                connex.commit()
+                connex.close()
+                return user_id
+            except Exception as e:
+                logging.getLogger().error(f'{traceback.print_exc()}')
+                return None
+        return -1
+
+    def passwordLogin(self, username, password):
+        hashed_pw = None
+
+        connex = self.cnx_pool.get_connection()
+
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+
+                cursor.callproc('GetHashedPassword', [username])
+
+                if cursor.rowcount == 0:
+                    connex.close()
+                    return False
+
+                for result in cursor.stored_results():
+                    hashed_pw = result.fetchone()[0]
+                
+                if hashed_pw is None:
+                    return False
+
+                if bcrypt.checkpw(password.encode('utf-8'), hashed_pw):
+                    connex.close()
+                    return True
+
+                connex.close()
+            except:
+                connex.close()
+                logging.getLogger().error(f'{traceback.print_exc()}')
+        
+        return False
+
+    def GetUserID(self, username):
+        connex = self.cnx_pool.get_connection()
+
+        if connex != None:
+            try:
+                cursor = connex.cursor()
+
+                result_args = cursor.callproc('GetUserID', [username, ''])
+
+                return result_args[1]
+            except:
+                logging.getLogger().error(f'{traceback.print_exc()}')
+
+        return None
+
     def UpdateUser(self, updated_items):
         """
         updates a user in the database
@@ -208,7 +282,7 @@ class ResourceDB():
                 connex.close()
                 return True
             except Exception as e:
-                print(traceback.print_exc())
+                logging.getLogger().error(f'{traceback.print_exc()}')
                 connex.close()
         return False
     

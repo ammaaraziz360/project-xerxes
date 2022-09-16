@@ -1,7 +1,9 @@
-from backend.flask_API.http_response import HTTPResponse
-from backend.flask_API.http_type_enum import HTTPTypes
-from backend.flask_API.resource_methods import ResourceDB_API
-import backend.flask_API.auth_methods as auth_methods
+from crypt import methods
+from enums import LoginType
+from http_response import HTTPResponse
+from enums import HTTPTypes
+from resource_methods import ResourceDB_API
+import auth_methods as auth_methods
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 import traceback
@@ -39,8 +41,8 @@ def homeRoute():
     return "<h1>Welcome to Blogoo API</h1>"
 
 # default route
-@app.route('/api/users/login', methods=['POST'])
-def createUser():
+@app.route('/api/users/google-login', methods=['POST'])
+def googleLogin():
     """
     Create a new user
     or sign in an existing user
@@ -48,11 +50,11 @@ def createUser():
     returns a json object true or false about user existence
     returns jwt token for user
     """
-    result = auth_methods.AuthorizeUser(request, ResourceDatabase)
+    result = auth_methods.AuthorizeUser(request, ResourceDatabase, loginType=LoginType.GOOGLE_LOGIN)
     try:
         resp = None
-        if result['user_exists'] == -1:
-            return make_response(jsonify(result), 401)
+        if result is None:
+            return make_response(jsonify({"Error": "Login failed"}), 401)
         else:
             jwt_token = result['token']
             resp = make_response(result, 200)
@@ -60,8 +62,60 @@ def createUser():
             resp.headers['X-JWT'] = jwt_token
             return resp
     except Exception as e:
-        print(traceback.print_exc())
+        app.logger.error(f'{traceback.print_exc()}')
         return make_response(jsonify({'Error': str(e)}), 401)
+
+@app.route('/api/users/login', methods=['POST'])
+def userLogin():
+    try:
+        result = ResourceDatabase.passwordLogin(request.json['username'], request.json['password'])
+
+        if result is False:
+            return make_response(jsonify({'Error': "Incorrect Credentials"}), 401)
+        
+        auth_info = auth_methods.AuthorizeUser(request, ResourceDatabase, LoginType=LoginType.PASSWORD_LOGIN, username=request.json['username'])
+        
+        if auth_info is None:
+            return make_response(jsonify({"Error": "Login failed"}), 401)
+        else:
+            resp = make_response(auth_info, 200)
+            resp.headers['Access-Control-Expose-Headers'] = 'X-JWT'
+            resp.headers['X-JWT'] = auth_info['token']
+            return resp
+
+    except Exception as e:
+        app.logger.error(f'{traceback.print_exc()}')
+        return make_response(jsonify({"Error": str(e)}), 401)
+
+@app.route('/api/users', methods=['POST'])
+def createUser():
+    try:
+        pass
+    except:
+        pass
+
+
+@app.route('/api/users/logout', methods=['POST'])
+def logoutUser():
+    """
+    Logout user
+    """
+    try:
+        JWTResult = auth_methods.AuthenticateUser(request.headers)
+
+        resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.POST)
+
+        if JWTResult["Valid"] == False:
+            return resp.CreateResponse()
+        
+        result = auth_methods.LogoutUser(request.headers)
+
+        resp.ResponseResult = result
+
+        return resp.CreateResponse()
+    except Exception as e:
+        print(e)
+        return make_response(jsonify({'error': [str(e)]}), 401)
 
 @app.route('/api/users', methods=['PUT'])
 def updateUser():
@@ -142,29 +196,6 @@ def AuthenticateUser():
 #         return resp
 #     except Exception as e:
 #         return make_response(jsonify({'error': [str(e)]}), 401)
-    
-    
-@app.route('/api/users/logout', methods=['POST'])
-def logoutUser():
-    """
-    Logout user
-    """
-    try:
-        JWTResult = auth_methods.AuthenticateUser(request.headers)
-
-        resp = HTTPResponse(JWTAuthResult=JWTResult, HTTPType=HTTPTypes.POST)
-
-        if JWTResult["Valid"] == False:
-            return resp.CreateResponse()
-        
-        result = auth_methods.LogoutUser(request.headers)
-
-        resp.ResponseResult = result
-
-        return resp.CreateResponse()
-    except Exception as e:
-        print(e)
-        return make_response(jsonify({'error': [str(e)]}), 401)
     
 @app.route('/api/users/profile/<username>', methods=['GET'])
 def getUserProfile(username):

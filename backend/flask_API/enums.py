@@ -8,3 +8,7 @@ class HTTPTypes(Enum):
     PUT = 4
     DELETE = 5
     NONE = 6
+
+class LoginType(Enum):
+    GOOGLE_LOGIN = 1
+    PASSWORD_LOGIN = 2
